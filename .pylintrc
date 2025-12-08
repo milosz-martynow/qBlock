@@ -1,0 +1,9 @@
+[FORMAT]
+max-line-length=79
+
+[MESSAGES CONTROL]
+disable=wildcard-import
+disable=unused-wildcard-import
+disable=too-many-positional-arguments
+disable=too-few-public-methods
+disable=too-many-arguments
