@@ -14,26 +14,49 @@ from aufbau_exceptions import EMPIRICAL_EXCEPTIONS
 
 class SpinOrbital:
     """
-    A single electron spin–orbital specified by quantum numbers (n, l, m, s).
+    Representation of a single-electron spin–orbital defined by the four
+    quantum numbers (n, l, m, s).
+
+    A spin–orbital is the most fundamental one-electron quantum state in the
+    central-field approximation. It corresponds to the direct product:
+
+        spatial orbital  ×  spin eigenstate
+
+    and is fully specified by:
+
+        * n — principal quantum number
+        * l — orbital angular momentum quantum number
+        * m — magnetic quantum number (projection of L on z)
+        * s — spin quantum number (+1/2 or −1/2)
+
+    Each SpinOrbital object is unique and corresponds to a specific location
+    in the complete electron state basis used by the atom model.
 
     Parameters
     ----------
     n : int
-        Principal quantum number.
-    l : int
-        Angular momentum quantum number.
-    m : int
-        Magnetic quantum number.
-    s : float
-        Spin value (+0.5 or -0.5).
+        Principal quantum number. Must satisfy ``n ≥ 1``. Determines the
+        energy level and radial extent of the orbital.
 
-    Attributes
-    ----------
+    l : int
+        Orbital angular momentum quantum number. Must satisfy
+        ``0 ≤ l < n``. Determines the shape of the spatial wavefunction.
+
+    m : int
+        Magnetic quantum number, representing the z-projection of angular
+        momentum. Must satisfy ``−l ≤ m ≤ l``.
+
+    s : float
+        Spin projection quantum number. Must be either ``+0.5`` or ``−0.5``.
+        Corresponds to eigenstates of ``S_z``.
+
     occupied : bool
-        Whether this spin–orbital is filled by an electron.
-    data : Optional[Any]
-        Optional container for numerical electron parameters
-        (basis coefficients, energies, density values, etc.).
+        Whether this spin–orbital currently hosts an electron.
+
+    data : Any or None
+        Optional storage for user-defined numerical metadata. It may store
+        additional numerical information (e.g., basis-set coefficients,
+        orbital energies, SCF results).
     """
 
     def __init__(self, n: int, l: int, m: int, s: float) -> None:
@@ -60,7 +83,42 @@ class SpinOrbital:
 
 class Orbital:
     """
-    A spatial orbital containing two paired spin states: +0.5 and -0.5.
+    A spatial orbital consisting of exactly two spin–orbitals:
+    one with spin ``+1/2`` and one with spin ``−1/2``.
+
+    An Orbital groups the two SpinOrbital objects that share the same spatial
+    quantum numbers (n, l, m) but differ in spin. This matches the central-field
+    model in which every spatial wavefunction admits two allowed spin states.
+
+    Parameters
+    ----------
+    spin_up : SpinOrbital
+        The spin–orbital with ``s = +0.5``. Must have the same ``n, l, m``
+        quantum numbers as ``spin_down``.
+
+    spin_down : SpinOrbital
+        The spin–orbital with ``s = −0.5``. Must have the same ``n, l, m``
+        quantum numbers as ``spin_up``.
+
+    Internal Variables
+    ------------------
+    n : int
+        Principal quantum number. Must satisfy ``n ≥ 1``. Determines the
+        energy level and radial extent of the orbital.
+
+    l : int
+        Orbital angular momentum quantum number. Must satisfy
+        ``0 ≤ l < n``. Determines the shape of the spatial wavefunction.
+
+    m : int
+        Magnetic quantum number, representing the z-projection of angular
+        momentum. Must satisfy ``−l ≤ m ≤ l``.
+
+    spin_up : SpinOrbital
+        Electron state with spin +1/2.
+
+    spin_down : SpinOrbital
+        Electron state with spin −1/2.
     """
 
     def __init__(self, spin_up: SpinOrbital, spin_down: SpinOrbital) -> None:
@@ -86,7 +144,45 @@ class Orbital:
 
 class SubShell:
     """
-    A subshell defined by (n, l), containing orbitals where m runs from –l to +l.
+    A subshell defined by quantum numbers (n, l), containing all orbitals
+    with magnetic quantum numbers ``m = −l, …, +l``.
+
+    In the central-field model, a subshell represents all orbitals that share
+    the same radial and angular parts of the wavefunction. Each allowed m-value
+    corresponds to one spatial orbital, each of which supports two spin states.
+
+    Thus, a subshell contains:
+
+        * (2l + 1) spatial orbitals
+        * 2 × (2l + 1) possible spin–orbitals
+
+    Parameters
+    ----------
+    n : int
+        Principal quantum number. Must be at least 1.
+
+    l : int
+        Orbital angular momentum quantum number. Must satisfy
+        ``0 ≤ l < n``. Determines the subshell type (s, p, d, f ...).
+
+    Notes
+    -----
+    - The ``capacity()`` method returns the maximum number of electrons that
+      the subshell can hold, equal to ``2 × (2l + 1)``.
+
+    Internal Variables
+    ------------------
+    n : int
+        Principal quantum number. Must satisfy ``n ≥ 1``. Determines the
+        energy level and radial extent of the orbital.
+
+    l : int
+        Orbital angular momentum quantum number. Must satisfy
+        ``0 ≤ l < n``. Determines the shape of the spatial wavefunction.
+
+    orbitals : list[Orbital]
+        List of Orbitals corresponding to each allowed m-value.
+        Length is ``2l + 1``.
     """
 
     def __init__(self, n: int, l: int) -> None:
@@ -112,7 +208,25 @@ class SubShell:
 
 class Shell:
     """
-    A shell containing all subshells for the principal quantum number n.
+    A shell representing all subshells with the same principal quantum
+    number ``n``. Each subshell contains its full complement of orbitals
+    and spin–orbitals. A Shell therefore holds a complete set of quantum
+    states for a given energy level.
+
+    Parameters
+    ----------
+    n : int
+        Principal quantum number of the shell. Must be at least 1.
+
+    Internal Variables
+    ------------------
+    n : int
+        Principal quantum number. Must satisfy ``n ≥ 1``. Determines the
+        energy level and radial extent of the orbital.
+
+    subshells : list[SubShell]
+        All subshells for this shell, with angular momentum quantum numbers
+        l = 0 … n−1.
     """
 
     def __init__(self, n: int) -> None:
