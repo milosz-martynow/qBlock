@@ -27,7 +27,9 @@ where:
 Reference
 ---------
 NIST Atomic Spectra Database (ASD):
-https://physics.nist.gov/PhysRefData/ASD/
+https://physics.nist.gov/PhysRefData/ASD/ionEnergy.html
+https://www.nist.gov/pml/atomic-reference-data-electronic-structure-calculations/atomic-reference-data-electronic-8
+https://chem.libretexts.org/Ancillary_Materials/Reference/Reference_Tables/Atomic_and_Molecular_Properties/A1%3A_Atomic_Electron_Configurations?utm_source=chatgpt.com
 """
 
 from typing import Dict, List

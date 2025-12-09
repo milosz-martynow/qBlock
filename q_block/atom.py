@@ -9,7 +9,7 @@ https://physics.nist.gov/PhysRefData/ASD/
 
 from typing import Any, Dict, List, Optional, Tuple
 
-from aufbau_exceptions import EMPIRICAL_EXCEPTIONS
+from q_block.aufbau_exceptions import EMPIRICAL_EXCEPTIONS
 
 
 class SpinOrbital:
@@ -250,9 +250,7 @@ class Atom:
         Z: int,
         n_max: int = 7,
         use_empirical_exceptions: bool = True,
-        empirical_exceptions: Dict[
-            int, List[Dict[str, int]]
-        ] = EMPIRICAL_EXCEPTIONS,
+        empirical_exceptions: Dict[int, List[Dict[str, int]]] = EMPIRICAL_EXCEPTIONS,
     ) -> None:
         """
         Initialize an Atom object containing nested shells, subshells, orbitals,
@@ -400,9 +398,7 @@ class Atom:
 
         # --- EMPIRICAL OVERRIDE PATH (NIST EXCEPTIONS) ---
         if self.use_empirical and self.Z in self.empirical_exceptions:
-            self._apply_exception(
-                instructions=self.empirical_exceptions[self.Z]
-            )
+            self._apply_exception(instructions=self.empirical_exceptions[self.Z])
             return self.shells
 
         remaining = self.Z
@@ -461,7 +457,5 @@ class Atom:
             for i in range(second):
                 orbitals[i].spin_down.occupied = True
             remaining -= second
-
-        return self.shells
 
         return self.shells

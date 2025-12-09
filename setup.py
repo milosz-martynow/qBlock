@@ -24,6 +24,11 @@ setuptools.setup(
     extras_require={"development": extra, "all": all_modules},
     scripts=[
         str(Path.joinpath(main_folder, "atom.py")),
+        str(Path.joinpath(main_folder, "aufbau_exceptions.py")),
+        str(Path.joinpath(main_folder, "atoms_data.py")),
+        str(Path.joinpath(test_folder, "test_atom.py")),
+        str(Path.joinpath(test_folder, "data/expected_atom_pure.py")),
+        str(Path.joinpath(test_folder, "data/expected_atom_empirical.py")),
     ],
     python_requires="==3.12.*",
 )

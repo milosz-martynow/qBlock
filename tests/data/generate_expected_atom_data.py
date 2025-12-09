@@ -1,0 +1,208 @@
+"""
+Fixed generate_expected_atom_data.py
+
+Behavior:
+ - Creates expected_atom_pure.py with full spin-orbital maps for Z=1..118 (theory).
+ - Creates expected_atom_empirical.py including ONLY elements where
+   empirical exceptions change the theoretical filling.
+ - For empirical elements, writes the FULL final occupancy map (all occupied orbitals),
+   by applying EMPIRICAL_EXCEPTIONS onto the theoretical map (rather than trusting
+   atom_emp.fill() if it only marks exception orbitals).
+"""
+
+from pathlib import Path
+from typing import Dict, Tuple, List
+from copy import deepcopy
+
+from q_block.atom import Atom
+from q_block.atoms_data import ATOMS_SYMBOLS
+from q_block.aufbau_exceptions import EMPIRICAL_EXCEPTIONS
+
+# Type aliases
+SpinKey = Tuple[int, int, int, float]  # (n, l, m, s)
+SpinMap = Dict[SpinKey, bool]
+
+
+def extract_spin_map_from_atom(atom_instance: Atom) -> SpinMap:
+    """
+    Extract a full spin-orbital occupancy map from an Atom instance.
+
+    Returns a dict {(n,l,m,s): bool} including ALL generated spin orbitals.
+    """
+    mapping: SpinMap = {}
+    # Atom provides either atom.shells or atom.spinorbitals; we traverse shells/subshells to be safe
+    for shell in atom_instance.shells.values():
+        for subshell in shell.subshells:
+            for orb in subshell.orbitals:
+                mapping[(orb.n, orb.l, orb.m, orb.spin_up.s)] = bool(orb.spin_up.occupied)
+                mapping[(orb.n, orb.l, orb.m, orb.spin_down.s)] = bool(orb.spin_down.occupied)
+    return mapping
+
+
+def subshell_keys_for_map(spinmap: SpinMap, n: int, l: int) -> List[SpinKey]:
+    """
+    Return the list of spin-orbital keys in spinmap that belong to subshell (n,l).
+    Keys are returned in m ascending, spin_up then spin_down order (if present).
+    """
+    keys = []
+    # m values range -l .. +l
+    for m in range(-l, l + 1):
+        # spin up then spin down
+        up = (n, l, m, 0.5)
+        down = (n, l, m, -0.5)
+        if up in spinmap:
+            keys.append(up)
+        if down in spinmap:
+            keys.append(down)
+    return keys
+
+
+def apply_empirical_to_map(base_map: SpinMap, instructions: List[Dict]) -> SpinMap:
+    """
+    Take a copy of base_map (theoretical) and apply empirical instructions:
+    instructions: list of dicts with keys "n", "l", "electron_count"
+
+    For each (n,l):
+      - compute ms = [-l..+l]
+      - num_orb = len(ms)
+      - first fill min(num_orb, electron_count) spin-up (+0.5) in ms order
+      - then fill remaining up to num_orb spin-down (-0.5) in ms order
+      - ensure any previously filled orbitals outside this subshell remain unchanged
+
+    Returns a new SpinMap with applied changes.
+    """
+    out_map = deepcopy(base_map)
+
+    for ins in instructions:
+        n = int(ins["n"])
+        l = int(ins["l"])
+        count = int(ins["electron_count"])
+
+        ms = list(range(-l, l + 1))
+        num_orb = len(ms)
+
+        # Determine keys for this subshell in the out_map; if some keys missing,
+        # we create them (defensive) so full map covers subshell (n,l).
+        for m in ms:
+            up_key = (n, l, m, 0.5)
+            down_key = (n, l, m, -0.5)
+            if up_key not in out_map:
+                out_map[up_key] = False
+            if down_key not in out_map:
+                out_map[down_key] = False
+
+        # Clear existing occupancy for this subshell (we will set according to instruction)
+        for m in ms:
+            out_map[(n, l, m, 0.5)] = False
+            out_map[(n, l, m, -0.5)] = False
+
+        # First pass: spin-up
+        first = min(num_orb, count)
+        for i in range(first):
+            m = ms[i]
+            out_map[(n, l, m, 0.5)] = True
+
+        # Second pass: spin-down
+        remaining = max(0, count - first)
+        second = min(num_orb, remaining)
+        for i in range(second):
+            m = ms[i]
+            out_map[(n, l, m, -0.5)] = True
+
+    return out_map
+
+
+def spinmaps_identical(m1: SpinMap, m2: SpinMap) -> bool:
+    """
+    True if two spin maps have identical keys and identical bool values for all keys.
+    """
+    if set(m1.keys()) != set(m2.keys()):
+        return False
+    for k in m1:
+        if bool(m1[k]) != bool(m2[k]):
+            return False
+    return True
+
+
+def subshell_counts_from_map(spinmap: SpinMap) -> List[Tuple[int, int, int]]:
+    """
+    Produce (n, l, count) triples for subshells with nonzero occupancy in spinmap.
+    """
+    counts: Dict[Tuple[int, int], int] = {}
+    for (n, l, m, s), occ in spinmap.items():
+        if occ:
+            counts[(n, l)] = counts.get((n, l), 0) + 1
+    triples = [(n, l, c) for (n, l), c in counts.items()]
+    triples.sort(key=lambda x: (x[0], x[1]))
+    return triples
+
+
+OUT_DIR = Path("./tests/data")
+OUT_DIR.mkdir(parents=True, exist_ok=True)
+
+PURE_FILE = OUT_DIR / "expected_atom_pure.py"
+EMP_FILE = OUT_DIR / "expected_atom_empirical.py"
+
+HEADER = """# AUTO-GENERATED FILE
+# Generated by generate_expected_atom_data.py
+# DO NOT EDIT MANUALLY
+#
+# Contains expected spin-orbital occupancy maps produced directly from:
+#     Atom.fill() (theoretical) and by applying EMPIRICAL_EXCEPTIONS to theory
+#
+# For each element Z:
+#   # Z = {Z}  {Symbol}
+#   # config: <configuration string>   (derived from final counts)
+#   # subshells: [(n,l,count), ...]
+#   EXPECTED_ATOM_PURE[Z] = {{ ... }}
+#
+"""
+
+PURE_FILE.write_text(HEADER + "EXPECTED_ATOM_PURE = {}\n\n", encoding="utf8")
+EMP_FILE.write_text(HEADER + "EXPECTED_ATOM_EMPIRICAL = {}\n\n", encoding="utf8")
+
+
+for Z in range(1, 119):
+    sym = ATOMS_SYMBOLS[Z]
+
+    # --- PURE (theory) ---
+    atom_pure = Atom(Z=Z, n_max=7, use_empirical_exceptions=False)
+    atom_pure.fill()
+    spinmap_pure = extract_spin_map_from_atom(atom_pure)
+    subs_pure = subshell_counts_from_map(spinmap_pure)
+    # Build a config string like "1s2 2s2 2p6 ..."
+    l_to_letter = {0: "s", 1: "p", 2: "d", 3: "f", 4: "g"}
+    cfg_parts = [f"{n}{l_to_letter[l]}{count}" for (n, l, count) in subs_pure]
+    cfg_pure = " ".join(cfg_parts)
+
+    with PURE_FILE.open("a", encoding="utf8") as f:
+        f.write(f"# Z = {Z}   {sym}\n")
+        f.write(f"# config: {cfg_pure}\n")
+        f.write(f"# subshells: {subs_pure}\n")
+        f.write(f"EXPECTED_ATOM_PURE[{Z}] = {{\n")
+        for key, val in sorted(spinmap_pure.items()):
+            f.write(f"    {key}: {val},\n")
+        f.write("}\n\n")
+
+    # --- EMPIRICAL (apply exceptions ON TOP OF THEORY) ---
+    # Start from pure map and apply EMPIRICAL_EXCEPTIONS if present
+    if Z in EMPIRICAL_EXCEPTIONS:
+        ins_list = EMPIRICAL_EXCEPTIONS[Z]
+        spinmap_emp = apply_empirical_to_map(spinmap_pure, ins_list)
+        subs_emp = subshell_counts_from_map(spinmap_emp)
+        cfg_parts_emp = [f"{n}{l_to_letter[l]}{count}" for (n, l, count) in subs_emp]
+        cfg_emp = " ".join(cfg_parts_emp)
+
+        # Only write empirical if it actually differs from pure
+        if not spinmaps_identical(spinmap_pure, spinmap_emp):
+            with EMP_FILE.open("a", encoding="utf8") as f:
+                f.write(f"# Z = {Z}   {sym}\n")
+                f.write(f"# config: {cfg_emp}\n")
+                f.write(f"# subshells: {subs_emp}\n")
+                f.write(f"EXPECTED_ATOM_EMPIRICAL[{Z}] = {{\n")
+                for key, val in sorted(spinmap_emp.items()):
+                    f.write(f"    {key}: {val},\n")
+                f.write("}\n\n")
+
+print("Done.")
+print("Generated: expected_atom_pure.py and expected_atom_empirical.py")
