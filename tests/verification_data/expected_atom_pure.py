@@ -33760,4 +33760,3 @@ EXPECTED_ATOM_PURE[118] = {
     (7, 6, 6, -0.5): False,
     (7, 6, 6, 0.5): False,
 }
-

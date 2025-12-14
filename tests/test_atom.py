@@ -2,19 +2,13 @@
 Tests for the SpinOrbital class.
 """
 
+from typing import Dict, List, Tuple
+
 import pytest
-from typing import Dict, Tuple, List
-
-from q_block.atom import (
-    Atom,
-    Shell,
-    SubShell,
-    Orbital,
-    SpinOrbital,
-)
-
-from data.expected_atom_pure import EXPECTED_ATOM_PURE
 from data.expected_atom_empirical import EXPECTED_ATOM_EMPIRICAL
+from data.expected_atom_pure import EXPECTED_ATOM_PURE
+
+from q_block.atom import Atom, Orbital, Shell, SpinOrbital, SubShell
 
 SpinKey = Tuple[int, int, int, float]  # (n, l, m, s)
 SpinMap = Dict[SpinKey, bool]
@@ -217,6 +211,7 @@ def expected_emp(atomic_number: int):
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def extract_spin_map(atom: Atom) -> SpinMap:
     """
     Extract the complete spin-orbital occupancy map from an Atom instance.
@@ -265,6 +260,7 @@ def maps_equal(a: SpinMap, b: SpinMap) -> bool:
 # Tests
 # ---------------------------------------------------------------------------
 
+
 def test_atom_pure_matches_expected(
     atomic_number: int,
     expected_pure: SpinMap,
@@ -276,19 +272,22 @@ def test_atom_pure_matches_expected(
     :param expected_pure: reference mapping from EXPECTED_ATOM_PURE
     """
     atom = Atom(Z=atomic_number, n_max=7, use_empirical_exceptions=False)
-    atom.fill()
+    atom.fill_occupancy()
 
     actual = extract_spin_map(atom)
 
-    assert set(actual.keys()) == set(expected_pure.keys()), \
-        f"Spin-orbital key mismatch for Z={atomic_number}"
+    assert set(actual.keys()) == set(
+        expected_pure.keys()
+    ), f"Spin-orbital key mismatch for Z={atomic_number}"
 
     for key in actual:
-        assert actual[key] == expected_pure[key], \
-            f"Value mismatch at Z={atomic_number} on spin orbital {key}"
+        assert (
+            actual[key] == expected_pure[key]
+        ), f"Value mismatch at Z={atomic_number} on spin orbital {key}"
 
-    assert count_spin_map(actual) == atomic_number, \
-        f"Electron count mismatch for Z={atomic_number}"
+    assert (
+        count_spin_map(actual) == atomic_number
+    ), f"Electron count mismatch for Z={atomic_number}"
 
 
 def test_atom_pure_matches_expected_for_exceptions(
@@ -311,19 +310,22 @@ def test_atom_pure_matches_expected_for_exceptions(
     #     pytest.skip(f"Z={atomic_number} has no empirical exception — skipping pure test.")
 
     atom = Atom(Z=atomic_number, n_max=7, use_empirical_exceptions=False)
-    atom.fill()
+    atom.fill_occupancy()
 
     actual = extract_spin_map(atom)
 
     # Keyset must match exactly
-    assert set(actual.keys()) == set(expected_pure.keys()), \
-        f"[PURE] Spin-orbital key mismatch for exception atom Z={atomic_number}"
+    assert set(actual.keys()) == set(
+        expected_pure.keys()
+    ), f"[PURE] Spin-orbital key mismatch for exception atom Z={atomic_number}"
 
     # Values must match exactly
     for key in actual:
-        assert actual[key] == expected_pure[key], \
-            f"[PURE] Value mismatch at Z={atomic_number} on spin orbital {key}"
+        assert (
+            actual[key] == expected_pure[key]
+        ), f"[PURE] Value mismatch at Z={atomic_number} on spin orbital {key}"
 
     # Pure electron count must always equal Z
-    assert count_spin_map(actual) == atomic_number, \
-        f"[PURE] Electron count mismatch for Z={atomic_number}"
+    assert (
+        count_spin_map(actual) == atomic_number
+    ), f"[PURE] Electron count mismatch for Z={atomic_number}"

@@ -9,6 +9,7 @@ https://physics.nist.gov/PhysRefData/ASD/
 
 from typing import Any, Dict, List, Optional, Tuple
 
+from q_block.atoms_data import ATOMS_SYMBOLS
 from q_block.aufbau_exceptions import EMPIRICAL_EXCEPTIONS
 
 
@@ -199,7 +200,42 @@ class SubShell:
             self.orbitals.append(Orbital(spin_up=up, spin_down=down))
 
     def capacity(self) -> int:
-        """Maximum electrons = 2 × (2l + 1)."""
+        """
+        Return the maximum number of electrons that can occupy this subshell.
+
+        Explanation
+        -----------
+        A subshell with angular momentum quantum number ``l`` contains:
+
+            * ``2l + 1`` spatial orbitals, one for each allowed magnetic
+              quantum number ``m ∈ {−l, …, +l}``
+            * each spatial orbital supports **two** spin states
+              (``s = +1/2`` and ``s = −1/2``)
+
+        Therefore, the theoretical electron capacity of a subshell is:
+
+            ``capacity = 2 × (2l + 1)``
+
+        In this implementation, the same value is computed as:
+
+            ``2 × len(self.orbitals)``
+
+        because ``self.orbitals`` contains exactly one ``Orbital`` instance
+        per allowed ``m`` value. Thus:
+
+            ``len(self.orbitals) == (2l + 1)``
+
+        making the two expressions mathematically identical. Using
+        ``2 * len(self.orbitals)`` ensures that the capacity always matches
+        the *actual constructed structure* and remains robust even if future
+        versions introduce modifications (e.g., relativistic splitting or
+        constrained orbital sets).
+
+        Returns
+        -------
+        int
+            Maximum number of electrons allowed in this subshell.
+        """
         return 2 * len(self.orbitals)
 
     def __repr__(self) -> str:
@@ -250,7 +286,10 @@ class Atom:
         Z: int,
         n_max: int = 7,
         use_empirical_exceptions: bool = True,
-        empirical_exceptions: Dict[int, List[Dict[str, int]]] = EMPIRICAL_EXCEPTIONS,
+        empirical_exceptions: Dict[
+            int, List[Dict[str, int]]
+        ] = EMPIRICAL_EXCEPTIONS,
+        basis_set: Optional[Dict[str, Any]] = None
     ) -> None:
         """
         Initialize an Atom object containing nested shells, subshells, orbitals,
@@ -312,6 +351,7 @@ class Atom:
         self.use_empirical = use_empirical_exceptions
         self.empirical_exceptions = empirical_exceptions
 
+        # Helper variables
         self.shells: Dict[int, Shell] = {
             n: Shell(n=n) for n in range(1, n_max + 1)
         }  # shells indexed by n
@@ -319,6 +359,9 @@ class Atom:
         self._all_subshells: List[SubShell] = []  # flattened subshell list
         for shell in self.shells.values():
             self._all_subshells.extend(shell.subshells)
+
+        self.symbol: str = ATOMS_SYMBOLS[Z]
+        self.basis_set = basis_set[self.symbol]
 
     @staticmethod
     def _aufbau_key(sub: SubShell) -> Tuple[int, int]:
@@ -331,17 +374,17 @@ class Atom:
 
         Why this is necessary
         ----------------------
-        The Atom object is *stateful*: once `fill()` is called, each
+        The Atom object is *stateful*: once `fill_spinorbitals_with_gto()` is called, each
         `SpinOrbital` stores whether it is occupied. If the user calls
-        `fill()` again—possibly after changing Z or switching exceptions—
+        `fill_spinorbitals_with_gto()` again—possibly after changing Z or switching exceptions—
         the previous occupation must NOT persist.
 
         Without reset():
         - electrons would accumulate with each call
         - configurations would become invalid
-        - repeated `.fill()` would produce different results for the same input
+        - repeated `.fill_spinorbitals_with_gto()` would produce different results for the same input
 
-        This method guarantees that every call to `fill()` begins from a
+        This method guarantees that every call to `fill_spinorbitals_with_gto()` begins from a
         completely clean state, ensuring deterministic and physically
         correct behavior.
         """
@@ -352,7 +395,7 @@ class Atom:
 
     def _apply_exception(self, instructions: List[Dict[str, int]]) -> None:
         """
-        Apply empirical NIST-based electron configuration exceptions.
+        Apply empirical electron configuration exceptions.
 
         Parameters
         ----------
@@ -384,21 +427,18 @@ class Atom:
             for i in range(second):
                 orbitals[i].spin_down.occupied = True
 
-    def fill(self) -> Dict[int, Shell]:
+    def fill_occupancy(self) -> Dict[int, Shell]:
         """
         Fill electrons according to Aufbau and Hund rules.
-
-        Returns
-        -------
-        dict[int, Shell]
-            Mapping from principal quantum number to Shell instance.
         """
 
         self._reset()
 
         # --- EMPIRICAL OVERRIDE PATH (NIST EXCEPTIONS) ---
         if self.use_empirical and self.Z in self.empirical_exceptions:
-            self._apply_exception(instructions=self.empirical_exceptions[self.Z])
+            self._apply_exception(
+                instructions=self.empirical_exceptions[self.Z]
+            )
             return self.shells
 
         remaining = self.Z
@@ -458,4 +498,103 @@ class Atom:
                 orbitals[i].spin_down.occupied = True
             remaining -= second
 
-        return self.shells
+    def populate_spinorbitals_with_gto(self) -> None:
+        """
+        Populate occupied SpinOrbitals with Gaussian-type orbital (GTO)
+        basis parameters corresponding to their atomic subshells.
+
+        This method supports split-valence basis sets by allowing multiple
+        basis shells to map onto the outermost occupied subshell for a given
+        angular momentum ``l``.
+
+        Mapping rules
+        -------------
+        - Only occupied subshells are considered.
+        - Mapping is performed independently for each angular momentum ``l``.
+        - Occupied subshells are ordered by Aufbau key ``(n + l, n)``.
+        - Basis shells are consumed in the order:
+              core → valence_inner → valence_outer
+        - Each inner subshell receives exactly one basis shell.
+        - All remaining basis shells are assigned to the outermost subshell.
+        - Basis shells assigned to the same subshell are concatenated.
+
+        SpinOrbital.data schema
+        -----------------------
+        {
+            "exponents": List[float],
+            "contractions": List[float],
+        }
+        """
+
+        if self.basis_set is None:
+            return
+
+        # Ensure occupations exist
+        self.fill_occupancy()
+
+        # ------------------------------------------------------------
+        # Group occupied subshells by angular momentum
+        # ------------------------------------------------------------
+        occupied_by_l: Dict[int, List[SubShell]] = {}
+
+        for subshell in self._all_subshells:
+            if any(
+                    so.occupied
+                    for orb in subshell.orbitals
+                    for so in (orb.spin_up, orb.spin_down)
+            ):
+                occupied_by_l.setdefault(subshell.l, []).append(subshell)
+
+        for subshells in occupied_by_l.values():
+            subshells.sort(key=lambda ss: (ss.n + ss.l, ss.n))
+
+        # ------------------------------------------------------------
+        # Assign basis shells
+        # ------------------------------------------------------------
+        for l, subshells in occupied_by_l.items():
+
+            # Collect basis shells for this l
+            basis_shells: List[Dict[str, List[float]]] = []
+            for region in ("core", "valence_inner", "valence_outer"):
+                basis_shells.extend(self.basis_set.get(region, {}).get(l, []))
+
+            if len(basis_shells) < len(subshells):
+                raise ValueError(
+                    f"Insufficient basis shells for l={l}: "
+                    f"{len(basis_shells)} < {len(subshells)}"
+                )
+
+            # --------------------------------------------------------
+            # Split-valence aware assignment
+            # --------------------------------------------------------
+            assignments: Dict[SubShell, List[Dict[str, List[float]]]] = {
+                ss: [] for ss in subshells
+            }
+
+            # One shell for each inner subshell
+            for ss, basis in zip(subshells[:-1], basis_shells):
+                assignments[ss].append(basis)
+
+            # Remaining shells go to outermost subshell
+            for basis in basis_shells[len(subshells) - 1:]:
+                assignments[subshells[-1]].append(basis)
+
+            # --------------------------------------------------------
+            # Populate SpinOrbitals
+            # --------------------------------------------------------
+            for subshell, shells in assignments.items():
+
+                exponents: List[float] = []
+                contractions: List[float] = []
+
+                for sh in shells:
+                    exponents.extend(sh["exponents"])
+                    contractions.extend(sh["coefficients"])
+
+                for orbital in subshell.orbitals:
+                    for so in (orbital.spin_up, orbital.spin_down):
+                        if so.occupied:
+                            so.data = {
+                                "exponents": exponents,
+                                "contractions": contractions,
+                            }

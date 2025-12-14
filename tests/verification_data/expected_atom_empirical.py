@@ -2872,4 +2872,3 @@ EXPECTED_ATOM_EMPIRICAL[79] = {
     (7, 6, 6, -0.5): False,
     (7, 6, 6, 0.5): False,
 }
-

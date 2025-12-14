@@ -10,9 +10,9 @@ Behavior:
    atom_emp.fill() if it only marks exception orbitals).
 """
 
-from pathlib import Path
-from typing import Dict, Tuple, List
 from copy import deepcopy
+from pathlib import Path
+from typing import Dict, List, Tuple
 
 from q_block.atom import Atom
 from q_block.atoms_data import ATOMS_SYMBOLS
@@ -34,8 +34,12 @@ def extract_spin_map_from_atom(atom_instance: Atom) -> SpinMap:
     for shell in atom_instance.shells.values():
         for subshell in shell.subshells:
             for orb in subshell.orbitals:
-                mapping[(orb.n, orb.l, orb.m, orb.spin_up.s)] = bool(orb.spin_up.occupied)
-                mapping[(orb.n, orb.l, orb.m, orb.spin_down.s)] = bool(orb.spin_down.occupied)
+                mapping[(orb.n, orb.l, orb.m, orb.spin_up.s)] = bool(
+                    orb.spin_up.occupied
+                )
+                mapping[(orb.n, orb.l, orb.m, orb.spin_down.s)] = bool(
+                    orb.spin_down.occupied
+                )
     return mapping
 
 
@@ -57,7 +61,9 @@ def subshell_keys_for_map(spinmap: SpinMap, n: int, l: int) -> List[SpinKey]:
     return keys
 
 
-def apply_empirical_to_map(base_map: SpinMap, instructions: List[Dict]) -> SpinMap:
+def apply_empirical_to_map(
+    base_map: SpinMap, instructions: List[Dict]
+) -> SpinMap:
     """
     Take a copy of base_map (theoretical) and apply empirical instructions:
     instructions: list of dicts with keys "n", "l", "electron_count"
@@ -159,7 +165,9 @@ HEADER = """# AUTO-GENERATED FILE
 """
 
 PURE_FILE.write_text(HEADER + "EXPECTED_ATOM_PURE = {}\n\n", encoding="utf8")
-EMP_FILE.write_text(HEADER + "EXPECTED_ATOM_EMPIRICAL = {}\n\n", encoding="utf8")
+EMP_FILE.write_text(
+    HEADER + "EXPECTED_ATOM_EMPIRICAL = {}\n\n", encoding="utf8"
+)
 
 
 for Z in range(1, 119):
@@ -190,7 +198,9 @@ for Z in range(1, 119):
         ins_list = EMPIRICAL_EXCEPTIONS[Z]
         spinmap_emp = apply_empirical_to_map(spinmap_pure, ins_list)
         subs_emp = subshell_counts_from_map(spinmap_emp)
-        cfg_parts_emp = [f"{n}{l_to_letter[l]}{count}" for (n, l, count) in subs_emp]
+        cfg_parts_emp = [
+            f"{n}{l_to_letter[l]}{count}" for (n, l, count) in subs_emp
+        ]
         cfg_emp = " ".join(cfg_parts_emp)
 
         # Only write empirical if it actually differs from pure

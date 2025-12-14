@@ -20,27 +20,13 @@ Note - `'.venv'` name is included in `.gitignore` file.
 ### PIP
 Upgrading pip will be useful, when issues with requirements libraries araises:
 ```
-py.exe -m pip install --upgrade pip
+python.exe -m pip install --upgrade pip
 ```
 
 ## Install packages
-To install `quantum_chemistry_from_scratch` with all project dependencies:
-```
-pip.exe install -e ".[all]"
-```
-To install `quantum_chemistry_from_scratch` only with required dependencies:
+To install `qBlock` with all project dependencies:
 ```
 pip.exe install -e .
-```
-
-To install `quantum_chemistry_from_scratch` with test dependencies:
-```
-pip.exe install -e ".[test]"
-```
-
-To install `quantum_chemistry_from_scratch` with extra dependencies for formatting:
-```
-pip.exe install -e ".[extra]"
 ```
 
 Sometimes, python does not come with `setuptools`. If so - above will not work until
