@@ -1,5 +1,6 @@
 from q_block.atom import Atom
 from q_block.basis_set_pople import parse_gaussian_basis
+
 gto_gbs = "data/basis_set/gto_gaussian_format/3-21G.gbs"
 
 if __name__ == "__main__":

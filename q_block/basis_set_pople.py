@@ -25,14 +25,7 @@ Notes
 """
 
 import re
-from typing import (
-    Dict,
-    List,
-    Tuple,
-    Any,
-    TypeAlias,
-    Literal,
-)
+from typing import Any, Dict, List, Literal, Tuple, TypeAlias
 
 RegionName: TypeAlias = Literal[
     "core",
@@ -56,7 +49,7 @@ Regions: TypeAlias = Dict[
 ]
 
 BasisSet: TypeAlias = Dict[
-    str,     # element symbol
+    str,  # element symbol
     Regions,
 ]
 
@@ -112,6 +105,7 @@ def _format_shell(shell: Dict[str, Any]) -> BasisSetParameters:
         "coefficients": [p[1][0] for p in shell["primitives"]],
     }
 
+
 def _build_regions(
     raw_shells: List[Dict[str, Any]],
 ) -> Regions:
@@ -140,10 +134,12 @@ def _build_regions(
             shells.append({"l": 0, "primitives": s_prims})
             shells.append({"l": 1, "primitives": p_prims})
         else:
-            shells.append({
-                "l": ANGULAR_MOMENTUM_MAP[sh["type"]],
-                "primitives": sh["primitives"],
-            })
+            shells.append(
+                {
+                    "l": ANGULAR_MOMENTUM_MAP[sh["type"]],
+                    "primitives": sh["primitives"],
+                }
+            )
 
     # Group shells by angular momentum
     by_l: Dict[int, List[Dict[str, Any]]] = {}
@@ -242,10 +238,12 @@ def parse_gaussian_basis(filepath: str) -> BasisSet:
                         primitives.append((exponent, coefficients))
                         i += 1
 
-                    raw_shells.append({
-                        "type": shell_type,
-                        "primitives": primitives,
-                    })
+                    raw_shells.append(
+                        {
+                            "type": shell_type,
+                            "primitives": primitives,
+                        }
+                    )
                     continue
 
                 if line == "****":

@@ -15,7 +15,7 @@ from pathlib import Path
 from typing import Dict, List, Tuple
 
 from q_block.atom import Atom
-from q_block.atoms_data import ATOMS_SYMBOLS
+from q_block.atoms_data import ATOMS_SYMBOLS_Z_TO_SYMBOL
 from q_block.aufbau_exceptions import EMPIRICAL_EXCEPTIONS
 
 # Type aliases
@@ -23,7 +23,7 @@ SpinKey = Tuple[int, int, int, float]  # (n, l, m, s)
 SpinMap = Dict[SpinKey, bool]
 
 
-def extract_spin_map_from_atom(atom_instance: Atom) -> SpinMap:
+def _extract_spin_map_from_atom(atom_instance: Atom) -> SpinMap:
     """
     Extract a full spin-orbital occupancy map from an Atom instance.
 
@@ -43,7 +43,7 @@ def extract_spin_map_from_atom(atom_instance: Atom) -> SpinMap:
     return mapping
 
 
-def subshell_keys_for_map(spinmap: SpinMap, n: int, l: int) -> List[SpinKey]:
+def _subshell_keys_for_map(spinmap: SpinMap, n: int, l: int) -> List[SpinKey]:
     """
     Return the list of spin-orbital keys in spinmap that belong to subshell (n,l).
     Keys are returned in m ascending, spin_up then spin_down order (if present).
@@ -61,7 +61,7 @@ def subshell_keys_for_map(spinmap: SpinMap, n: int, l: int) -> List[SpinKey]:
     return keys
 
 
-def apply_empirical_to_map(
+def _apply_empirical_to_map(
     base_map: SpinMap, instructions: List[Dict]
 ) -> SpinMap:
     """
@@ -118,7 +118,7 @@ def apply_empirical_to_map(
     return out_map
 
 
-def spinmaps_identical(m1: SpinMap, m2: SpinMap) -> bool:
+def _spinmaps_identical(m1: SpinMap, m2: SpinMap) -> bool:
     """
     True if two spin maps have identical keys and identical bool values for all keys.
     """
@@ -130,7 +130,7 @@ def spinmaps_identical(m1: SpinMap, m2: SpinMap) -> bool:
     return True
 
 
-def subshell_counts_from_map(spinmap: SpinMap) -> List[Tuple[int, int, int]]:
+def _subshell_counts_from_map(spinmap: SpinMap) -> List[Tuple[int, int, int]]:
     """
     Produce (n, l, count) triples for subshells with nonzero occupancy in spinmap.
     """
@@ -171,13 +171,13 @@ EMP_FILE.write_text(
 
 
 for Z in range(1, 119):
-    sym = ATOMS_SYMBOLS[Z]
+    sym = ATOMS_SYMBOLS_Z_TO_SYMBOL[Z]
 
     # --- PURE (theory) ---
     atom_pure = Atom(Z=Z, n_max=7, use_empirical_exceptions=False)
     atom_pure.fill()
-    spinmap_pure = extract_spin_map_from_atom(atom_pure)
-    subs_pure = subshell_counts_from_map(spinmap_pure)
+    spinmap_pure = _extract_spin_map_from_atom(atom_pure)
+    subs_pure = _subshell_counts_from_map(spinmap_pure)
     # Build a config string like "1s2 2s2 2p6 ..."
     l_to_letter = {0: "s", 1: "p", 2: "d", 3: "f", 4: "g"}
     cfg_parts = [f"{n}{l_to_letter[l]}{count}" for (n, l, count) in subs_pure]
@@ -196,15 +196,15 @@ for Z in range(1, 119):
     # Start from pure map and apply EMPIRICAL_EXCEPTIONS if present
     if Z in EMPIRICAL_EXCEPTIONS:
         ins_list = EMPIRICAL_EXCEPTIONS[Z]
-        spinmap_emp = apply_empirical_to_map(spinmap_pure, ins_list)
-        subs_emp = subshell_counts_from_map(spinmap_emp)
+        spinmap_emp = _apply_empirical_to_map(spinmap_pure, ins_list)
+        subs_emp = _subshell_counts_from_map(spinmap_emp)
         cfg_parts_emp = [
             f"{n}{l_to_letter[l]}{count}" for (n, l, count) in subs_emp
         ]
         cfg_emp = " ".join(cfg_parts_emp)
 
         # Only write empirical if it actually differs from pure
-        if not spinmaps_identical(spinmap_pure, spinmap_emp):
+        if not _spinmaps_identical(spinmap_pure, spinmap_emp):
             with EMP_FILE.open("a", encoding="utf8") as f:
                 f.write(f"# Z = {Z}   {sym}\n")
                 f.write(f"# config: {cfg_emp}\n")

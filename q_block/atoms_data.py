@@ -1,6 +1,11 @@
 """Atoms data for reuse purposes"""
 
-ATOMS_SYMBOLS = {
+from typing import Dict, TypeVar
+
+K = TypeVar("K")
+V = TypeVar("V")
+
+ATOMS_SYMBOLS_Z_TO_SYMBOL: Dict[int, str] = {
     1: "H",
     2: "He",
     3: "Li",
@@ -120,3 +125,14 @@ ATOMS_SYMBOLS = {
     117: "Ts",
     118: "Og",
 }
+
+
+def invert_dict(d: Dict[K, V]) -> Dict[V, K]:
+    if len(set(d.values())) != len(d):
+        raise ValueError("Cannot invert dictionary with non-unique values")
+    return {v: k for k, v in d.items()}
+
+
+ATOMS_SYMBOLS_SYMBOL_TO_Z: Dict[str, int] = invert_dict(
+    d=ATOMS_SYMBOLS_Z_TO_SYMBOL
+)

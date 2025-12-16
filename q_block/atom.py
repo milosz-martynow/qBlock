@@ -9,7 +9,7 @@ https://physics.nist.gov/PhysRefData/ASD/
 
 from typing import Any, Dict, List, Optional, Tuple
 
-from q_block.atoms_data import ATOMS_SYMBOLS
+from q_block.atoms_data import ATOMS_SYMBOLS_Z_TO_SYMBOL
 from q_block.aufbau_exceptions import EMPIRICAL_EXCEPTIONS
 
 
@@ -289,7 +289,7 @@ class Atom:
         empirical_exceptions: Dict[
             int, List[Dict[str, int]]
         ] = EMPIRICAL_EXCEPTIONS,
-        basis_set: Optional[Dict[str, Any]] = None
+        basis_set: Optional[Dict[str, Any]] = None,
     ) -> None:
         """
         Initialize an Atom object containing nested shells, subshells, orbitals,
@@ -360,8 +360,7 @@ class Atom:
         for shell in self.shells.values():
             self._all_subshells.extend(shell.subshells)
 
-        self.symbol: str = ATOMS_SYMBOLS[Z]
-        self.basis_set = basis_set[self.symbol]
+        self.basis_set = basis_set
 
     @staticmethod
     def _aufbau_key(sub: SubShell) -> Tuple[int, int]:
@@ -539,9 +538,9 @@ class Atom:
 
         for subshell in self._all_subshells:
             if any(
-                    so.occupied
-                    for orb in subshell.orbitals
-                    for so in (orb.spin_up, orb.spin_down)
+                so.occupied
+                for orb in subshell.orbitals
+                for so in (orb.spin_up, orb.spin_down)
             ):
                 occupied_by_l.setdefault(subshell.l, []).append(subshell)
 
@@ -576,7 +575,7 @@ class Atom:
                 assignments[ss].append(basis)
 
             # Remaining shells go to outermost subshell
-            for basis in basis_shells[len(subshells) - 1:]:
+            for basis in basis_shells[len(subshells) - 1 :]:
                 assignments[subshells[-1]].append(basis)
 
             # --------------------------------------------------------
