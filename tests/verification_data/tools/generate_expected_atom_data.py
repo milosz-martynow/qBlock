@@ -1,13 +1,23 @@
-"""
-Fixed generate_expected_atom_data.py
+"""Generate expected occupancy maps for all elements.
 
-Behavior:
- - Creates expected_atom_pure.py with full spin-orbital maps for Z=1..118 (theory).
- - Creates expected_atom_empirical.py including ONLY elements where
-   empirical exceptions change the theoretical filling.
- - For empirical elements, writes the FULL final occupancy map (all occupied orbitals),
-   by applying EMPIRICAL_EXCEPTIONS onto the theoretical map (rather than trusting
-   atom_emp.fill() if it only marks exception orbitals).
+This script produces two auto-generated Python modules used by the test
+suite as golden references:
+
+- ``expected_atom_pure.py`` — full spin-orbital occupancy maps produced by
+    the theoretical Aufbau+Hund filling for Z=1..118.
+- ``expected_atom_empirical.py`` — deviations from theory where empirical
+    exceptions apply; contains only elements whose empirical mapping differs
+    from the pure theoretical result.
+
+The generation process builds an ``Atom`` instance for each Z, extracts the
+complete spin-orbital occupancy map and serializes the mapping to the
+corresponding output file.
+
+Note
+----
+The empirical file is produced by applying ``EMPIRICAL_EXCEPTIONS`` on top
+of the pure theoretical map; generated files are authoritative and should be
+reviewed before committing.
 """
 
 from copy import deepcopy
@@ -24,10 +34,13 @@ SpinMap = Dict[SpinKey, bool]
 
 
 def _extract_spin_map_from_atom(atom_instance: Atom) -> SpinMap:
-    """
-    Extract a full spin-orbital occupancy map from an Atom instance.
+    """Extract a full spin-orbital occupancy map from an Atom instance.
 
-    Returns a dict {(n,l,m,s): bool} including ALL generated spin orbitals.
+    :param atom_instance: Atom with pre-built shells and occupancy flags set.
+    :type atom_instance: Atom
+
+    :returns: Mapping of spin-orbital keys to occupancy booleans.
+    :rtype: SpinMap
     """
     mapping: SpinMap = {}
     # Atom provides either atom.shells or atom.spinorbitals; we traverse shells/subshells to be safe
@@ -44,9 +57,20 @@ def _extract_spin_map_from_atom(atom_instance: Atom) -> SpinMap:
 
 
 def _subshell_keys_for_map(spinmap: SpinMap, n: int, l: int) -> List[SpinKey]:
-    """
-    Return the list of spin-orbital keys in spinmap that belong to subshell (n,l).
-    Keys are returned in m ascending, spin_up then spin_down order (if present).
+    """List spin-orbital keys for a specific subshell (n, l).
+
+    Keys are returned with magnetic quantum number ``m`` ascending and spin
+    ordering ``+0.5`` then ``-0.5`` when present.
+
+    :param spinmap: Spin-orbital mapping produced by ``Atom`` extraction.
+    :type spinmap: SpinMap
+    :param n: Principal quantum number of the subshell.
+    :type n: int
+    :param l: Angular momentum quantum number of the subshell.
+    :type l: int
+
+    :returns: Ordered list of keys belonging to the subshell.
+    :rtype: List[SpinKey]
     """
     keys = []
     # m values range -l .. +l
@@ -64,18 +88,20 @@ def _subshell_keys_for_map(spinmap: SpinMap, n: int, l: int) -> List[SpinKey]:
 def _apply_empirical_to_map(
     base_map: SpinMap, instructions: List[Dict]
 ) -> SpinMap:
-    """
-    Take a copy of base_map (theoretical) and apply empirical instructions:
-    instructions: list of dicts with keys "n", "l", "electron_count"
+    """Apply empirical subshell occupancy instructions onto a base spin map.
 
-    For each (n,l):
-      - compute ms = [-l..+l]
-      - num_orb = len(ms)
-      - first fill min(num_orb, electron_count) spin-up (+0.5) in ms order
-      - then fill remaining up to num_orb spin-down (-0.5) in ms order
-      - ensure any previously filled orbitals outside this subshell remain unchanged
+    The function returns a new copy of ``base_map`` with occupancy for the
+    specified ``(n,l)`` subshells replaced according to the provided
+    ``instructions``. Each instruction is a mapping with keys ``"n"``,
+    ``"l"`` and ``"electron_count"``.
 
-    Returns a new SpinMap with applied changes.
+    :param base_map: The theoretical occupancy map to serve as a base.
+    :type base_map: SpinMap
+    :param instructions: List of subshell assignment dictionaries.
+    :type instructions: List[Dict]
+
+    :returns: New SpinMap with empirical assignments applied.
+    :rtype: SpinMap
     """
     out_map = deepcopy(base_map)
 
@@ -119,8 +145,15 @@ def _apply_empirical_to_map(
 
 
 def _spinmaps_identical(m1: SpinMap, m2: SpinMap) -> bool:
-    """
-    True if two spin maps have identical keys and identical bool values for all keys.
+    """Return True when two spin maps have identical keys and values.
+
+    :param m1: First spin map.
+    :type m1: SpinMap
+    :param m2: Second spin map.
+    :type m2: SpinMap
+
+    :returns: ``True`` when maps are identical, otherwise ``False``.
+    :rtype: bool
     """
     if set(m1.keys()) != set(m2.keys()):
         return False
@@ -131,8 +164,13 @@ def _spinmaps_identical(m1: SpinMap, m2: SpinMap) -> bool:
 
 
 def _subshell_counts_from_map(spinmap: SpinMap) -> List[Tuple[int, int, int]]:
-    """
-    Produce (n, l, count) triples for subshells with nonzero occupancy in spinmap.
+    """Compute occupied electron counts per subshell from a spin map.
+
+    :param spinmap: Mapping of spin-orbital keys to occupancy booleans.
+    :type spinmap: SpinMap
+
+    :returns: Sorted list of ``(n, l, count)`` triples for occupied subshells.
+    :rtype: List[Tuple[int, int, int]]
     """
     counts: Dict[Tuple[int, int], int] = {}
     for (n, l, m, s), occ in spinmap.items():

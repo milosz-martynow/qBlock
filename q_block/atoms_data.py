@@ -1,9 +1,19 @@
-"""Atoms data for reuse purposes"""
+"""Atoms constants and small utilities used across the package.
+
+This module provides a mapping between atomic number (Z) and element
+symbol and a small utility to invert dictionaries while validating
+value uniqueness.
+
+Public values
+- `ATOMS_SYMBOLS_Z_TO_SYMBOL`: Dict[int, str] — map Z -> element symbol
+- `ATOMS_SYMBOLS_SYMBOL_TO_Z`: Dict[str, int] — inverse mapping (symbol -> Z)
+"""
 
 from typing import Dict, TypeVar
 
 K = TypeVar("K")
 V = TypeVar("V")
+
 
 ATOMS_SYMBOLS_Z_TO_SYMBOL: Dict[int, str] = {
     1: "H",
@@ -128,6 +138,17 @@ ATOMS_SYMBOLS_Z_TO_SYMBOL: Dict[int, str] = {
 
 
 def invert_dict(d: Dict[K, V]) -> Dict[V, K]:
+    """Invert a dictionary mapping while validating value uniqueness.
+
+    :param d: Dictionary to invert. All values must be unique.
+    :type d: Dict[K, V]
+
+    :returns: Inverted dictionary mapping original values -> original keys.
+    :rtype: Dict[V, K]
+
+    :raises ValueError: If the dictionary contains non-unique values and
+        cannot be inverted.
+    """
     if len(set(d.values())) != len(d):
         raise ValueError("Cannot invert dictionary with non-unique values")
     return {v: k for k, v in d.items()}

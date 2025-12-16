@@ -70,17 +70,13 @@ def _parse_float(token: str) -> float:
     using ``D`` or ``d`` (e.g. ``1.234D+02``) into standard Python
     scientific notation using ``E`` before converting to ``float``.
 
-    Parameters
-    ----------
-    token : str
-        String representation of a floating-point number. The value may
-        use Fortran-style exponent notation (``D`` or ``d``) or standard
-        scientific notation (``E``).
+    :param token: String representation of a floating-point number. The
+        value may use Fortran-style exponent notation (``D`` or ``d``)
+        or standard scientific notation (``E``).
+    :type token: str
 
-    Returns
-    -------
-    float
-        The parsed floating-point value.
+    :returns: The parsed floating-point value.
+    :rtype: float
     """
     return float(token.replace("D", "E").replace("d", "E"))
 
@@ -90,15 +86,12 @@ def _format_shell(shell: Dict[str, Any]) -> BasisSetParameters:
     Convert an internal shell representation into a clean, serializable
     dictionary.
 
-    Parameters
-    ----------
-    shell : Dict[str, Any]
-        Shell dictionary containing primitives.
+    :param shell: Shell dictionary containing primitives.
+    :type shell: Dict[str, Any]
 
-    Returns
-    -------
-    Dict[str, Any]
-        Dictionary with number of primitives, exponents, and coefficients.
+    :returns: Dictionary with number of primitives, exponents, and
+        coefficients.
+    :rtype: Dict[str, Any]
     """
     return {
         "exponents": [p[0] for p in shell["primitives"]],
@@ -113,16 +106,13 @@ def _build_regions(
     Convert parsed Gaussian shells into a structured dictionary with
     numerical angular momentum and region classification.
 
-    Parameters
-    ----------
-    raw_shells : List[Dict[str, Any]]
-        Shells as parsed directly from the Gaussian basis file.
+    :param raw_shells: Shells as parsed directly from the Gaussian basis
+        file.
+    :type raw_shells: List[Dict[str, Any]]
 
-    Returns
-    -------
-    Regions
-        Basis set dictionary split into core, valence-inner, and
+    :returns: Basis set dictionary split into core, valence-inner, and
         valence-outer regions and grouped by angular momentum.
+    :rtype: Regions
     """
     shells: List[Dict[str, Any]] = []
 
@@ -194,17 +184,13 @@ def parse_gaussian_basis(filepath: str) -> BasisSet:
     structured dictionary with angular momentum separation and region
     classification.
 
-    Parameters
-    ----------
-    filepath : str
-        Path to the Gaussian-format basis set file.
+    :param filepath: Path to the Gaussian-format basis set file.
+    :type filepath: str
 
-    Returns
-    -------
-    BasisSet
-        Dictionary keyed by atomic symbol, containing fully expanded
-        basis set data grouped by region and angular momentum. See
-        Header of this script for more data structure architecture.
+    :returns: Dictionary keyed by atomic symbol, containing fully
+        expanded basis set data grouped by region and angular momentum.
+        See Header of this script for more data structure architecture.
+    :rtype: BasisSet
     """
     with open(filepath, "r") as f:
         lines: List[str] = [ln.strip() for ln in f if ln.strip()]

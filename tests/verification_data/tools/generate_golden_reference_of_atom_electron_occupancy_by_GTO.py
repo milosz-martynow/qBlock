@@ -1,88 +1,14 @@
-"""
-Golden-reference generator for GTO population tests.
+"""Generate golden-reference JSON snapshots for GTO population tests.
 
-===============================================================================
-PURPOSE
-===============================================================================
+This module creates one JSON snapshot per Gaussian basis set containing the
+verified mapping between occupied subshells and Gaussian-type orbital (GTO)
+parameters for all atoms present in the basis. The generated files live
+under ``tests/verification_data/gto_population/``.
 
-This script generates *golden-reference snapshots* for the function:
-
-    Atom.populate_spinorbitals_with_gto
-
-Golden references are authoritative, version-controlled data files that
-represent the *correct and verified* mapping between:
-
-    (Atom, Basis Set) → occupied subshells → GTO parameters
-
-They are used by unit tests to detect *any regression* in the mapping logic.
-
--------------------------------------------------------------------------------
-IMPORTANT WARNING
--------------------------------------------------------------------------------
-
-Golden references MUST NOT be regenerated casually.
-
-After running this script:
-
-  1. The generated JSON files MUST be reviewed manually
-  2. Values MUST be validated against:
-       - the corresponding .gbs basis file
-       - expected quantum numbers (n, l)
-       - known basis-set structure (split-valence, diffuse, polarization)
-  3. Only after verification should the files be committed
-
-Blind regeneration defeats the purpose of golden-reference testing.
-
-===============================================================================
-GOLDEN REFERENCE ARCHITECTURE
-===============================================================================
-
-Golden references are stored under:
-
-    tests/verification_data/gto_population/
-
-Each basis set produces exactly ONE JSON file:
-
-    gto_population/
-      3-21G.json
-      6-31G.json
-      6-311G.json
-      6-311++Gss.json
-
-Each file has the structure:
-
-    {
-      "basis": "6-31G",
-      "atoms": {
-        "H": {
-          "symbol": "H",
-          "Z": 1,
-          "basis": "6-31G",
-          "orbitals": { ... }
-        },
-        "C": { ... },
-        "Fe": { ... }
-      }
-    }
-
--------------------------------------------------------------------------------
-WHAT IS *NOT* STORED
--------------------------------------------------------------------------------
-
-- region names (core / valence)
-- AO indices
-- normalization constants
-- implementation-specific ordering
-
-===============================================================================
-HOW TO USE
-===============================================================================
-
-Run from project root:
-
-    python tools/generate_golden.py
-
-===============================================================================
+Warning
+-------
+Regenerate golden references only after careful manual review and validation
+against the source ``.gbs`` basis files.
 """
 
 import json
@@ -117,12 +43,15 @@ BASIS_FILES: List[str] = [
 
 
 def generate_golden() -> None:
-    """
-    Generate golden-reference JSON snapshots for all atoms
-    in all configured Gaussian basis sets.
+    """Generate golden-reference JSON snapshots for configured basis sets.
 
-    Output:
-        One JSON file per basis set, containing all atoms.
+    The function parses each configured Gaussian basis file, constructs an
+    ``Atom`` for every element present in the basis, calls
+    :meth:`Atom.populate_spinorbitals_with_gto` and serializes the resulting
+    per-atom data into a single JSON file per basis.
+
+    :returns: None
+    :rtype: None
     """
 
     GOLDEN_ROOT.mkdir(parents=True, exist_ok=True)

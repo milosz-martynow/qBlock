@@ -4,7 +4,7 @@ Tests for the SpinOrbital class.
 
 import json
 from pathlib import Path
-from typing import Any, Dict, Tuple
+from typing import Any, Dict, Iterator, Tuple
 
 import pytest
 
@@ -21,6 +21,16 @@ from tests.verification_data.expected_atom_pure import EXPECTED_ATOM_PURE
 
 SpinKey = Tuple[int, int, int, float]  # (n, l, m, s)
 SpinMap = Dict[SpinKey, bool]
+
+BASIS_ROOT: Path = Path("./data/basis_set/gto_gaussian_format")
+GOLDEN_ROOT: Path = Path("./tests/verification_data/gto_population")
+
+BASIS_FILES = [
+    "3-21G.gbs",
+    "6-31G.gbs",
+    "6-311G.gbs",
+    "6-311++Gss.gbs",
+]
 
 
 def test_spinorbital_valid_initialization():
@@ -216,11 +226,6 @@ def expected_emp(atomic_number: int):
     return EXPECTED_ATOM_EMPIRICAL.get(atomic_number, None)
 
 
-# ---------------------------------------------------------------------------
-# Helpers
-# ---------------------------------------------------------------------------
-
-
 def extract_spin_map(atom: Atom) -> SpinMap:
     """
     Extract the complete spin-orbital occupancy map from an Atom instance.
@@ -263,11 +268,6 @@ def maps_equal(a: SpinMap, b: SpinMap) -> bool:
         if a[k] != b[k]:
             return False
     return True
-
-
-# ---------------------------------------------------------------------------
-# Tests
-# ---------------------------------------------------------------------------
 
 
 def test_atom_pure_matches_expected(
@@ -321,6 +321,7 @@ def test_atom_pure_matches_expected_for_exceptions(
     atom = Atom(Z=atomic_number, n_max=7, use_empirical_exceptions=False)
     atom.fill_occupancy()
 
+    # Ensure the atom's state is correctly updated without relying on a return value
     actual = extract_spin_map(atom)
 
     # Keyset must match exactly
@@ -361,37 +362,6 @@ verified GTO assignments for ALL atoms defined in that basis.
 Each (basis set, atom) pair is tested as an independent unit test.
 ===============================================================================
 """
-
-import json
-from pathlib import Path
-from typing import Any, Dict, Iterator, Tuple
-
-import pytest
-
-from q_block.atom import Atom
-from q_block.atoms_data import (
-    ATOMS_SYMBOLS_SYMBOL_TO_Z,
-    ATOMS_SYMBOLS_Z_TO_SYMBOL,
-)
-from q_block.basis_set_pople import parse_gaussian_basis
-
-# ---------------------------------------------------------------------------
-# Configuration
-# ---------------------------------------------------------------------------
-
-BASIS_ROOT: Path = Path("./data/basis_set/gto_gaussian_format")
-GOLDEN_ROOT: Path = Path("./tests/verification_data/gto_population")
-
-BASIS_FILES = [
-    "3-21G.gbs",
-    "6-31G.gbs",
-    "6-311G.gbs",
-    "6-311++Gss.gbs",
-]
-
-# ---------------------------------------------------------------------------
-# Helpers
-# ---------------------------------------------------------------------------
 
 
 def _serialize_atom_for_test(
@@ -452,11 +422,6 @@ def _iter_golden_test_cases() -> Iterator[Tuple[str, str]]:
             yield basis_file, symbol
 
 
-# ---------------------------------------------------------------------------
-# Tests
-# ---------------------------------------------------------------------------
-
-
 @pytest.mark.parametrize(
     "basis_file, symbol",
     list(_iter_golden_test_cases()),
@@ -472,12 +437,11 @@ def test_golden_gto_population(
     This test compares the populated GTO data against manually verified
     golden-reference data.
 
-    Parameters
-    ----------
-    basis_file
-        Gaussian basis set filename.
-    symbol
-        Atomic symbol (e.g. ``"H"``, ``"C"``, ``"Fe"``).
+    :param basis_file: Gaussian basis set filename.
+    :type basis_file: str
+
+    :param symbol: Atomic symbol (e.g. ``"H"``, ``"C"``, ``"Fe"``).
+    :type symbol: str
     """
 
     basis_path = BASIS_ROOT / basis_file
