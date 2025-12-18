@@ -17,10 +17,8 @@ setup(
     author_email="miloszmartynow@gmail.com",
     description="Block architecture of software for quantum mechanics of matter.",
     python_requires="==3.12.*",
-    # ✅ THIS IS THE KEY FIX
     packages=find_packages(),
-    # Optional dependencies
-    install_requires=requires,
+    install_requires=requires + test + extra,
     extras_require={
         "test": test,
         "dev": extra,

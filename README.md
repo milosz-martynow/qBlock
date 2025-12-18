@@ -12,7 +12,7 @@ For better maintenance of Python code it is worth to use
 
 You can create Python Virtual Environment by typing in terminal of your project root folder:
 ```
-py.exe -m venv .venv
+python.exe -m venv .venv
 .venv\Scripts\activate
 ```
 Note - `'.venv'` name is included in `.gitignore` file.

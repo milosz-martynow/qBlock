@@ -1,0 +1,26 @@
+@startuml
+' Activity diagram showing a typical sequence of actions in q_block
+start
+:Parse basis files (optional)\n(parse_gaussian_basis);
+if (basis file present?) then (yes)
+  :Load BasisSet (regions by l);
+else (no)
+  :basis_set := None;
+endif
+:Instantiate Atom(Z, basis_set);
+:Atom.fill_occupancy();
+if (use empirical exception for Z?) then (yes)
+  :Atom._apply_exception(...)\n(assign specific subshell counts);
+else (no)
+  :Apply Aufbau ordering (sort by n+l, n);
+  :Apply Hund's rule (single occupancy then pairing);
+endif
+:Check occupied subshells;
+if (basis_set is not None) then (yes)
+  :Atom.populate_spinorbitals_with_gto();
+  :Group occupied subshells by l;\nassign basis shells;\nset SpinOrbital.data;
+else (no)
+  :Skip GTO population;
+endif
+stop
+@enduml

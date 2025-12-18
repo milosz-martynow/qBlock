@@ -1,0 +1,65 @@
+@startuml
+' Block Definition Diagram for package q_block
+package "q_block" {
+  package "model" {
+    class "SpinOrbital" {
+      - n: int
+      - l: int
+      - m: int
+      - s: float
+      - occupied: bool
+      - data: Any
+    }
+    class "Orbital" {
+      - spin_up: SpinOrbital
+      - spin_down: SpinOrbital
+    }
+    class "SubShell" {
+      - n: int
+      - l: int
+      - orbitals: List<Orbital>
+      + capacity(): int
+    }
+    class "Shell" {
+      - n: int
+      - subshells: List<SubShell>
+    }
+    class "Atom" {
+      - Z: int
+      - n_max: int
+      - shells: Dict<int,Shell>
+      - use_empirical: bool
+      - empirical_exceptions: Dict<int,List<Dict<"n","l","electron_count">>>
+      - basis_set: Optional[Dict]
+      + fill_occupancy(): None
+      + populate_spinorbitals_with_gto(): None
+    }
+  }
+
+  package "io & helpers" {
+    class "atoms_data" as AD <<module>> {
+      + ATOMS_SYMBOLS_Z_TO_SYMBOL: Dict
+      + ATOMS_SYMBOLS_SYMBOL_TO_Z: Dict
+      + ANGULAR_MOMENTUM_MAP: Dict[str,int]
+    }
+    class "aufbau_exceptions" as AE <<module>> {
+      + EMPIRICAL_EXCEPTIONS: Dict
+    }
+    class "basis_set_pople" as BSP <<module>> {
+      + parse_gaussian_basis(filepath: str): BasisSet
+      + ANGULAR_MOMENTUM_MAP: Dict[str,int]
+    }
+  }
+}
+
+' Relationships
+"Atom" "1" *-- "*" "Shell"
+"Shell" "1" *-- "*" "SubShell"
+"SubShell" "1" *-- "*" "Orbital"
+"Orbital" "1" *-- "2" "SpinOrbital"
+
+"Atom" ..> AE : uses EMPIRICAL_EXCEPTIONS
+"Atom" ..> AD : references ATOMS_SYMBOLS_Z_TO_SYMBOL
+"Atom" ..> BSP : may use parse_gaussian_basis result
+
+@enduml

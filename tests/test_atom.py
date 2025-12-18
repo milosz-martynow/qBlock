@@ -12,6 +12,7 @@ from q_block.atom import Atom, Orbital, Shell, SpinOrbital, SubShell
 from q_block.atoms_data import (
     ATOMS_SYMBOLS_SYMBOL_TO_Z,
     ATOMS_SYMBOLS_Z_TO_SYMBOL,
+    ANGULAR_MOMENTUM_MAP
 )
 from q_block.basis_set_pople import parse_gaussian_basis
 from tests.verification_data.expected_atom_empirical import (
@@ -132,7 +133,7 @@ def test_subshell_orbital_count_and_capacity():
     l = 2  # d-subshell -> m = -2,-1,0,1,2 => 5 spatial orbitals
     sub = SubShell(n=n, l=l)
     assert len(sub.orbitals) == (2 * l + 1)
-    assert sub.capacity() == 2 * (2 * l + 1)
+    assert sub._capacity() == 2 * (2 * l + 1)
 
     # each orbital must have spin-up and spin-down SpinOrbitals with expected
     # quantum numbers

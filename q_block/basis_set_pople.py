@@ -26,6 +26,7 @@ Notes
 
 import re
 from typing import Any, Dict, List, Literal, Tuple, TypeAlias
+from q_block.atoms_data import ANGULAR_MOMENTUM_MAP
 
 RegionName: TypeAlias = Literal[
     "core",
@@ -52,14 +53,6 @@ BasisSet: TypeAlias = Dict[
     str,  # element symbol
     Regions,
 ]
-
-ANGULAR_MOMENTUM_MAP: Dict[str, int] = {
-    "S": 0,
-    "P": 1,
-    "D": 2,
-    "F": 3,
-    "G": 4,
-}
 
 
 def _parse_float(token: str) -> float:

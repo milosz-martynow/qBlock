@@ -151,7 +151,7 @@ class SubShell:
             down = SpinOrbital(n=n, l=l, m=m, s=-0.5)
             self.orbitals.append(Orbital(spin_up=up, spin_down=down))
 
-    def capacity(self) -> int:
+    def _capacity(self) -> int:
         """Return the maximum number of electrons that can occupy this subshell.
 
         Explanation
@@ -292,11 +292,12 @@ class Atom:
             n: Shell(n=n) for n in range(1, n_max + 1)
         }  # shells indexed by n
 
-        self._all_subshells: List[SubShell] = []  # flattened subshell list
-        for shell in self.shells.values():
-            self._all_subshells.extend(shell.subshells)
-
         self.basis_set = basis_set
+
+    @property
+    def _all_subshells(self) -> List[SubShell]:
+        """Return a flattened list of subshells in shell order (n ascending)."""
+        return [ss for shell in self.shells.values() for ss in shell.subshells]
 
     @staticmethod
     def _aufbau_key(sub: SubShell) -> Tuple[int, int]:
@@ -421,7 +422,7 @@ class Atom:
 
                 orbitals = subshell.orbitals
                 num_orb = len(orbitals)
-                subshell_capacity = subshell.capacity()
+                subshell_capacity = subshell._capacity()
 
                 electrons = min(subshell_capacity, remaining)
 
