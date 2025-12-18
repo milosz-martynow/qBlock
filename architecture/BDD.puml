@@ -1,0 +1,72 @@
+```plantuml
+@startuml
+' Modules
+package "q_block" {
+  package "modules" {
+    class "SpinOrbital" {
+      - n:int
+      - l:int
+      - m:int
+      - s:float
+      - occupied:bool
+      - data:Any
+    }
+    class "Orbital" {
+      - spin_up:SpinOrbital
+      - spin_down:SpinOrbital
+    }
+    class "SubShell" {
+      - n:int
+      - l:int
+      - orbitals: List<Orbital>
+      + capacity(): int
+    }
+    class "Shell" {
+      - n:int
+      - subshells: List<SubShell>
+    }
+    class "Atom" {
+      - Z:int
+      - shells: Dict<int,Shell>
+      - _all_subshells: List<SubShell>
+      - basis_set: Optional[Dict]
+      + fill_occupancy(): None
+      + populate_spinorbitals_with_gto(): None
+    }
+  }
+  package "data & helpers" {
+    class "atoms_data" as AD <<module>> {
+      + ATOMS_SYMBOLS_Z_TO_SYMBOL: Dict
+    }
+    class "aufbau_exceptions" as AE <<module>> {
+      + EMPIRICAL_EXCEPTIONS: Dict
+    }
+    class "basis_set_pople" as BSP <<module>> {
+      + parse_gaussian_basis(...)
+    }
+  }
+}
+
+' Relationships (composition / uses)
+Atom "1" *-- "*" Shell
+Shell "1" *-- "*" SubShell
+SubShell "1" *-- "*" Orbital
+Orbital "1" *-- "2" SpinOrbital
+
+Atom ..> AE : uses EMPIRICAL_EXCEPTIONS
+Atom ..> AD : references ATOMS_SYMBOLS_Z_TO_SYMBOL
+Atom ..> BSP : uses parsing & basis assignment
+
+' Top-level scripts & tests
+package "root" {
+  class "main.py" <<script>>
+  class "tests/test_atom.py" <<tests>>
+  class "data/basis_set" <<folder>>
+}
+
+main.py ..> Atom
+tests/test_atom.py ..> Atom
+data/basis_set ..> BSP
+
+@enduml
+```
