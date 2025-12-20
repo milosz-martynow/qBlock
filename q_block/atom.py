@@ -11,11 +11,9 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from q_block.atoms_data import EMPIRICAL_EXCEPTIONS
 
-
 # Electron state classes have been moved to `electron.py` to reflect
 # the singular module name. Keep imports stable for the rest of the package.
-from .electron import SpinOrbital, Orbital, SubShell, Shell
-
+from .electron import Orbital, Shell, SpinOrbital, SubShell
 
 
 class Atom:
