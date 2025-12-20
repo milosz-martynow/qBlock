@@ -1,7 +1,6 @@
 @startuml
 ' Block Definition Diagram for package q_block
 package "q_block" {
-  package "model" {
     class "SpinOrbital" {
       - n: int
       - l: int
@@ -18,7 +17,6 @@ package "q_block" {
       - n: int
       - l: int
       - orbitals: List<Orbital>
-      + capacity(): int
     }
     class "Shell" {
       - n: int
@@ -33,23 +31,18 @@ package "q_block" {
       - basis_set: Optional[Dict]
       + fill_occupancy(): None
       + populate_spinorbitals_with_gto(): None
-    }
   }
 
-  package "io & helpers" {
     class "atoms_data" as AD <<module>> {
       + ATOMS_SYMBOLS_Z_TO_SYMBOL: Dict
       + ATOMS_SYMBOLS_SYMBOL_TO_Z: Dict
       + ANGULAR_MOMENTUM_MAP: Dict[str,int]
+      + EMPIRICAL_EXCEPTIONS: Dict[int, List[Dict[str,int]]]
     }
-    class "aufbau_exceptions" as AE <<module>> {
-      + EMPIRICAL_EXCEPTIONS: Dict
-    }
+
     class "basis_set_pople" as BSP <<module>> {
       + parse_gaussian_basis(filepath: str): BasisSet
-      + ANGULAR_MOMENTUM_MAP: Dict[str,int]
     }
-  }
 }
 
 ' Relationships
@@ -58,8 +51,7 @@ package "q_block" {
 "SubShell" "1" *-- "*" "Orbital"
 "Orbital" "1" *-- "2" "SpinOrbital"
 
-"Atom" ..> AE : uses EMPIRICAL_EXCEPTIONS
-"Atom" ..> AD : references ATOMS_SYMBOLS_Z_TO_SYMBOL
-"Atom" ..> BSP : may use parse_gaussian_basis result
+"Atom" ..> AD : depends on
+"Atom" ..> BSP : depends on
 
 @enduml

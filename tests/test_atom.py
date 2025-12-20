@@ -12,7 +12,6 @@ from q_block.atom import Atom, Orbital, Shell, SpinOrbital, SubShell
 from q_block.atoms_data import (
     ATOMS_SYMBOLS_SYMBOL_TO_Z,
     ATOMS_SYMBOLS_Z_TO_SYMBOL,
-    ANGULAR_MOMENTUM_MAP
 )
 from q_block.basis_set_pople import parse_gaussian_basis
 from tests.verification_data.expected_atom_empirical import (

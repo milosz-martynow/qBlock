@@ -26,6 +26,7 @@ Notes
 
 import re
 from typing import Any, Dict, List, Literal, Tuple, TypeAlias
+
 from q_block.atoms_data import ANGULAR_MOMENTUM_MAP
 
 RegionName: TypeAlias = Literal[

@@ -19,6 +19,7 @@ from typing import Dict, List, TypeVar
 K = TypeVar("K")
 V = TypeVar("V")
 
+
 def _invert_dict(d: Dict[K, V]) -> Dict[V, K]:
     """Invert a dictionary mapping while validating value uniqueness.
 
@@ -34,6 +35,7 @@ def _invert_dict(d: Dict[K, V]) -> Dict[V, K]:
     if len(set(d.values())) != len(d):
         raise ValueError("Cannot invert dictionary with non-unique values")
     return {v: k for k, v in d.items()}
+
 
 ATOMS_SYMBOLS_Z_TO_SYMBOL: Dict[int, str] = {
     1: "H",
@@ -158,7 +160,7 @@ ATOMS_SYMBOLS_Z_TO_SYMBOL: Dict[int, str] = {
 
 ATOMS_SYMBOLS_SYMBOL_TO_Z: Dict[str, int] = _invert_dict(
     d=ATOMS_SYMBOLS_Z_TO_SYMBOL
-) 
+)
 
 ANGULAR_MOMENTUM_MAP: Dict[str, int] = {
     "S": 0,

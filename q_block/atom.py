@@ -9,7 +9,7 @@ https://physics.nist.gov/PhysRefData/ASD/
 
 from typing import Any, Dict, List, Optional, Tuple
 
-from q_block.aufbau_exceptions import EMPIRICAL_EXCEPTIONS
+from q_block.atoms_data import EMPIRICAL_EXCEPTIONS
 
 
 class SpinOrbital:
