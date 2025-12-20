@@ -25,8 +25,7 @@ from pathlib import Path
 from typing import Dict, List, Tuple
 
 from q_block.atom import Atom
-from q_block.atoms_data import ATOMS_SYMBOLS_Z_TO_SYMBOL
-from q_block.aufbau_exceptions import EMPIRICAL_EXCEPTIONS
+from q_block.atoms_data import ATOMS_SYMBOLS_Z_TO_SYMBOL, EMPIRICAL_EXCEPTIONS
 
 # Type aliases
 SpinKey = Tuple[int, int, int, float]  # (n, l, m, s)
@@ -54,35 +53,6 @@ def _extract_spin_map_from_atom(atom_instance: Atom) -> SpinMap:
                     orb.spin_down.occupied
                 )
     return mapping
-
-
-def _subshell_keys_for_map(spinmap: SpinMap, n: int, l: int) -> List[SpinKey]:
-    """List spin-orbital keys for a specific subshell (n, l).
-
-    Keys are returned with magnetic quantum number ``m`` ascending and spin
-    ordering ``+0.5`` then ``-0.5`` when present.
-
-    :param spinmap: Spin-orbital mapping produced by ``Atom`` extraction.
-    :type spinmap: SpinMap
-    :param n: Principal quantum number of the subshell.
-    :type n: int
-    :param l: Angular momentum quantum number of the subshell.
-    :type l: int
-
-    :returns: Ordered list of keys belonging to the subshell.
-    :rtype: List[SpinKey]
-    """
-    keys = []
-    # m values range -l .. +l
-    for m in range(-l, l + 1):
-        # spin up then spin down
-        up = (n, l, m, 0.5)
-        down = (n, l, m, -0.5)
-        if up in spinmap:
-            keys.append(up)
-        if down in spinmap:
-            keys.append(down)
-    return keys
 
 
 def _apply_empirical_to_map(

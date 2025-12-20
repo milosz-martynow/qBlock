@@ -10,8 +10,7 @@ behaviour and documentation. The module exposes:
     - Shell
 """
 
-from typing import Any, Dict, List, Optional, Tuple
-
+from typing import Any, List, Optional
 
 class SpinOrbital:
     """

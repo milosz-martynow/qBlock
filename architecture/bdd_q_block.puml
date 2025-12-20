@@ -13,27 +13,30 @@ package "q_block" {
         + populate_spinorbitals_with_gto(): None
       }
 
-      class "SpinOrbital" {
-        - n: int
-        - l: int
-        - m: int
-        - s: float
-        - occupied: bool
-        - data: Any
-      }
-      class "Orbital" {
-        - spin_up: SpinOrbital
-        - spin_down: SpinOrbital
-      }
-      class "SubShell" {
-        - n: int
-        - l: int
-        - orbitals: List<Orbital>
-      }
-      class "Shell" {
-        - n: int
-        - subshells: List<SubShell>
-      }
+    class "SpinOrbital" {
+      - n: int
+      - l: int
+      - m: int
+      - s: float
+      - occupied: bool
+      - data: Any
+    }
+    class "Orbital" {
+      - spin_up: SpinOrbital
+      - spin_down: SpinOrbital
+    }
+    class "SubShell" {
+      - n: int
+      - l: int
+      - orbitals: List<Orbital>
+    }
+    class "Shell" {
+      - n: int
+      - subshells: List<SubShell>
+    }
+
+  ' Module shim for explicit module presence
+ 
 
     class "atoms_data" as AD <<module>> {
       + ATOMS_SYMBOLS_Z_TO_SYMBOL: Dict
@@ -53,7 +56,7 @@ package "q_block" {
 "SubShell" "1" *-- "*" "Orbital"
 "Orbital" "1" *-- "2" "SpinOrbital"
 
-"Atom" ..> AD : uses
-"Atom" ..> BSP : uses
+"Atom" ..> AD : depends on
+"Atom" ..> BSP : depends on
 
 @enduml
