@@ -1,37 +1,39 @@
 @startuml
 ' Block Definition Diagram for package q_block
 package "q_block" {
-    class "SpinOrbital" {
-      - n: int
-      - l: int
-      - m: int
-      - s: float
-      - occupied: bool
-      - data: Any
-    }
-    class "Orbital" {
-      - spin_up: SpinOrbital
-      - spin_down: SpinOrbital
-    }
-    class "SubShell" {
-      - n: int
-      - l: int
-      - orbitals: List<Orbital>
-    }
-    class "Shell" {
-      - n: int
-      - subshells: List<SubShell>
-    }
-    class "Atom" {
-      - Z: int
-      - n_max: int
-      - shells: Dict<int,Shell>
-      - use_empirical: bool
-      - empirical_exceptions: Dict<int,List<Dict<"n","l","electron_count">>>
-      - basis_set: Optional[Dict]
-      + fill_occupancy(): None
-      + populate_spinorbitals_with_gto(): None
-  }
+
+      class "Atom" {
+        - Z: int
+        - n_max: int
+        - shells: Dict<int,Shell>
+        - use_empirical: bool
+        - empirical_exceptions: Dict<int,List<Dict<"n","l","electron_count">>>
+        - basis_set: Optional[Dict]
+        + fill_occupancy(): None
+        + populate_spinorbitals_with_gto(): None
+      }
+
+      class "SpinOrbital" {
+        - n: int
+        - l: int
+        - m: int
+        - s: float
+        - occupied: bool
+        - data: Any
+      }
+      class "Orbital" {
+        - spin_up: SpinOrbital
+        - spin_down: SpinOrbital
+      }
+      class "SubShell" {
+        - n: int
+        - l: int
+        - orbitals: List<Orbital>
+      }
+      class "Shell" {
+        - n: int
+        - subshells: List<SubShell>
+      }
 
     class "atoms_data" as AD <<module>> {
       + ATOMS_SYMBOLS_Z_TO_SYMBOL: Dict
@@ -51,7 +53,7 @@ package "q_block" {
 "SubShell" "1" *-- "*" "Orbital"
 "Orbital" "1" *-- "2" "SpinOrbital"
 
-"Atom" ..> AD : depends on
-"Atom" ..> BSP : depends on
+"Atom" ..> AD : uses
+"Atom" ..> BSP : uses
 
 @enduml
