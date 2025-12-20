@@ -10,13 +10,10 @@ from q_block.atoms_data import (
     ATOMS_SYMBOLS_Z_TO_SYMBOL,
 )
 from q_block.basis_set_pople import parse_gaussian_basis
-from q_block.electron import Orbital, Shell, SpinOrbital, SubShell
-from tests.verification_data.expected_atom_empirical import (
-    EXPECTED_ATOM_EMPIRICAL,
-)
+from q_block.electron import  Shell, SpinOrbital
 from tests.verification_data.expected_atom_pure import EXPECTED_ATOM_PURE
 
-SpinKey = Tuple[int, int, int, float]  # (n, l, m, s)
+SpinKey = Tuple[int, int, int, float]
 SpinMap = Dict[SpinKey, bool]
 
 BASIS_ROOT: Path = Path("./data/basis_set/gto_gaussian_format")
@@ -28,43 +25,6 @@ BASIS_FILES = [
     "6-311G.gbs",
     "6-311++Gss.gbs",
 ]
-
-
-@pytest.fixture(params=range(1, 119))
-def atomic_number(request) -> int:
-    """
-    Fixture: iterate across all atomic numbers Z = 1..118.
-
-    :param request: pytest parameter provider
-    :returns: atomic number Z
-    :rtype: int
-    """
-    return int(request.param)
-
-
-@pytest.fixture
-def expected_pure(atomic_number: int) -> SpinMap:
-    """
-    Provide expected pure-mode spin-orbital map for Z.
-
-    :param atomic_number: atomic number
-    :returns: expected spin-orbital occupancy dictionary
-    """
-    return EXPECTED_ATOM_PURE[atomic_number]
-
-
-@pytest.fixture
-def expected_emp(atomic_number: int):
-    """
-    Provide expected empirical-mode spin-orbital map for Z *only if it exists*.
-
-    If Z is not present in EXPECTED_ATOM_EMPIRICAL, return None, meaning
-    empirical == pure for this atomic number.
-
-    :param atomic_number: atomic number
-    :returns: empirical spin map or None
-    """
-    return EXPECTED_ATOM_EMPIRICAL.get(atomic_number, None)
 
 
 def extract_spin_map(atom: Atom) -> SpinMap:
@@ -111,16 +71,17 @@ def maps_equal(a: SpinMap, b: SpinMap) -> bool:
     return True
 
 
+@pytest.mark.parametrize("atomic_number", range(1, 119))
 def test_atom_pure_matches_expected(
     atomic_number: int,
-    expected_pure: SpinMap,
 ) -> None:
     """
     Test that Atom(Z, pure mode) matches the expected static spin map.
 
     :param atomic_number: atomic number under test
-    :param expected_pure: reference mapping from EXPECTED_ATOM_PURE
     """
+    expected_pure: SpinMap = EXPECTED_ATOM_PURE[atomic_number]
+
     atom = Atom(Z=atomic_number, n_max=7, use_empirical_exceptions=False)
     atom.fill_occupancy()
 
@@ -140,9 +101,9 @@ def test_atom_pure_matches_expected(
     ), f"Electron count mismatch for Z={atomic_number}"
 
 
+@pytest.mark.parametrize("atomic_number", range(1, 119))
 def test_atom_pure_matches_expected_for_exceptions(
     atomic_number: int,
-    expected_pure: SpinMap,
 ) -> None:
     """
     Test that Atom(Z, pure mode) matches the expected pure spin-orbital map,
@@ -153,11 +114,12 @@ def test_atom_pure_matches_expected_for_exceptions(
       - For other Z, this test is skipped
 
     :param atomic_number: atomic number under test
-    :param expected_pure: reference pure-mode spin map
     """
     # Only test atoms that actually have empirical exceptions
     # if atomic_number not in EXPECTED_ATOM_EMPIRICAL:
     #     pytest.skip(f"Z={atomic_number} has no empirical exception — skipping pure test.")
+
+    expected_pure: SpinMap = EXPECTED_ATOM_PURE[atomic_number]
 
     atom = Atom(Z=atomic_number, n_max=7, use_empirical_exceptions=False)
     atom.fill_occupancy()
