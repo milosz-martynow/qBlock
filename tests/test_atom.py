@@ -76,29 +76,29 @@ def test_atom_pure_matches_expected(
     atomic_number: int,
 ) -> None:
     """
-    Test that Atom(Z, pure mode) matches the expected static spin map.
+    Test that Atom(atomic_number, pure mode) matches the expected static spin map.
 
     :param atomic_number: atomic number under test
     """
     expected_pure: SpinMap = EXPECTED_ATOM_PURE[atomic_number]
 
-    atom = Atom(Z=atomic_number, n_max=7, use_empirical_exceptions=False)
+    atom = Atom(atomic_number=atomic_number, maximal_principal_quantum_number=7, empirical_exceptions=None)
     atom.fill_occupancy()
 
     actual = extract_spin_map(atom)
 
     assert set(actual.keys()) == set(
         expected_pure.keys()
-    ), f"Spin-orbital key mismatch for Z={atomic_number}"
+    ), f"Spin-orbital key mismatch for atomic_number={atomic_number}"
 
     for key in actual:
         assert (
             actual[key] == expected_pure[key]
-        ), f"Value mismatch at Z={atomic_number} on spin orbital {key}"
+        ), f"Value mismatch at atomic_number={atomic_number} on spin orbital {key}"
 
     assert (
         count_spin_map(actual) == atomic_number
-    ), f"Electron count mismatch for Z={atomic_number}"
+    ), f"Electron count mismatch for atomic_number={atomic_number}"
 
 
 @pytest.mark.parametrize("atomic_number", range(1, 119))
@@ -106,22 +106,22 @@ def test_atom_pure_matches_expected_for_exceptions(
     atomic_number: int,
 ) -> None:
     """
-    Test that Atom(Z, pure mode) matches the expected pure spin-orbital map,
+    Test that Atom(atomic_number, pure mode) matches the expected pure spin-orbital map,
     but **only for atoms that have empirical exceptions**.
 
     Meaning:
-      - Z is tested only if it appears in EXPECTED_ATOM_EMPIRICAL
-      - For other Z, this test is skipped
+      - atomic_number is tested only if it appears in EXPECTED_ATOM_EMPIRICAL
+      - For other atomic_number, this test is skipped
 
     :param atomic_number: atomic number under test
     """
     # Only test atoms that actually have empirical exceptions
     # if atomic_number not in EXPECTED_ATOM_EMPIRICAL:
-    #     pytest.skip(f"Z={atomic_number} has no empirical exception — skipping pure test.")
+    #     pytest.skip(f"atomic_number={atomic_number} has no empirical exception — skipping pure test.")
 
     expected_pure: SpinMap = EXPECTED_ATOM_PURE[atomic_number]
 
-    atom = Atom(Z=atomic_number, n_max=7, use_empirical_exceptions=False)
+    atom = Atom(atomic_number=atomic_number, maximal_principal_quantum_number=7, empirical_exceptions=None)
     atom.fill_occupancy()
 
     # Ensure the atom's state is correctly updated without relying on a return value
@@ -130,18 +130,18 @@ def test_atom_pure_matches_expected_for_exceptions(
     # Keyset must match exactly
     assert set(actual.keys()) == set(
         expected_pure.keys()
-    ), f"[PURE] Spin-orbital key mismatch for exception atom Z={atomic_number}"
+    ), f"[PURE] Spin-orbital key mismatch for exception atom atomic_number={atomic_number}"
 
     # Values must match exactly
     for key in actual:
         assert (
             actual[key] == expected_pure[key]
-        ), f"[PURE] Value mismatch at Z={atomic_number} on spin orbital {key}"
+        ), f"[PURE] Value mismatch at atomic_number={atomic_number} on spin orbital {key}"
 
-    # Pure electron count must always equal Z
+    # Pure electron count must always equal atomic_number
     assert (
         count_spin_map(actual) == atomic_number
-    ), f"[PURE] Electron count mismatch for Z={atomic_number}"
+    ), f"[PURE] Electron count mismatch for atomic_number={atomic_number}"
 
 
 """
@@ -197,8 +197,8 @@ def _serialize_atom_for_test(
             }
 
     return {
-        "symbol": ATOMS_SYMBOLS_Z_TO_SYMBOL[atom.Z],
-        "Z": atom.Z,
+        "symbol": ATOMS_SYMBOLS_Z_TO_SYMBOL[atom.atomic_number],
+        "Z": atom.atomic_number,
         "basis": basis_name,
         "orbitals": orbitals,
     }
@@ -227,7 +227,7 @@ def _iter_golden_test_cases() -> Iterator[Tuple[str, str]]:
 
 @pytest.mark.parametrize(
     "basis_file, symbol",
-    list(_iter_golden_test_cases()),
+    list(_iter_golden_test_cases() ),
     ids=lambda p: p if isinstance(p, str) else None,
 )
 def test_golden_gto_population(
@@ -258,7 +258,7 @@ def test_golden_gto_population(
     golden_atom = golden["atoms"][symbol]
 
     atom = Atom(
-        Z=ATOMS_SYMBOLS_SYMBOL_TO_Z[symbol],
+        atomic_number=ATOMS_SYMBOLS_SYMBOL_TO_Z[symbol],
         basis_set=basis[symbol],
     )
     atom.populate_spinorbitals_with_gto()

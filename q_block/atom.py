@@ -7,13 +7,14 @@ NIST Atomic Spectra Database (ASD)
 https://physics.nist.gov/PhysRefData/ASD/
 """
 
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple, Union
 
-from q_block.atoms_data import EMPIRICAL_EXCEPTIONS
+from q_block.atoms_data import EMPIRICAL_EXCEPTIONS, ATOMS_SYMBOLS_Z_TO_SYMBOL
+from q_block.coordinates import CartesianCoordinates
 
-# Electron state classes have been moved to `electron.py` to reflect
-# the singular module name. Keep imports stable for the rest of the package.
-from .electron import Shell, SubShell, Orbital, SpinOrbital
+Number = Union[int, float]
+
+from q_block.electron import Shell, SubShell, Orbital, SpinOrbital
 
 
 class Atom:
@@ -23,13 +24,13 @@ class Atom:
 
     def __init__(
         self,
-        Z: int,
-        n_max: int = 7,
-        use_empirical_exceptions: bool = True,
-        empirical_exceptions: Dict[
+        atomic_number: int,
+        maximal_principal_quantum_number: int = 7,
+        empirical_exceptions: Optional[Dict[
             int, List[Dict[str, int]]
-        ] = EMPIRICAL_EXCEPTIONS,
+        ]] = EMPIRICAL_EXCEPTIONS,
         basis_set: Optional[Dict[str, Any]] = None,
+        coordinates: Optional[CartesianCoordinates] = None,
     ) -> None:
         """
         Initialize an Atom object containing nested shells, subshells, orbitals,
@@ -50,20 +51,17 @@ class Atom:
         `fill_occupancy()`, which applies either the Aufbau+Hund rules or empirical
         exceptions based on real experimental ground-state configurations.
 
-        :param Z: Atomic number (number of electrons in the neutral ground state).
-        :type Z: int
-        :raises ValueError: If ``Z < 0``.
+        :param atomic_number: Atomic number (number of electrons in the neutral ground state).
+        :type atomic_number: int
+        :raises ValueError: If ``atomic_number < 0``.
 
-        :param n_max: Maximum principal quantum number to construct. Determines
+        :param maximal_principal_quantum_number: Maximum principal quantum number to construct. Determines
                 how many shells are created. Default is 7.
-        :type n_max: int
+        :type maximal_principal_quantum_number: int
 
-        :param use_empirical_exceptions: If True, electron filling will use
+        :param empirical_exceptions: If not None, electron filling will use
                 empirical exceptions for certain elements; otherwise pure Aufbau is used.
-        :type use_empirical_exceptions: bool
-
-        :param empirical_exceptions: Dictionary with empirical configurations.
-        :type empirical_exceptions: Dict[int, List[Dict[str, int]]]
+        :type empirical_exceptions: Optional[Dict[int, List[Dict[str, int]]]]
 
         :param basis_set: Optional basis-set dictionary to attach to the Atom.
         :type basis_set: Optional[Dict[str, Any]]
@@ -78,20 +76,26 @@ class Atom:
             ``fill_occupancy()``.
         """
 
-        if Z < 0:
-            raise ValueError("Z must be ≥ 0")
+        if atomic_number < 0:
+            raise ValueError("atomic_number must be ≥ 0")
 
-        self.Z = Z  # electron count
-        self.n_max = n_max  # max principal number
-        self.use_empirical = use_empirical_exceptions
+        self.atomic_number = atomic_number
+        self.maximal_principal_quantum_number = maximal_principal_quantum_number
         self.empirical_exceptions = empirical_exceptions
+
+        # Coordinates (CartesianCoordinates instance or None)
+        self.coordinates: Optional[CartesianCoordinates] = coordinates
 
         # Helper variables
         self.shells: Dict[int, Shell] = {
-            n: Shell(n=n) for n in range(1, n_max + 1)
-        }  # shells indexed by n
-
+            n: Shell(n=n) for n in range(1, maximal_principal_quantum_number + 1)
+        }
         self.basis_set = basis_set
+
+    @property
+    def symbol(self) -> str:
+        """Return the chemical element symbol for this atom (derived from atomic_number)."""
+        return ATOMS_SYMBOLS_Z_TO_SYMBOL[self.atomic_number]
 
     @property
     def _all_subshells(self) -> List[SubShell]:
@@ -174,7 +178,7 @@ class Atom:
         :class:`SpinOrbital` objects stored in this :class:`Atom`.
 
         When empirical exceptions are enabled and an entry exists for
-        ``self.Z``, the empirical mapping is applied instead of the pure
+        ``self.atomic_number``, the empirical mapping is applied instead of the pure
         Aufbau filling.
 
         :returns: None
@@ -188,12 +192,14 @@ class Atom:
         # ------------------------------------------------------------------
         # Empirical instructions mutate existing spin-orbitals in-place.
         # When applicable, apply the empirical mapping and skip Aufbau.
+        #
+        # ==================================================================
         skip_aufbau = (
-            self.use_empirical and self.Z in self.empirical_exceptions
+            self.empirical_exceptions is not None and self.atomic_number in self.empirical_exceptions
         )
         if skip_aufbau:
             self._apply_exception(
-                instructions=self.empirical_exceptions[self.Z]
+                instructions=self.empirical_exceptions[self.atomic_number]
             )
 
         # ==================================================================
@@ -208,10 +214,9 @@ class Atom:
         # 1s → 2s → 2p → 3s → 3p → 4s → 3d → 4p → 5s → …
         #
         # Note: exceptions of Aufbau principle are implemented above
-        #
         # ==================================================================
         if not skip_aufbau:
-            remaining = self.Z
+            remaining = self.atomic_number
 
             for subshell in sorted(
                 self._all_subshells, key=lambda ss: Atom._aufbau_key(sub=ss)
@@ -352,3 +357,10 @@ class Atom:
                                 "exponents": exponents,
                                 "contractions": contractions,
                             }
+
+    def __repr__(self) -> str:
+        if self.coordinates is not None and self.coordinates.x is not None and self.coordinates.y is not None and self.coordinates.z is not None:
+            coord_str = f" coords=({self.coordinates.x:.3f},{self.coordinates.y:.3f},{self.coordinates.z:.3f})"
+        else:
+            coord_str = ""
+        return f"Atom(atomic_number={self.atomic_number}, symbol={self.symbol}{coord_str})"
