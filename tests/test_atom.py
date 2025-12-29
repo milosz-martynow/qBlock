@@ -5,12 +5,10 @@ from typing import Any, Dict, Iterator, Tuple
 import pytest
 
 from q_block.atom import Atom
-from q_block.atoms_data import (
-    ATOMS_SYMBOLS_SYMBOL_TO_Z,
-    ATOMS_SYMBOLS_Z_TO_SYMBOL,
-)
+from q_block.atoms_data import (ATOMS_SYMBOLS_SYMBOL_TO_Z,
+                                ATOMS_SYMBOLS_Z_TO_SYMBOL)
 from q_block.basis_set_pople import parse_gaussian_basis
-from q_block.electron import  Shell, SpinOrbital
+from q_block.electron import Shell, SpinOrbital
 from tests.verification_data.expected_atom_pure import EXPECTED_ATOM_PURE
 
 SpinKey = Tuple[int, int, int, float]
@@ -82,7 +80,11 @@ def test_atom_pure_matches_expected(
     """
     expected_pure: SpinMap = EXPECTED_ATOM_PURE[atomic_number]
 
-    atom = Atom(atomic_number=atomic_number, maximal_principal_quantum_number=7, empirical_exceptions=None)
+    atom = Atom(
+        atomic_number=atomic_number,
+        maximal_principal_quantum_number=7,
+        empirical_exceptions=None,
+    )
     atom.fill_occupancy()
 
     actual = extract_spin_map(atom)
@@ -121,7 +123,11 @@ def test_atom_pure_matches_expected_for_exceptions(
 
     expected_pure: SpinMap = EXPECTED_ATOM_PURE[atomic_number]
 
-    atom = Atom(atomic_number=atomic_number, maximal_principal_quantum_number=7, empirical_exceptions=None)
+    atom = Atom(
+        atomic_number=atomic_number,
+        maximal_principal_quantum_number=7,
+        empirical_exceptions=None,
+    )
     atom.fill_occupancy()
 
     # Ensure the atom's state is correctly updated without relying on a return value
@@ -227,7 +233,7 @@ def _iter_golden_test_cases() -> Iterator[Tuple[str, str]]:
 
 @pytest.mark.parametrize(
     "basis_file, symbol",
-    list(_iter_golden_test_cases() ),
+    list(_iter_golden_test_cases()),
     ids=lambda p: p if isinstance(p, str) else None,
 )
 def test_golden_gto_population(

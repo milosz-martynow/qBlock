@@ -12,6 +12,7 @@ behaviour and documentation. The module exposes:
 
 from typing import Any, List, Optional
 
+
 class SpinOrbital:
     """
     Representation of a single-electron spin–orbital defined by the four

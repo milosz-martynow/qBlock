@@ -6,7 +6,7 @@ from typing import List
 
 from setuptools import find_packages, setup
 
-requires: List[str] = ["setuptools==80.9.0"]
+requires: List[str] = ["setuptools==80.9.0", "pandas==2.3.3"]
 test: List[str] = ["pytest==9.0.2"]
 extra: List[str] = ["pylint==4.0.4", "black==25.12.0", "isort==7.0.0"]
 

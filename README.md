@@ -42,3 +42,30 @@ black.exe --config=.blackrc .\q_block\ .\tests\ setup.py
 pylint.exe --rcfile=.pylintrc .\q_block\ .\tests\ setup.py
 pytest.exe .
 ```
+
+## Example: creating an AtomicSystem
+
+Below is a minimal example showing how to create an :class:`AtomicSystem`
+from an XYZ file or from a Python structure using the helpers in
+``q_block.read_atoms``. The repository contains small example geometries in
+``tests/verification_data/geometries`` (for instance ``water.xyz``).
+
+```python
+from q_block.read_atoms import populate_from_xyz_file, populate_from_script
+from q_block.atomic_system import AtomicSystem
+
+# Load from an XYZ file shipped with the tests
+df = populate_from_xyz_file("tests/verification_data/geometries/water.xyz", atom_prefix="A")
+system = AtomicSystem(df)
+print(system)            # AtomicSystem(n_atoms=...)
+print(system.atoms.head())
+
+# Or build from a Python data structure: [symbol, x, y, z]
+py_data = [["O", 0.000000, 0.000000, 0.000000], ["H", 0.758602, 0.000000, 0.504284], ["H", -0.758602, 0.000000, 0.504284]]
+df2 = populate_from_script(py_data, atom_prefix="M")
+system2 = AtomicSystem(df2)
+print(system2.atoms)
+```
+
+Note: the example requires the ``pandas`` package to be installed in your
+environment.

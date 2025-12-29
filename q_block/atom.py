@@ -9,12 +9,9 @@ https://physics.nist.gov/PhysRefData/ASD/
 
 from typing import Any, Dict, List, Optional, Tuple, Union
 
-from q_block.atoms_data import EMPIRICAL_EXCEPTIONS, ATOMS_SYMBOLS_Z_TO_SYMBOL
+from q_block.atoms_data import ATOMS_SYMBOLS_Z_TO_SYMBOL, EMPIRICAL_EXCEPTIONS
 from q_block.coordinates import CartesianCoordinates
-
-Number = Union[int, float]
-
-from q_block.electron import Shell, SubShell, Orbital, SpinOrbital
+from q_block.electron import Orbital, Shell, SpinOrbital, SubShell
 
 
 class Atom:
@@ -26,9 +23,9 @@ class Atom:
         self,
         atomic_number: int,
         maximal_principal_quantum_number: int = 7,
-        empirical_exceptions: Optional[Dict[
-            int, List[Dict[str, int]]
-        ]] = EMPIRICAL_EXCEPTIONS,
+        empirical_exceptions: Optional[
+            Dict[int, List[Dict[str, int]]]
+        ] = EMPIRICAL_EXCEPTIONS,
         basis_set: Optional[Dict[str, Any]] = None,
         coordinates: Optional[CartesianCoordinates] = None,
     ) -> None:
@@ -80,7 +77,9 @@ class Atom:
             raise ValueError("atomic_number must be ≥ 0")
 
         self.atomic_number = atomic_number
-        self.maximal_principal_quantum_number = maximal_principal_quantum_number
+        self.maximal_principal_quantum_number = (
+            maximal_principal_quantum_number
+        )
         self.empirical_exceptions = empirical_exceptions
 
         # Coordinates (CartesianCoordinates instance or None)
@@ -88,7 +87,8 @@ class Atom:
 
         # Helper variables
         self.shells: Dict[int, Shell] = {
-            n: Shell(n=n) for n in range(1, maximal_principal_quantum_number + 1)
+            n: Shell(n=n)
+            for n in range(1, maximal_principal_quantum_number + 1)
         }
         self.basis_set = basis_set
 
@@ -195,7 +195,8 @@ class Atom:
         #
         # ==================================================================
         skip_aufbau = (
-            self.empirical_exceptions is not None and self.atomic_number in self.empirical_exceptions
+            self.empirical_exceptions is not None
+            and self.atomic_number in self.empirical_exceptions
         )
         if skip_aufbau:
             self._apply_exception(
@@ -359,7 +360,12 @@ class Atom:
                             }
 
     def __repr__(self) -> str:
-        if self.coordinates is not None and self.coordinates.x is not None and self.coordinates.y is not None and self.coordinates.z is not None:
+        if (
+            self.coordinates is not None
+            and self.coordinates.x is not None
+            and self.coordinates.y is not None
+            and self.coordinates.z is not None
+        ):
             coord_str = f" coords=({self.coordinates.x:.3f},{self.coordinates.y:.3f},{self.coordinates.z:.3f})"
         else:
             coord_str = ""

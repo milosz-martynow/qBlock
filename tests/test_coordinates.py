@@ -3,14 +3,19 @@ Unit tests for the coordinates module using pytest with fixtures and parametrize
 
 All docstrings follow Sphinx format.
 """
-import pytest
-from q_block.coordinates import Coordinates, CartesianCoordinates
 
-@pytest.fixture(params=[
-    (1.0, 2.0, 3.0),
-    (0.0, 0.0, 0.0),
-    (-1.5, 2.5, 3.5),
-])
+import pytest
+
+from q_block.coordinates import CartesianCoordinates, Coordinates
+
+
+@pytest.fixture(
+    params=[
+        (1.0, 2.0, 3.0),
+        (0.0, 0.0, 0.0),
+        (-1.5, 2.5, 3.5),
+    ]
+)
 def cartesian_coords(request):
     """
     Fixture providing CartesianCoordinates for parameterized tests.
@@ -22,6 +27,7 @@ def cartesian_coords(request):
     """
     x, y, z = request.param
     return CartesianCoordinates(x, y, z)
+
 
 def test_cartesian_coordinates_init_and_repr(cartesian_coords):
     """
@@ -35,13 +41,20 @@ def test_cartesian_coordinates_init_and_repr(cartesian_coords):
     assert c.y == pytest.approx(c.as_tuple()[1])
     assert c.z == pytest.approx(c.as_tuple()[2])
     assert c.as_tuple() == (c.x, c.y, c.z)
-    assert repr(c) == f"CartesianCoordinates(x={c.x:.3f}, y={c.y:.3f}, z={c.z:.3f})"
+    assert (
+        repr(c)
+        == f"CartesianCoordinates(x={c.x:.3f}, y={c.y:.3f}, z={c.z:.3f})"
+    )
 
-@pytest.mark.parametrize("x, y, z", [
-    (1.5, 2.5, 3.5),
-    (0.0, 0.0, 0.0),
-    (-2.0, 4.0, 8.0),
-])
+
+@pytest.mark.parametrize(
+    "x, y, z",
+    [
+        (1.5, 2.5, 3.5),
+        (0.0, 0.0, 0.0),
+        (-2.0, 4.0, 8.0),
+    ],
+)
 def test_as_tuple(x, y, z):
     """
     Test as_tuple() returns correct tuple for CartesianCoordinates.
@@ -59,6 +72,7 @@ def test_as_tuple(x, y, z):
     assert c.y == y
     assert c.z == z
 
+
 def test_inheritance(cartesian_coords):
     """
     Test that CartesianCoordinates is a subclass of Coordinates.
@@ -69,21 +83,42 @@ def test_inheritance(cartesian_coords):
     c = cartesian_coords
     assert isinstance(c, Coordinates)
 
-def test_coordinates_as_tuple_not_implemented():
-    """
-    Test that as_tuple() raises NotImplementedError for base Coordinates.
-    """
-    class DummyCoordinates(Coordinates):
-        pass
-    dummy = DummyCoordinates()
-    with pytest.raises(NotImplementedError):
-        dummy.as_tuple()
 
-@pytest.mark.parametrize("args", [
-    (1.0, 2.0),
-    (1.0,),
-    tuple(),
-])
+def test_coordinates_as_tuple_uses_abstract_methods():
+    """
+    Test that Coordinates.as_tuple() relies on _coordinate_[1-3].
+    """
+
+    class DummyCoordinates(Coordinates):
+        def __init__(self):
+            self.calls = []
+
+        def _coordinate_1(self) -> float:  # type: ignore[override]
+            self.calls.append(1)
+            return 1.0
+
+        def _coordinate_2(self) -> float:  # type: ignore[override]
+            self.calls.append(2)
+            return 2.0
+
+        def _coordinate_3(self) -> float:  # type: ignore[override]
+            self.calls.append(3)
+            return 3.0
+
+    dummy = DummyCoordinates()
+    tup = dummy.as_tuple()
+    assert tup == (1.0, 2.0, 3.0)
+    assert dummy.calls == [1, 2, 3]
+
+
+@pytest.mark.parametrize(
+    "args",
+    [
+        (1.0, 2.0),
+        (1.0,),
+        tuple(),
+    ],
+)
 def test_cartesian_coordinates_requires_all_args(args):
     """
     Test that CartesianCoordinates requires all three arguments.
@@ -93,3 +128,32 @@ def test_cartesian_coordinates_requires_all_args(args):
     """
     with pytest.raises(TypeError):
         CartesianCoordinates(*args)
+
+
+@pytest.mark.parametrize(
+    "seq",
+    [
+        (1.0, 2.0, 3.0),
+        ["1.0", "2.0", "3.0"],
+    ],
+)
+def test_cartesian_from_sequence_valid(seq):
+    """CartesianCoordinates.from_sequence should accept numeric and string values."""
+    c = CartesianCoordinates.from_sequence(seq)
+    assert isinstance(c, CartesianCoordinates)
+    assert c.as_tuple() == (1.0, 2.0, 3.0)
+    assert c.to_list() == [1.0, 2.0, 3.0]
+
+
+@pytest.mark.parametrize(
+    "bad_seq",
+    [
+        (1.0, 2.0),
+        ("a", "b", "c"),
+        "abc",  # len 3 but not numeric
+    ],
+)
+def test_cartesian_from_sequence_invalid(bad_seq):
+    """CartesianCoordinates.from_sequence must raise ValueError for invalid input."""
+    with pytest.raises(ValueError):
+        CartesianCoordinates.from_sequence(bad_seq)
