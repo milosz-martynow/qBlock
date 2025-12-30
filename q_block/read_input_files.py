@@ -9,6 +9,7 @@ This module provides small, reusable functions that convert input data
 The functions are intentionally independent from :class:`AtomicSystem` so
 that the same parsing code can be reused in tests or other modules.
 """
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -38,9 +39,15 @@ def _check_atom_symbol(symbol_raw: Any) -> str:
     """
     symbol = str(symbol_raw).strip()
     if not symbol:
-        raise ValueError(f"Atomic symbol must be a non-empty string; got {symbol!r}")
+        raise ValueError(
+            f"Atomic symbol must be a non-empty string; got {symbol!r}"
+        )
 
-    if not symbol[0].isupper() or (len(symbol) > 1 and not symbol[1:].islower()) or not symbol.isalpha():
+    if (
+        not symbol[0].isupper()
+        or (len(symbol) > 1 and not symbol[1:].islower())
+        or not symbol.isalpha()
+    ):
         raise ValueError(
             f"Atomic symbol must start with a capital letter followed by lowercase letters: got {symbol!r}"
         )
@@ -51,7 +58,9 @@ def _check_atom_symbol(symbol_raw: Any) -> str:
     return symbol
 
 
-def populate_from_script(atom_data: List[List[Any]], atom_prefix: str = "") -> pd.DataFrame:
+def populate_from_script(
+    atom_data: List[List[Any]], atom_prefix: str = ""
+) -> pd.DataFrame:
     """Create atoms DataFrame from a Python structure.
 
     The expected input format is::
@@ -84,7 +93,9 @@ def populate_from_script(atom_data: List[List[Any]], atom_prefix: str = "") -> p
         try:
             coordinates = CartesianCoordinates.from_sequence(entry[1:4])
         except ValueError as exc:
-            raise ValueError(f"Coordinates must be convertible to float; got {entry[1:4]!r}") from exc
+            raise ValueError(
+                f"Coordinates must be convertible to float; got {entry[1:4]!r}"
+            ) from exc
 
         x, y, z = coordinates.as_tuple()
 
@@ -105,11 +116,16 @@ def populate_from_script(atom_data: List[List[Any]], atom_prefix: str = "") -> p
             }
         )
 
-    df = pd.DataFrame(rows, columns=["atom_id", "atomic_number", "symbol", "x", "y", "z", "atom"])
+    df = pd.DataFrame(
+        rows,
+        columns=["atom_id", "atomic_number", "symbol", "x", "y", "z", "atom"],
+    )
     return df
 
 
-def populate_from_xyz_file(xyz_path: Union[str, Path], atom_prefix: str = "") -> pd.DataFrame:
+def populate_from_xyz_file(
+    xyz_path: Union[str, Path], atom_prefix: str = ""
+) -> pd.DataFrame:
     """Create atoms DataFrame from an XYZ file.
 
     The function accepts the conventional XYZ format::
@@ -137,31 +153,41 @@ def populate_from_xyz_file(xyz_path: Union[str, Path], atom_prefix: str = "") ->
     raw_lines = [ln.rstrip("\n\r") for ln in text.splitlines()]
 
     if len(raw_lines) < 3:
-        raise ValueError("XYZ file must contain at least three lines (N, comment, and one coordinate line)")
+        raise ValueError(
+            "XYZ file must contain at least three lines (N, comment, and one coordinate line)"
+        )
 
     first_line = raw_lines[0].strip()
     try:
         n_atoms = int(first_line)
     except ValueError:
-        raise ValueError("First line of XYZ file must be an integer atom count")
+        raise ValueError(
+            "First line of XYZ file must be an integer atom count"
+        )
 
     # Keep comment line (raw_lines[1]) even if empty; collect coordinate lines ignoring blank lines.
     coord_lines = [ln.strip() for ln in raw_lines[2:] if ln.strip()]
     if len(coord_lines) != n_atoms:
-        raise ValueError(f"XYZ file declares {n_atoms} atoms but only {len(coord_lines)} coordinate lines were found")
+        raise ValueError(
+            f"XYZ file declares {n_atoms} atoms but only {len(coord_lines)} coordinate lines were found"
+        )
 
     data: List[List[Any]] = []
     for i in range(n_atoms):
         parts = coord_lines[i].split()
         if len(parts) < 4:
-            raise ValueError(f"Malformed XYZ coordinate line {i + 3}: {coord_lines[i]!r}")
+            raise ValueError(
+                f"Malformed XYZ coordinate line {i + 3}: {coord_lines[i]!r}"
+            )
 
         symbol = _check_atom_symbol(parts[0])
         try:
             coordinates = CartesianCoordinates.from_sequence(parts[1:4])
             x, y, z = coordinates.as_tuple()
         except ValueError:
-            raise ValueError(f"XYZ coordinates must be floats on line {i + 3}: {coord_lines[i]!r}")
+            raise ValueError(
+                f"XYZ coordinates must be floats on line {i + 3}: {coord_lines[i]!r}"
+            )
 
         data.append([symbol, x, y, z])
 

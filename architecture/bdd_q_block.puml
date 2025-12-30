@@ -9,12 +9,11 @@ package "q_block" {
         atomic_number: int
         maximal_principal_quantum_number: int
         shells: Dict<int,Shell>
-        empirical_exceptions: Optional[Dict<int,List<Dict<"n","l","electron_count">>>]
+        _empirical_exceptions: Optional[Dict<int,List<Dict<"n","l","electron_count">>>]
         basis_set: Optional[Dict]
         coordinates: Optional[CartesianCoordinates]
         fill_occupancy(): None
         populate_spinorbitals_with_gto(): None
-        symbol: str
     }
 
     class "CartesianCoordinates" {
@@ -78,7 +77,7 @@ package "q_block" {
         parse_gaussian_basis(filepath: str): BasisSet
     }
 
-    class "read_atoms" as RA <<module>> {
+    class "read_input_files" as RIF <<module>> {
         populate_from_script(atom_data, atom_prefix: str): pd.DataFrame
         populate_from_xyz_file(xyz_path, atom_prefix: str): pd.DataFrame
     }
@@ -91,19 +90,19 @@ package "q_block" {
 ' Relationships
 ' ----------------------------------------------------------
 
-"Atom" "1" *-- "*" "Shell"
-"Shell" "1" *-- "*" "SubShell"
-"SubShell" "1" *-- "*" "Orbital"
-"Orbital" "1" *-- "2" "SpinOrbital"
-"AtomicSystem" "1" *-- "*" "Atom"
+"Atom" "1" *--> "*" "Shell"
+"Shell" "1" *--> "*" "SubShell"
+"SubShell" "1" *--> "*" "Orbital"
+"Orbital" "1" *--> "2" "SpinOrbital"
+"AtomicSystem" "1" *--> "*" "Atom"
 
 "Molecule" --|> "AtomicSystem"
 "Crystal"  --|> "AtomicSystem"
 
 "Atom" ..> AD  : depends on
 "Atom" ..> BSP : depends on
-"AtomicSystem" ..> RA : uses
+"AtomicSystem" ..> RIF : uses
 "Atom" ..> "CartesianCoordinates" : uses
-"RA" ..> "CartesianCoordinates" : uses
+"RIF" ..> "CartesianCoordinates" : uses
 
 @enduml

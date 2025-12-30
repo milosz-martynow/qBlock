@@ -9,15 +9,17 @@ https://physics.nist.gov/PhysRefData/ASD/
 
 from typing import Any, Dict, List, Optional, Tuple, Union
 
-from q_block.atoms_data import ATOMS_SYMBOLS_Z_TO_SYMBOL, EMPIRICAL_EXCEPTIONS
+from q_block.atoms_data import (
+    ATOMS_SYMBOLS_SYMBOL_TO_Z,
+    ATOMS_SYMBOLS_Z_TO_SYMBOL,
+    EMPIRICAL_EXCEPTIONS,
+)
 from q_block.coordinates import CartesianCoordinates
 from q_block.electron import Orbital, Shell, SpinOrbital, SubShell
 
 
 class Atom:
-    """
-    Represents an atom composed of shells, subshells, orbitals, and spin–orbitals.
-    """
+    """Represents an atom composed of shells, subshells, orbitals, and spin–orbitals."""
 
     def __init__(
         self,
@@ -29,8 +31,7 @@ class Atom:
         basis_set: Optional[Dict[str, Any]] = None,
         coordinates: Optional[CartesianCoordinates] = None,
     ) -> None:
-        """
-        Initialize an Atom object containing nested shells, subshells, orbitals,
+        """Initialize an Atom object containing nested shells, subshells, orbitals,
         and spin–orbitals up to a chosen maximum principal quantum number.
 
         This constructor builds the complete quantum-mechanical structure of an
@@ -44,9 +45,10 @@ class Atom:
             - Orbital(n,l,m): a pair of opposite-spin spin-orbitals
             - SpinOrbital:    a single electron state (n,l,m,s)
 
-        No electrons are assigned at initialization; occupation occurs only in
-        `fill_occupancy()`, which applies either the Aufbau+Hund rules or empirical
-        exceptions based on real experimental ground-state configurations.
+        After constructing the orbital manifold, the method immediately calls
+        :meth:`fill_occupancy` to assign electrons according to either the
+        Aufbau+Hund rules or empirical exceptions based on real experimental
+        ground-state configurations.
 
         :param atomic_number: Atomic number (number of electrons in the neutral ground state).
         :type atomic_number: int
@@ -80,7 +82,9 @@ class Atom:
         self.maximal_principal_quantum_number = (
             maximal_principal_quantum_number
         )
-        self.empirical_exceptions = empirical_exceptions
+        # Store empirical exceptions in a private attribute; callers configure
+        # behavior via the constructor argument.
+        self._empirical_exceptions = empirical_exceptions
 
         # Coordinates (CartesianCoordinates instance or None)
         self.coordinates: Optional[CartesianCoordinates] = coordinates
@@ -92,29 +96,33 @@ class Atom:
         }
         self.basis_set = basis_set
 
-    @property
-    def symbol(self) -> str:
-        """Return the chemical element symbol for this atom (derived from atomic_number)."""
-        return ATOMS_SYMBOLS_Z_TO_SYMBOL[self.atomic_number]
+        # Build the ground-state electronic configuration immediately.
+        self.fill_occupancy()
 
     @property
     def _all_subshells(self) -> List[SubShell]:
-        """Return a flattened list of subshells in shell order (n ascending)."""
+        """Return a flattened list of subshells in shell order (n ascending).
+
+        :returns: List of all subshells belonging to this atom, ordered by
+            increasing principal quantum number ``n`` and the insertion
+            order within each :class:`Shell`.
+        :rtype: List[SubShell]
+        """
         return [ss for shell in self.shells.values() for ss in shell.subshells]
 
     @staticmethod
     def _aufbau_key(sub: SubShell) -> Tuple[int, int]:
         """Compute the Aufbau sorting key for a subshell.
 
-        Parameters
-        ----------
-        sub : SubShell
-            Subshell for which the (n + l, n) key is computed.
+        The key implements the standard Aufbau ordering by increasing
+        ``(n + l)`` and, for equal ``(n + l)``, by increasing ``n``.
 
-        Returns
-        -------
-        Tuple[int, int]
-            Sorting key `(n + l, n)` used to implement the Aufbau ordering.
+        :param sub: Subshell for which the ``(n + l, n)`` key is computed.
+        :type sub: SubShell
+
+        :returns: Sorting key ``(n + l, n)`` used to implement the Aufbau
+            ordering.
+        :rtype: Tuple[int, int]
         """
         return (sub.n + sub.l, sub.n)
 
@@ -123,9 +131,6 @@ class Atom:
 
         This method mutates all contained :class:`SpinOrbital` objects by
         setting their ``occupied`` attribute to ``False``.
-
-        :returns: None
-        :rtype: None
         """
         for sub in self._all_subshells:
             for orb in sub.orbitals:
@@ -142,9 +147,6 @@ class Atom:
 
         :raises ValueError: If a referenced subshell does not exist in the
             prebuilt atom.
-
-        :returns: None
-        :rtype: None
         """
         for entry in instructions:
             n = entry["n"]
@@ -180,11 +182,7 @@ class Atom:
         When empirical exceptions are enabled and an entry exists for
         ``self.atomic_number``, the empirical mapping is applied instead of the pure
         Aufbau filling.
-
-        :returns: None
-        :rtype: None
         """
-
         self._reset()
 
         # ==================================================================
@@ -195,12 +193,12 @@ class Atom:
         #
         # ==================================================================
         skip_aufbau = (
-            self.empirical_exceptions is not None
-            and self.atomic_number in self.empirical_exceptions
+            self._empirical_exceptions is not None
+            and self.atomic_number in self._empirical_exceptions
         )
         if skip_aufbau:
             self._apply_exception(
-                instructions=self.empirical_exceptions[self.atomic_number]
+                instructions=self._empirical_exceptions[self.atomic_number]
             )
 
         # ==================================================================
@@ -265,15 +263,12 @@ class Atom:
 
         The method mutates ``SpinOrbital.data`` for occupied spin-orbitals.
 
-        :returns: None
-        :rtype: None
-
         Notes:
             - Requires ``self.basis_set`` to be a regions-structured dictionary
               (see :mod:`q_block.basis_set_pople`). If ``basis_set`` is
               ``None`` this function returns without changes.
-            - Calls :meth:`fill_occupancy` internally to ensure occupations
-              exist.
+            - Assumes that :meth:`fill_occupancy` has already been called
+              (this is now done automatically during initialization).
             - Sets ``SpinOrbital.data`` for each occupied spin-orbital to a
               dictionary with keys ``"exponents"`` and ``"contractions"`
               (both lists of floats).
@@ -285,12 +280,8 @@ class Atom:
                 "contractions": List[float],
             }
         """
-
         if self.basis_set is None:
             return
-
-        # Ensure occupations exist
-        self.fill_occupancy()
 
         # ------------------------------------------------------------
         # Group occupied subshells by angular momentum
@@ -369,4 +360,4 @@ class Atom:
             coord_str = f" coords=({self.coordinates.x:.3f},{self.coordinates.y:.3f},{self.coordinates.z:.3f})"
         else:
             coord_str = ""
-        return f"Atom(atomic_number={self.atomic_number}, symbol={self.symbol}{coord_str})"
+        return f"Atom(atomic_number={self.atomic_number}, symbol={ATOMS_SYMBOLS_Z_TO_SYMBOL[self.atomic_number]}{coord_str})"

@@ -10,8 +10,10 @@ from .atom import Atom, Orbital, Shell, SpinOrbital, SubShell
 from .atoms_data import ATOMS_SYMBOLS_SYMBOL_TO_Z, ATOMS_SYMBOLS_Z_TO_SYMBOL
 from .atomic_system import AtomicSystem
 from .basis_set_pople import parse_gaussian_basis
-from .read_atoms import populate_from_script, populate_from_xyz_file
+from .read_input_files import populate_from_script, populate_from_xyz_file
 from .coordinates import Coordinates, CartesianCoordinates
+from .molecule import Molecule
+from .crystal import Crystal
 
 __all__ = [
     "Atom",
@@ -27,4 +29,6 @@ __all__ = [
     "populate_from_xyz_file",
     "Coordinates",
     "CartesianCoordinates",
+    "Molecule",
+    "Crystal",
 ]

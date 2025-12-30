@@ -2,9 +2,10 @@
 
 This module defines the :class:`AtomicSystem` class, a lightweight,
 quantum‑agnostic container for atoms with Cartesian coordinates. Low‑level
-reading/parsing functions live in :mod:`q_block.read_atoms` and return the
+reading/parsing functions live in :mod:`q_block.read_input_files` and return the
 canonical :class:`pandas.DataFrame` accepted by this class.
 """
+
 from __future__ import annotations
 
 from typing import Optional
@@ -17,7 +18,7 @@ class AtomicSystem:
 
     This class stores atom metadata and attached :class:`q_block.atom.Atom`
     instances using a :class:`pandas.DataFrame` produced by the
-    :mod:`q_block.read_atoms` helpers.
+    :mod:`q_block.read_input_files` helpers.
 
     The DataFrame must use the columns::
 
@@ -33,7 +34,15 @@ class AtomicSystem:
     def __init__(self, atoms: Optional[pd.DataFrame] = None) -> None:
         if atoms is None:
             atoms = pd.DataFrame(
-                columns=["atom_id", "atomic_number", "symbol", "x", "y", "z", "atom"]
+                columns=[
+                    "atom_id",
+                    "atomic_number",
+                    "symbol",
+                    "x",
+                    "y",
+                    "z",
+                    "atom",
+                ]
             )
         self.atoms: pd.DataFrame = atoms
 

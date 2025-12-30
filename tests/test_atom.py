@@ -5,8 +5,10 @@ from typing import Any, Dict, Iterator, Tuple
 import pytest
 
 from q_block.atom import Atom
-from q_block.atoms_data import (ATOMS_SYMBOLS_SYMBOL_TO_Z,
-                                ATOMS_SYMBOLS_Z_TO_SYMBOL)
+from q_block.atoms_data import (
+    ATOMS_SYMBOLS_SYMBOL_TO_Z,
+    ATOMS_SYMBOLS_Z_TO_SYMBOL,
+)
 from q_block.basis_set_pople import parse_gaussian_basis
 from q_block.electron import Shell, SpinOrbital
 from tests.verification_data.expected_atom_pure import EXPECTED_ATOM_PURE

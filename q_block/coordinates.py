@@ -4,6 +4,7 @@ Coordinates module for atom representations.
 Defines abstract and concrete classes for spatial coordinates.
 """
 
+
 class Coordinates:
     """
     Abstract base class for coordinates representation.
@@ -96,13 +97,19 @@ class CartesianCoordinates(Coordinates):
         try:
             it = list(seq)
         except TypeError:
-            raise ValueError("Input must be an iterable with three numeric values")
+            raise ValueError(
+                "Input must be an iterable with three numeric values"
+            )
         if len(it) != 3:
-            raise ValueError("Sequence must have exactly three elements (x, y, z)")
+            raise ValueError(
+                "Sequence must have exactly three elements (x, y, z)"
+            )
         try:
             x, y, z = map(float, it)
         except (TypeError, ValueError) as exc:
-            raise ValueError("All coordinates must be convertible to float") from exc
+            raise ValueError(
+                "All coordinates must be convertible to float"
+            ) from exc
         return cls(x=x, y=y, z=z)
 
     def _coordinate_1(self) -> float:

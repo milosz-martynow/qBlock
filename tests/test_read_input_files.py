@@ -1,8 +1,9 @@
-"""Unit tests for q_block.read_atoms helpers.
+"""Unit tests for q_block.read_input_files helpers.
 
 These tests verify that populate_from_script and populate_from_xyz_file
 produce consistent pandas.DataFrame structures and Atom objects.
 """
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -23,7 +24,9 @@ DATA_DIR = Path("tests/verification_data/geometries")
         ("water.xyz", 3),
     ],
 )
-def test_populate_from_xyz_file_atom_count(filename: str, expected_n: int) -> None:
+def test_populate_from_xyz_file_atom_count(
+    filename: str, expected_n: int
+) -> None:
     """XYZ reader should respect the declared atom count.
 
     This test only checks that the function:
@@ -92,7 +95,7 @@ def test_populate_from_script_structure_and_atoms() -> None:
     # Check that DataFrame coordinates match Atom coordinates via AtomicSystem
     system = AtomicSystem(df)
     assert len(system) == 3
-    for (_, row) in system.atoms.iterrows():
+    for _, row in system.atoms.iterrows():
         atom = row["atom"]
         x, y, z = atom.coordinates.as_tuple()  # type: ignore[union-attr]
         assert row["x"] == pytest.approx(x)
