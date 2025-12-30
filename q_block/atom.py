@@ -79,9 +79,7 @@ class Atom:
             raise ValueError("atomic_number must be ≥ 0")
 
         self.atomic_number = atomic_number
-        self.maximal_principal_quantum_number = (
-            maximal_principal_quantum_number
-        )
+        self.maximal_principal_quantum_number = maximal_principal_quantum_number
         # Store empirical exceptions in a private attribute; callers configure
         # behavior via the constructor argument.
         self._empirical_exceptions = empirical_exceptions
@@ -91,8 +89,7 @@ class Atom:
 
         # Helper variables
         self.shells: Dict[int, Shell] = {
-            n: Shell(n=n)
-            for n in range(1, maximal_principal_quantum_number + 1)
+            n: Shell(n=n) for n in range(1, maximal_principal_quantum_number + 1)
         }
         self.basis_set = basis_set
 

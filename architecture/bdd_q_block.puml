@@ -56,8 +56,12 @@ package "q_block" {
         subshells: List<SubShell>
     }
 
-    class "AtomicSystem" {
+    class "InputData" {
         atoms: pd.DataFrame
+    }
+
+    class "AtomicSystem" {
+        input_data: InputData
     }
 
     class "Molecule" {
@@ -77,9 +81,8 @@ package "q_block" {
         parse_gaussian_basis(filepath: str): BasisSet
     }
 
-    class "read_input_files" as RIF <<module>> {
-        populate_from_script(atom_data, atom_prefix: str): pd.DataFrame
-        populate_from_xyz_file(xyz_path, atom_prefix: str): pd.DataFrame
+    class "input_data" as ID <<module>> {
+        InputData
     }
 
 
@@ -101,8 +104,7 @@ package "q_block" {
 
 "Atom" ..> AD  : depends on
 "Atom" ..> BSP : depends on
-"AtomicSystem" ..> RIF : uses
+"AtomicSystem" ..> ID : uses
 "Atom" ..> "CartesianCoordinates" : uses
-"RIF" ..> "CartesianCoordinates" : uses
 
 @enduml
