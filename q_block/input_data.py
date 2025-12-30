@@ -96,9 +96,6 @@ class InputData:
 
         return symbol
 
-    # ------------------------------------------------------------------
-    # Populating methods
-    # ------------------------------------------------------------------
     def from_script(self, atom_data: List[List[Any]], atom_prefix: str = "") -> None:
         """Populate this :class:`InputData` from a Python structure.
 
@@ -232,10 +229,6 @@ class InputData:
 
         # Reuse from_script to build the DataFrame from parsed records
         self.from_script(atom_data=data, atom_prefix=atom_prefix)
-
-    # ------------------------------------------------------------------
-    # Convenience methods
-    # ------------------------------------------------------------------
 
     def __len__(self) -> int:
         """Return number of atoms stored in this instance."""

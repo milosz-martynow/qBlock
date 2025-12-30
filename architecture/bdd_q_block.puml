@@ -9,7 +9,6 @@ package "q_block" {
         atomic_number: int
         maximal_principal_quantum_number: int
         shells: Dict<int,Shell>
-        _empirical_exceptions: Optional[Dict<int,List<Dict<"n","l","electron_count">>>]
         basis_set: Optional[Dict]
         coordinates: Optional[CartesianCoordinates]
         fill_occupancy(): None

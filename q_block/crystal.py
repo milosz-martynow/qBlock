@@ -8,9 +8,8 @@ from __future__ import annotations
 
 from typing import Optional
 
-import pandas as pd
-
 from .atomic_system import AtomicSystem
+from .input_data import InputData
 
 
 class Crystal(AtomicSystem):
@@ -21,10 +20,10 @@ class Crystal(AtomicSystem):
     crystals or periodic atomic arrangements. At this stage it does not
     introduce any additional behaviour beyond its base class.
 
-    :param atoms: Optional tabular description of atoms in the
-        crystalline system.
-    :type atoms: Optional[pd.DataFrame]
+    :param input_data: Optional :class:`InputData` instance describing
+        the atoms in the crystalline system.
+    :type input_data: Optional[InputData]
     """
 
-    def __init__(self, atoms: Optional[pd.DataFrame] = None) -> None:
-        super().__init__(atoms=atoms)
+    def __init__(self, input_data: Optional[InputData] = None) -> None:
+        super().__init__(input_data=input_data)

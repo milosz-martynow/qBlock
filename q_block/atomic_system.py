@@ -12,8 +12,6 @@ from __future__ import annotations
 
 from typing import Optional
 
-import pandas as pd
-
 from q_block.input_data import InputData
 
 

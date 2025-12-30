@@ -10,7 +10,6 @@ https://physics.nist.gov/PhysRefData/ASD/
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 from q_block.atoms_data import (
-    ATOMS_SYMBOLS_SYMBOL_TO_Z,
     ATOMS_SYMBOLS_Z_TO_SYMBOL,
     EMPIRICAL_EXCEPTIONS,
 )
@@ -255,97 +254,6 @@ class Atom:
                     orbitals[i].spin_down.occupied = True
                 remaining -= second
 
-    def populate_spinorbitals_with_gto(self) -> None:
-        """Attach Gaussian-type orbital (GTO) basis data to occupied spin-orbitals.
-
-        The method mutates ``SpinOrbital.data`` for occupied spin-orbitals.
-
-        Notes:
-            - Requires ``self.basis_set`` to be a regions-structured dictionary
-              (see :mod:`q_block.basis_set_pople`). If ``basis_set`` is
-              ``None`` this function returns without changes.
-            - Assumes that :meth:`fill_occupancy` has already been called
-              (this is now done automatically during initialization).
-            - Sets ``SpinOrbital.data`` for each occupied spin-orbital to a
-              dictionary with keys ``"exponents"`` and ``"contractions"`
-              (both lists of floats).
-
-        SpinOrbital.data schema::
-
-            {
-                "exponents": List[float],
-                "contractions": List[float],
-            }
-        """
-        if self.basis_set is None:
-            return
-
-        # ------------------------------------------------------------
-        # Group occupied subshells by angular momentum
-        # ------------------------------------------------------------
-        occupied_by_l: Dict[int, List[SubShell]] = {}
-
-        for subshell in self._all_subshells:
-            if any(
-                so.occupied
-                for orb in subshell.orbitals
-                for so in (orb.spin_up, orb.spin_down)
-            ):
-                occupied_by_l.setdefault(subshell.l, []).append(subshell)
-
-        for subshells in occupied_by_l.values():
-            subshells.sort(key=lambda ss: (ss.n + ss.l, ss.n))
-
-        # ------------------------------------------------------------
-        # Assign basis shells
-        # ------------------------------------------------------------
-        for l, subshells in occupied_by_l.items():
-
-            # Collect basis shells for this l
-            basis_shells: List[Dict[str, List[float]]] = []
-            for region in ("core", "valence_inner", "valence_outer"):
-                basis_shells.extend(self.basis_set.get(region, {}).get(l, []))
-
-            if len(basis_shells) < len(subshells):
-                raise ValueError(
-                    f"Insufficient basis shells for l={l}: "
-                    f"{len(basis_shells)} < {len(subshells)}"
-                )
-
-            # --------------------------------------------------------
-            # Split-valence aware assignment
-            # --------------------------------------------------------
-            assignments: Dict[SubShell, List[Dict[str, List[float]]]] = {
-                ss: [] for ss in subshells
-            }
-
-            # One shell for each inner subshell
-            for ss, basis in zip(subshells[:-1], basis_shells):
-                assignments[ss].append(basis)
-
-            # Remaining shells go to outermost subshell
-            for basis in basis_shells[len(subshells) - 1 :]:
-                assignments[subshells[-1]].append(basis)
-
-            # --------------------------------------------------------
-            # Populate SpinOrbitals
-            # --------------------------------------------------------
-            for subshell, shells in assignments.items():
-
-                exponents: List[float] = []
-                contractions: List[float] = []
-
-                for sh in shells:
-                    exponents.extend(sh["exponents"])
-                    contractions.extend(sh["coefficients"])
-
-                for orbital in subshell.orbitals:
-                    for so in (orbital.spin_up, orbital.spin_down):
-                        if so.occupied:
-                            so.data = {
-                                "exponents": exponents,
-                                "contractions": contractions,
-                            }
 
     def __repr__(self) -> str:
         if (
