@@ -6,7 +6,9 @@ for molecular systems that extends :class:`q_block.atomic_system.AtomicSystem`.
 
 from __future__ import annotations
 
-from typing import Optional, Dict, List
+from typing import Optional, Dict, List, Any
+
+import pandas as pd
 
 from .atomic_system import AtomicSystem
 from .input_data import InputData
@@ -121,3 +123,143 @@ class Molecule(AtomicSystem):
                                     "exponents": exponents,
                                     "contractions": contractions,
                                 }
+
+    def to_dataframe(self) -> pd.DataFrame:
+        """Build a multi-index :class:`pandas.DataFrame` for occupied spin-orbitals.
+
+        This method assumes that :meth:`populate_spinorbitals_with_gto` has
+        already been called (which happens automatically in ``__init__``).
+        It walks over all atoms in the molecule and collects information
+        about *occupied* spin-orbitals only, together with the GTO basis
+        parameters attached in ``SpinOrbital.data``.
+
+        The returned DataFrame uses a hierarchical index to organise the
+        information per atom and per spin-orbital::
+
+            index = ["atom_id", "symbol", "n", "l", "m", "s"]
+
+        and a *column* MultiIndex with the following logical groups:
+
+        * ``("geometry", "cartesian", "x" | "y" | "z")`` – Cartesian
+          coordinates of the atom
+        * ``("quantum_numbers", "n", "")``, ``("quantum_numbers", "l", "")``,
+          ``("quantum_numbers", "m", "")``, ``("quantum_numbers", "s", "")`` –
+          redundant storage of quantum numbers as columns for convenience
+        * ``("basis", "contractions", "c0".."cM")`` – contraction
+          coefficients
+        * ``("basis", "exponents", "e0".."eM")`` – primitive exponents
+
+        where ``M`` is the maximum primitive length across all occupied
+        spin-orbitals of the molecule. Shorter basis sets are padded with
+        ``None`` values so that every row has the same number of
+        ``c``/``e`` columns.
+
+        :returns: Multi-index DataFrame describing occupied spin-orbitals
+                  for the whole molecule.
+        :rtype: pandas.DataFrame
+        """
+
+        rows: list[dict[str, Any]] = []
+        max_len: int = 0
+
+        # First pass: collect raw lists and track the maximum basis length
+        for atom, atom_row in zip(self.atoms, self.input_data.atoms.itertuples()):
+            atom_id = getattr(atom_row, "atom_id")
+            symbol = getattr(atom_row, "symbol")
+            x = float(getattr(atom_row, "x"))
+            y = float(getattr(atom_row, "y"))
+            z = float(getattr(atom_row, "z"))
+
+            for subshell in atom._all_subshells:
+                for orbital in subshell.orbitals:
+                    for so, s in ((orbital.spin_up, +0.5), (orbital.spin_down, -0.5)):
+                        if not so.occupied or not so.data:
+                            continue
+
+                        exponents = list(so.data.get("exponents", []))
+                        contractions = list(so.data.get("contractions", []))
+                        length = max(len(exponents), len(contractions))
+                        if length > max_len:
+                            max_len = length
+
+                        rows.append(
+                            {
+                                "atom_id": atom_id,
+                                "symbol": symbol,
+                                "n": subshell.n,
+                                "l": subshell.l,
+                                "m": orbital.m,
+                                "s": s,
+                                "x": x,
+                                "y": y,
+                                "z": z,
+                                "exponents": exponents,
+                                "contractions": contractions,
+                            }
+                        )
+
+        # No occupied spin-orbitals -> return an empty, but well-formed, DataFrame
+        if not rows or max_len == 0:
+            index = pd.MultiIndex.from_tuples(
+                [], names=["atom_id", "symbol", "n", "l", "m", "s"]
+            )
+            geom_cols = [
+                ("geometry", "cartesian", "x"),
+                ("geometry", "cartesian", "y"),
+                ("geometry", "cartesian", "z"),
+            ]
+            qn_cols = [
+                ("quantum_numbers", "n", ""),
+                ("quantum_numbers", "l", ""),
+                ("quantum_numbers", "m", ""),
+                ("quantum_numbers", "s", ""),
+            ]
+            basis_cols: list[tuple[str, str, str]] = []
+            columns = pd.MultiIndex.from_tuples(geom_cols + qn_cols + basis_cols)
+            return pd.DataFrame(index=index, columns=columns)
+
+        # Second pass: flatten lists into c0..cM and e0..eM columns
+        flattened_rows: list[dict[str | tuple[str, str, str], Any]] = []
+        for row in rows:
+            exponents = list(row["exponents"])
+            contractions = list(row["contractions"])
+            length = max(len(exponents), len(contractions))
+
+            # First, equalise lengths within this orbital
+            if len(exponents) < length:
+                exponents += [None] * (length - len(exponents))
+            if len(contractions) < length:
+                contractions += [None] * (length - len(contractions))
+
+            # Then pad both to the global maximum
+            if length < max_len:
+                exponents += [None] * (max_len - length)
+                contractions += [None] * (max_len - length)
+
+            flat: dict[str | tuple[str, str, str], Any] = {
+                "atom_id": row["atom_id"],
+                "symbol": row["symbol"],
+                "n": row["n"],
+                "l": row["l"],
+                "m": row["m"],
+                "s": row["s"],
+                ("geometry", "cartesian", "x"): row["x"],
+                ("geometry", "cartesian", "y"): row["y"],
+                ("geometry", "cartesian", "z"): row["z"],
+                ("quantum_numbers", "n", ""): row["n"],
+                ("quantum_numbers", "l", ""): row["l"],
+                ("quantum_numbers", "m", ""): row["m"],
+                ("quantum_numbers", "s", ""): row["s"],
+            }
+
+            for i in range(max_len):
+                flat[("basis", "contractions", f"c{i}")] = contractions[i]
+                flat[("basis", "exponents", f"e{i}")] = exponents[i]
+
+            flattened_rows.append(flat)
+
+        df = pd.DataFrame(flattened_rows)
+        df.set_index(["atom_id", "symbol", "n", "l", "m", "s"], inplace=True)
+        df.columns = pd.MultiIndex.from_tuples(list(df.columns))
+
+        return df
