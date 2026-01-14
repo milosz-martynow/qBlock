@@ -12,7 +12,7 @@ from __future__ import annotations
 
 from typing import Optional
 
-from q_block.input_data import InputData
+from q_block.io.input_data import InputData
 
 
 class AtomicSystem:

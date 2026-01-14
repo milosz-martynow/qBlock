@@ -10,10 +10,10 @@ from typing import Optional, Dict, List, Any
 
 import pandas as pd
 
-from .atomic_system import AtomicSystem
-from .input_data import InputData
-from .electron import SubShell
-from .atom import Atom
+from q_block.systems.atomic_system import AtomicSystem
+from q_block.io.input_data import InputData
+from q_block.models.electron import SubShell
+from q_block.models.atom import Atom
 
 
 class Molecule(AtomicSystem):

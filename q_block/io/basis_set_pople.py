@@ -27,7 +27,7 @@ Notes
 import re
 from typing import Any, Dict, List, Literal, Tuple, TypeAlias
 
-from q_block.atoms_data import ANGULAR_MOMENTUM_MAP
+from q_block.constants.atoms_data import ANGULAR_MOMENTUM_MAP
 
 RegionName: TypeAlias = Literal[
     "core",
@@ -241,3 +241,4 @@ def parse_gaussian_basis(filepath: str) -> BasisSet:
         raise ValueError("No elements found in basis file.")
 
     return basis_by_element
+

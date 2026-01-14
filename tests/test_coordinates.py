@@ -6,7 +6,7 @@ All docstrings follow Sphinx format.
 
 import pytest
 
-from q_block.coordinates import CartesianCoordinates, Coordinates
+from q_block.io.coordinates import CartesianCoordinates, Coordinates
 
 
 @pytest.fixture(

@@ -22,9 +22,8 @@ from typing import Any, List, Union, Optional
 
 import pandas as pd
 
-from q_block.atom import Atom
-from q_block.atoms_data import ATOMS_SYMBOLS_SYMBOL_TO_Z
-from q_block.coordinates import CartesianCoordinates
+from q_block.constants.atoms_data import ATOMS_SYMBOLS_SYMBOL_TO_Z
+from q_block.io.coordinates import CartesianCoordinates
 
 
 class InputData:
@@ -134,6 +133,8 @@ class InputData:
 
             atomic_number = ATOMS_SYMBOLS_SYMBOL_TO_Z[symbol]
             atom_id = f"{atom_prefix}{idx + 1}"
+
+            from q_block.models.atom import Atom
 
             atom = Atom(atomic_number=atomic_number, coordinates=coordinates)
 

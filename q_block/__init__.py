@@ -6,14 +6,14 @@ Prefer importing specific symbols from submodules for clarity when
 modifying the package internals.
 """
 
-from .atom import Atom, Orbital, Shell, SpinOrbital, SubShell
-from .atoms_data import ATOMS_SYMBOLS_SYMBOL_TO_Z, ATOMS_SYMBOLS_Z_TO_SYMBOL
-from .atomic_system import AtomicSystem
-from .basis_set_pople import parse_gaussian_basis
-from .input_data import InputData
-from .coordinates import Coordinates, CartesianCoordinates
-from .molecule import Molecule
-from .crystal import Crystal
+from .models.atom import Atom, Orbital, Shell, SpinOrbital, SubShell
+from .constants.atoms_data import ATOMS_SYMBOLS_SYMBOL_TO_Z, ATOMS_SYMBOLS_Z_TO_SYMBOL
+from .systems.atomic_system import AtomicSystem
+from .io.basis_set_pople import parse_gaussian_basis
+from .io.input_data import InputData
+from .io.coordinates import Coordinates, CartesianCoordinates
+from .systems.molecule import Molecule
+from .systems.crystal import Crystal
 
 __all__ = [
     "Atom",

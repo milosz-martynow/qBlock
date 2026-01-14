@@ -1,15 +1,15 @@
 """Crystalline atomic system container.
 
 This module defines the :class:`Crystal` class, a minimal placeholder
-for crystalline systems that extends :class:`q_block.atomic_system.AtomicSystem`.
+for crystalline systems that extends :class:`q_block.systems.atomic_system.AtomicSystem`.
 """
 
 from __future__ import annotations
 
 from typing import Optional
 
-from .atomic_system import AtomicSystem
-from .input_data import InputData
+from q_block.systems.atomic_system import AtomicSystem
+from q_block.io.input_data import InputData
 
 
 class Crystal(AtomicSystem):

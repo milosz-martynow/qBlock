@@ -5,15 +5,14 @@ from typing import Any, Dict, Iterator, Tuple
 import pytest
 import pandas as pd
 
-from q_block.atom import Atom
-from q_block.atoms_data import (
+from q_block import Atom, Molecule
+from q_block.constants.atoms_data import (
     ATOMS_SYMBOLS_SYMBOL_TO_Z,
     ATOMS_SYMBOLS_Z_TO_SYMBOL,
 )
-from q_block.basis_set_pople import parse_gaussian_basis
-from q_block.electron import Shell, SpinOrbital
-from q_block.input_data import InputData
-from q_block.molecule import Molecule
+from q_block.io.basis_set_pople import parse_gaussian_basis
+from q_block.models.electron import Shell, SpinOrbital
+from q_block.io.input_data import InputData
 from tests.verification_data.expected_atom_pure import EXPECTED_ATOM_PURE
 
 SpinKey = Tuple[int, int, int, float]

@@ -12,7 +12,7 @@ import pandas as pd
 import pytest
 
 from q_block import AtomicSystem
-from q_block.input_data import InputData
+from q_block.io.input_data import InputData
 
 
 DATA_DIR = Path("tests/verification_data/geometries")

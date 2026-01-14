@@ -1,37 +1,36 @@
-"""
-Quantum-structure model of atoms using nested:
-Shell → SubShell → Orbital → SpinOrbital.
+"""Quantum-structure model of atoms using nested:
+Shell  SubShell  Orbital  SpinOrbital.
 
 Empirical reference:
 NIST Atomic Spectra Database (ASD)
 https://physics.nist.gov/PhysRefData/ASD/
 """
 
+from __future__ import annotations
+
 from typing import Any, Dict, List, Optional, Tuple, Union
 
-from q_block.atoms_data import (
+from q_block.constants.atoms_data import (
     ATOMS_SYMBOLS_Z_TO_SYMBOL,
     EMPIRICAL_EXCEPTIONS,
 )
-from q_block.coordinates import CartesianCoordinates
-from q_block.electron import Orbital, Shell, SpinOrbital, SubShell
+from q_block.io.coordinates import CartesianCoordinates
+from q_block.models.electron import Orbital, Shell, SpinOrbital, SubShell
 
 
 class Atom:
-    """Represents an atom composed of shells, subshells, orbitals, and spin–orbitals."""
+    """Represents an atom composed of shells, subshells, orbitals, and spin-orbitals."""
 
     def __init__(
         self,
         atomic_number: int,
         maximal_principal_quantum_number: int = 7,
-        empirical_exceptions: Optional[
-            Dict[int, List[Dict[str, int]]]
-        ] = EMPIRICAL_EXCEPTIONS,
+        empirical_exceptions: Optional[Dict[int, List[Dict[str, int]]]] = EMPIRICAL_EXCEPTIONS,
         basis_set: Optional[Dict[str, Any]] = None,
         coordinates: Optional[CartesianCoordinates] = None,
     ) -> None:
         """Initialize an Atom object containing nested shells, subshells, orbitals,
-        and spin–orbitals up to a chosen maximum principal quantum number.
+        and spin-orbitals up to a chosen maximum principal quantum number.
 
         This constructor builds the complete quantum-mechanical structure of an
         atom in the nonrelativistic, central-field approximation, where each
@@ -64,23 +63,24 @@ class Atom:
         :param basis_set: Optional basis-set dictionary to attach to the Atom.
         :type basis_set: Optional[Dict[str, Any]]
 
+        :param coordinates: Optional CartesianCoordinates associated with the atom.
+        :type coordinates: Optional[CartesianCoordinates]
+
         Notes
         -----
         - All quantum objects are pre-constructed so that ``fill_occupancy()`` only marks
-            specific spin-orbitals as occupied.
+          specific spin-orbitals as occupied.
         - Internal state is deterministic: calling ``fill_occupancy()`` always resets all
-            occupancy flags before reassigning electrons.
+          occupancy flags before reassigning electrons.
         - The atom is neutral; ions can be modeled by modifying Z prior to calling
-            ``fill_occupancy()``.
+          ``fill_occupancy()``.
         """
 
         if atomic_number < 0:
-            raise ValueError("atomic_number must be ≥ 0")
+            raise ValueError("atomic_number must be >= 0")
 
         self.atomic_number = atomic_number
         self.maximal_principal_quantum_number = maximal_principal_quantum_number
-        # Store empirical exceptions in a private attribute; callers configure
-        # behavior via the constructor argument.
         self._empirical_exceptions = empirical_exceptions
 
         # Coordinates (CartesianCoordinates instance or None)
@@ -123,7 +123,7 @@ class Atom:
         return (sub.n + sub.l, sub.n)
 
     def _reset(self) -> None:
-        """Reset all spin–orbitals to the unoccupied state.
+        """Reset all spin-orbitals to the unoccupied state.
 
         This method mutates all contained :class:`SpinOrbital` objects by
         setting their ``occupied`` attribute to ``False``.
@@ -150,7 +150,7 @@ class Atom:
             count = entry["electron_count"]
 
             # locate subshell
-            subshell = None
+            subshell: Optional[SubShell] = None
             for ss in self._all_subshells:
                 if ss.n == n and ss.l == l:
                     subshell = ss
@@ -186,7 +186,6 @@ class Atom:
         # ------------------------------------------------------------------
         # Empirical instructions mutate existing spin-orbitals in-place.
         # When applicable, apply the empirical mapping and skip Aufbau.
-        #
         # ==================================================================
         skip_aufbau = (
             self._empirical_exceptions is not None
@@ -206,7 +205,7 @@ class Atom:
         #     and for equal (n + l), fill lower n first.
         #
         # This ordering corresponds to the typical Aufbau sequence:
-        # 1s → 2s → 2p → 3s → 3p → 4s → 3d → 4p → 5s → …
+        # 1s  2s  2p  3s  3p  4s  3d  4p  5s  ...
         #
         # Note: exceptions of Aufbau principle are implemented above
         # ==================================================================
@@ -226,11 +225,11 @@ class Atom:
                 electrons = min(subshell_capacity, remaining)
 
                 # ==================================================================
-                # H U N D ’ S   R U L E   (FIRST STAGE)
+                # H U N D ' S   R U L E   (FIRST STAGE)
                 # ------------------------------------------------------------------
                 # Assign all electrons with spin +1/2 first, one per orbital.
                 #
-                # Hund’s rule:
+                # Hund's rule:
                 #     "Electrons singly occupy degenerate orbitals with parallel
                 #      spins before any pairing occurs."
                 #
@@ -242,18 +241,17 @@ class Atom:
                 remaining -= first
 
                 # ==================================================================
-                # H U N D ’ S   R U L E   (SECOND STAGE)
+                # H U N D ' S   R U L E   (SECOND STAGE)
                 # ------------------------------------------------------------------
                 # After all orbitals in the subshell have one electron,
-                # the remaining electrons pair with spin –1/2.
+                # the remaining electrons pair with spin -1/2.
                 #
-                # This corresponds to the “pairing stage” of Hund’s rule.
+                # This corresponds to the "pairing stage" of Hund's rule.
                 # ==================================================================
                 second = min(num_orb, electrons - first)
                 for i in range(second):
                     orbitals[i].spin_down.occupied = True
                 remaining -= second
-
 
     def __repr__(self) -> str:
         if (
@@ -262,7 +260,12 @@ class Atom:
             and self.coordinates.y is not None
             and self.coordinates.z is not None
         ):
-            coord_str = f" coords=({self.coordinates.x:.3f},{self.coordinates.y:.3f},{self.coordinates.z:.3f})"
+            coord_str = (
+                f" coords=({self.coordinates.x:.3f},{self.coordinates.y:.3f},{self.coordinates.z:.3f})"
+            )
         else:
             coord_str = ""
-        return f"Atom(atomic_number={self.atomic_number}, symbol={ATOMS_SYMBOLS_Z_TO_SYMBOL[self.atomic_number]}{coord_str})"
+        return (
+            f"Atom(atomic_number={self.atomic_number}, "
+            f"symbol={ATOMS_SYMBOLS_Z_TO_SYMBOL[self.atomic_number]}{coord_str})"
+        )

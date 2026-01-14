@@ -1,7 +1,7 @@
 """Golden-reference tests for GTO population via Molecule.
 
-This module validates that :class:`q_block.molecule.Molecule` correctly
-populates Gaussian-type orbital (GTO) data on :class:`q_block.atom.Atom`
+This module validates that :class:`q_block.systems.molecule.Molecule` correctly
+populates Gaussian-type orbital (GTO) data on :class:`q_block.models.atom.Atom`
 instances using the same golden-reference data as the original
 Atom-level implementation.
 """
@@ -15,14 +15,14 @@ from typing import Any, Dict, Iterator, Tuple
 import pandas as pd
 import pytest
 
-from q_block.atom import Atom
-from q_block.atoms_data import (
+from q_block import Atom
+from q_block.constants.atoms_data import (
     ATOMS_SYMBOLS_SYMBOL_TO_Z,
     ATOMS_SYMBOLS_Z_TO_SYMBOL,
 )
-from q_block.basis_set_pople import parse_gaussian_basis
-from q_block.input_data import InputData
-from q_block.molecule import Molecule
+from q_block.io.basis_set_pople import parse_gaussian_basis
+from q_block.io.input_data import InputData
+from q_block.systems.molecule import Molecule
 
 BASIS_ROOT: Path = Path("./data/basis_set/gto_gaussian_format")
 GOLDEN_ROOT: Path = Path("./tests/verification_data/gto_population")
@@ -43,7 +43,8 @@ def _serialize_atom_for_test(atom: Atom, basis_name: str) -> Dict[str, Any]:
     self-contained.
     """
 
-    from q_block.electron import Shell, SpinOrbital  # local import to avoid cycles
+    # lokalny import, aby uniknąć zbędnych zależności w czasie importu modułu testowego
+    from q_block.models.electron import Shell, SpinOrbital  # local import to avoid cycles
 
     orbitals: Dict[str, Dict[str, list]] = {}
 

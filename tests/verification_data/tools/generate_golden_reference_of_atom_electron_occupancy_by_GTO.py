@@ -16,9 +16,9 @@ from collections import OrderedDict
 from pathlib import Path
 from typing import Any, Dict, List
 
-from q_block.atom import Atom
-from q_block.atoms_data import ATOMS_SYMBOLS_SYMBOL_TO_Z
-from q_block.basis_set_pople import parse_gaussian_basis
+from q_block.models.atom import Atom
+from q_block.constants.atoms_data import ATOMS_SYMBOLS_SYMBOL_TO_Z
+from q_block.io.basis_set_pople import parse_gaussian_basis
 from tests.test_atom import _serialize_atom_for_test
 
 # ---------------------------------------------------------------------------

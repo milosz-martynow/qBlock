@@ -1,10 +1,10 @@
 """
-Tests for electron classes moved to `q_block.electron`.
+Tests for electron classes moved to `q_block.models.electron`.
 """
 
 import pytest
 
-from q_block.electron import Orbital, Shell, SpinOrbital, SubShell
+from q_block.models.electron import Orbital, Shell, SpinOrbital, SubShell
 
 
 def test_spinorbital_valid_initialization() -> None:

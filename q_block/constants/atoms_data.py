@@ -170,8 +170,7 @@ ANGULAR_MOMENTUM_MAP: Dict[str, int] = {
     "G": 4,
 }
 
-"""
-Dictionary containing experimentally verified ground-state electron
+"""Dictionary containing experimentally verified ground-state electron
 configurations for elements whose true electron distributions deviate from
 the Aufbau principle.
 
@@ -192,68 +191,61 @@ pure numeric quantum identifiers, without any string parsing:
 
 where:
 
-    * n — principal quantum number
-    * l — orbital angular momentum quantum number
-    * electron_count — number of electrons occupying the (n,l) subshell
-
-Reference
----------
-NIST Atomic Spectra Database (ASD):
-https://physics.nist.gov/PhysRefData/ASD/ionEnergy.html
-https://www.nist.gov/pml/atomic-reference-data-electronic-structure-calculations/atomic-reference-data-electronic-8
-https://chem.libretexts.org/Ancillary_Materials/Reference/Reference_Tables/Atomic_and_Molecular_Properties/A1%3A_Atomic_Electron_Configurations?utm_source=chatgpt.com
+    * n  -- principal quantum number
+    * l  -- orbital angular momentum quantum number encoded as an integer
+    * electron_count -- number of electrons occupying the subshell
 """
 
 EMPIRICAL_EXCEPTIONS: Dict[int, List[Dict[str, int]]] = {
-    # Chromium (Cr), [Ar] 3d5 4s1
+    # Chromium: [Ar] 3d^5 4s^1 instead of [Ar] 3d^4 4s^2
     24: [
-        {"n": 3, "l": 2, "electron_count": 5},  # 3d5
-        {"n": 4, "l": 0, "electron_count": 1},  # 4s1
+        {"n": 3, "l": 2, "electron_count": 5},  # 3d^5
+        {"n": 4, "l": 0, "electron_count": 1},  # 4s^1
     ],
-    # Copper (Cu), [Ar] 3d10 4s1
+    # Copper: [Ar] 3d^10 4s^1 instead of [Ar] 3d^9 4s^2
     29: [
-        {"n": 3, "l": 2, "electron_count": 10},  # 3d10
-        {"n": 4, "l": 0, "electron_count": 1},  # 4s1
+        {"n": 3, "l": 2, "electron_count": 10},  # 3d^10
+        {"n": 4, "l": 0, "electron_count": 1},   # 4s^1
     ],
-    # Niobium (Nb), [Kr] 4d4 5s1
+    # Niobium: [Kr] 4d^4 5s^1 instead of [Kr] 4d^3 5s^2
     41: [
-        {"n": 4, "l": 2, "electron_count": 4},  # 4d4
-        {"n": 5, "l": 0, "electron_count": 1},  # 5s1
+        {"n": 4, "l": 2, "electron_count": 4},  # 4d^4
+        {"n": 5, "l": 0, "electron_count": 1},  # 5s^1
     ],
-    # Molybdenum (Mo), [Kr] 4d5 5s1
+    # Molybdenum: [Kr] 4d^5 5s^1 instead of [Kr] 4d^4 5s^2
     42: [
-        {"n": 4, "l": 2, "electron_count": 5},  # 4d5
-        {"n": 5, "l": 0, "electron_count": 1},  # 5s1
+        {"n": 4, "l": 2, "electron_count": 5},  # 4d^5
+        {"n": 5, "l": 0, "electron_count": 1},  # 5s^1
     ],
-    # Ruthenium (Ru), [Kr] 4d7 5s1
+    # Ruthenium: [Kr] 4d^7 5s^1 instead of [Kr] 4d^6 5s^2
     44: [
-        {"n": 4, "l": 2, "electron_count": 7},  # 4d7
-        {"n": 5, "l": 0, "electron_count": 1},  # 5s1
+        {"n": 4, "l": 2, "electron_count": 7},  # 4d^7
+        {"n": 5, "l": 0, "electron_count": 1},  # 5s^1
     ],
-    # Rhodium (Rh), [Kr] 4d8 5s1
+    # Rhodium: [Kr] 4d^8 5s^1 instead of [Kr] 4d^7 5s^2
     45: [
-        {"n": 4, "l": 2, "electron_count": 8},  # 4d8
-        {"n": 5, "l": 0, "electron_count": 1},  # 5s1
+        {"n": 4, "l": 2, "electron_count": 8},  # 4d^8
+        {"n": 5, "l": 0, "electron_count": 1},  # 5s^1
     ],
-    # Palladium (Pd), [Kr] 4d10
+    # Palladium: [Kr] 4d^10 instead of [Kr] 4d^8 5s^2
     46: [
-        {"n": 4, "l": 2, "electron_count": 10},  # 4d10
+        {"n": 4, "l": 2, "electron_count": 10},  # 4d^10
     ],
-    # Silver (Ag), [Kr] 4d10 5s1
+    # Silver: [Kr] 4d^10 5s^1 instead of [Kr] 4d^9 5s^2
     47: [
-        {"n": 4, "l": 2, "electron_count": 10},  # 4d10
-        {"n": 5, "l": 0, "electron_count": 1},  # 5s1
+        {"n": 4, "l": 2, "electron_count": 10},  # 4d^10
+        {"n": 5, "l": 0, "electron_count": 1},   # 5s^1
     ],
-    # Platinum (Pt), [Xe] 4f14 5d9 6s1
+    # Platinum: [Xe] 4f^14 5d^9 6s^1 instead of [Xe] 4f^14 5d^8 6s^2
     78: [
-        {"n": 4, "l": 3, "electron_count": 14},  # 4f14
-        {"n": 5, "l": 2, "electron_count": 9},  # 5d9
-        {"n": 6, "l": 0, "electron_count": 1},  # 6s1
+        {"n": 4, "l": 3, "electron_count": 14},  # 4f^14
+        {"n": 5, "l": 2, "electron_count": 9},   # 5d^9
+        {"n": 6, "l": 0, "electron_count": 1},   # 6s^1
     ],
-    # Gold (Au), [Xe] 4f14 5d10 6s1
+    # Gold: [Xe] 4f^14 5d^10 6s^1 instead of [Xe] 4f^14 5d^9 6s^2
     79: [
-        {"n": 4, "l": 3, "electron_count": 14},  # 4f14
-        {"n": 5, "l": 2, "electron_count": 10},  # 5d10
-        {"n": 6, "l": 0, "electron_count": 1},  # 6s1
+        {"n": 4, "l": 3, "electron_count": 14},  # 4f^14
+        {"n": 5, "l": 2, "electron_count": 10},  # 5d^10
+        {"n": 6, "l": 0, "electron_count": 1},   # 6s^1
     ],
 }
