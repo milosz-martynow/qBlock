@@ -1,0 +1,206 @@
+@startuml Hartree-Fock Unified Algorithm (RHF, UHF, ROHF)
+
+' ============================================================
+' UNIFIED HARTREE-FOCK SCF ACTIVITY DIAGRAM - HIGH LEVEL VIEW
+' Shows partition flow and data connections between components
+' Detailed content in individual partition files
+' Color coding: RHF=LightGreen, UHF=LightCoral, ROHF=LightYellow
+' ============================================================
+
+skinparam ActivityBackgroundColor White
+skinparam ActivityBorderColor Black
+skinparam DiamondBackgroundColor White
+skinparam DiamondBorderColor Black
+
+title Unified Hartree-Fock Self-Consistent Field Algorithm
+caption High-Level Partition Flow with Data Connections
+
+start
+
+' ============================================================
+' INITIALIZATION - Horizontal Band
+' ============================================================
+:══════════════════════════════════════════════════════════
+**INITIALIZATION** (See: initialization.puml)
+══════════════════════════════════════════════════════════; <<#LightBlue>>
+
+:▲ **Input:**
+• Molecular geometry (XYZ file)
+• Basis set name (e.g., 6-31G)
+• HF method (RHF/UHF/ROHF)
+• Charge, multiplicity; <<#LightBlue>>
+
+:Process atoms & basis set
+Count electrons by method;
+
+:▼ **Output:**
+• atoms, basis_functions, n_basis
+• RHF: <latex>N_{occ}</latex> | UHF: <latex>N_{\alpha}, N_{\beta}</latex> | ROHF: <latex>N_{closed}, N_{open}</latex>
+• HF_method; <<#LightBlue>>
+
+' ============================================================
+' INTEGRAL COMPUTATION - Horizontal Band
+' ============================================================
+:══════════════════════════════════════════════════════════
+**INTEGRAL COMPUTATION** (See: integral_computation.puml)
+══════════════════════════════════════════════════════════; <<#LightCyan>>
+
+:▲ **Input:**
+• atoms, basis_functions from Initialization; <<#LightCyan>>
+
+:Compute one & two-electron integrals
+<latex>\mathbf{S}, \mathbf{T}, \mathbf{V} \rightarrow \mathbf{H}</latex>
+ERI tensor, <latex>E_{nuc}</latex>;
+
+:▼ **Output:**
+• <latex>\mathbf{S}</latex> → SCF Initialization, SCF Iteration Loop, Post-SCF Analysis
+• <latex>\mathbf{H}</latex> → SCF Initialization, SCF Iteration Loop
+• ERI → SCF Iteration Loop
+• <latex>E_{nuc}</latex> → Finalization; <<#LightCyan>>
+
+' ============================================================
+' SCF INITIALIZATION - Horizontal Band
+' ============================================================
+:══════════════════════════════════════════════════════════
+**SCF INITIALIZATION** (See: scf_initialization.puml)
+══════════════════════════════════════════════════════════; <<#PaleGreen>>
+
+:▲ **Input:**
+• <latex>\mathbf{S}</latex> from Integral Computation
+• <latex>\mathbf{H}</latex> from Integral Computation
+• <latex>N_{occ}/N_{\alpha}/N_{\beta}/N_{closed}/N_{open}</latex> from Initialization; <<#PaleGreen>>
+
+:Compute <latex>\mathbf{X} = \mathbf{S}^{-1/2}</latex>
+Initial guess: <latex>\mathbf{F} = \mathbf{H}</latex>
+Diagonalize → initial <latex>\mathbf{C}, \boldsymbol{\varepsilon}</latex>
+Build initial density matrices;
+
+:▼ **Output:**
+• <latex>\mathbf{X}</latex> → SCF Iteration Loop
+• Initial <latex>\mathbf{C}</latex>, Density matrices → SCF Iteration Loop
+• DIIS storage (initialized) → SCF Iteration Loop; <<#PaleGreen>>
+
+' ============================================================
+' SCF ITERATION LOOP - Horizontal Band
+' ============================================================
+:══════════════════════════════════════════════════════════
+**SCF ITERATION LOOP** (See: scf_iteration_loop.puml)
+══════════════════════════════════════════════════════════; <<#Khaki>>
+
+:▲ **Input:**
+• <latex>\mathbf{H}</latex>, ERI from Integral Computation
+• <latex>\mathbf{X}</latex> from SCF Initialization
+• Occupation numbers from Initialization
+• DIIS storage; <<#Khaki>>
+
+:Build Fock matrix
+Compute <latex>E_{elec}</latex>, error, DIIS extrapolate
+Check convergence
+Transform, Diagonalize, Back-transform
+Update density matrices;
+
+:▼ **Output:**
+• converged (bool), n_iterations
+• <latex>E_{elec}</latex> → Finalization
+• Final <latex>\mathbf{C}, \boldsymbol{\varepsilon}</latex> → Post-SCF Analysis, Finalization
+• Final Fock, Density matrices → Finalization; <<#Khaki>>
+
+' ============================================================
+' POST-SCF ANALYSIS - Horizontal Band
+' ============================================================
+:══════════════════════════════════════════════════════════
+**POST-SCF ANALYSIS** (See: post_scf_analysis.puml)
+══════════════════════════════════════════════════════════; <<#LightPink>>
+
+:▲ **Input:**
+• <latex>\mathbf{C}</latex> from SCF Iteration Loop
+• <latex>\mathbf{S}</latex> from Integral Computation
+• <latex>N_{\alpha}, N_{\beta}</latex> from Initialization (UHF); <<#LightPink>>
+
+:Spin contamination analysis
+<latex>\langle\hat{S}^2\rangle</latex> calculation;
+
+:▼ **Output:**
+• <latex>\langle\hat{S}^2\rangle</latex> → Finalization
+• spin_contamination (bool) → Finalization; <<#LightPink>>
+
+' ============================================================
+' FINALIZATION - Horizontal Band
+' ============================================================
+:══════════════════════════════════════════════════════════
+**FINALIZATION** (See: finalization.puml)
+══════════════════════════════════════════════════════════; <<#Thistle>>
+
+:▲ **Input:**
+• <latex>E_{elec}</latex> from SCF Iteration Loop
+• <latex>E_{nuc}</latex> from Integral Computation
+• <latex>\mathbf{C}, \boldsymbol{\varepsilon}</latex> from SCF Iteration Loop
+• Fock, Density matrices from SCF Iteration Loop
+• <latex>\langle\hat{S}^2\rangle</latex> from Post-SCF Analysis
+• HF_method from Initialization; <<#Thistle>>
+
+:<latex>E_{total} = E_{elec} + E_{nuc}</latex>
+Create Wavefunction object
+Package HartreeFockResult;
+
+:▼ **Final Output:**
+HartreeFockResult containing:
+• <latex>E_{total}</latex>
+• Wavefunction (RHF/UHF/ROHF type)
+• All matrices
+• Convergence metadata; <<#Thistle>>
+
+stop
+
+' ============================================================
+' DATA FLOW SUMMARY & SYMBOL LEGEND
+' ============================================================
+legend right
+    **Symbol Legend:**
+    |= Symbol |= Description |
+    | <latex>\mathbf{S}</latex> | Overlap matrix - measures basis function overlap |
+    | <latex>\mathbf{T}</latex> | Kinetic energy matrix - electron kinetic energy |
+    | <latex>\mathbf{V}</latex> | Nuclear attraction matrix - electron-nucleus interaction |
+    | <latex>\mathbf{H}</latex> | Core Hamiltonian - one-electron energy operator |
+    | <latex>\mathbf{F}</latex> | Fock matrix - effective one-electron operator |
+    | <latex>\mathbf{P}</latex> | Density matrix - electron probability distribution |
+    | <latex>\mathbf{C}</latex> | MO coefficient matrix - orbital expansion coefficients |
+    | <latex>\mathbf{X}</latex> | Orthogonalization matrix - transforms to orthogonal basis |
+    | <latex>\boldsymbol{\varepsilon}</latex> | Orbital energies - eigenvalues of Fock matrix |
+    | ERI | Electron repulsion integrals - two-electron interactions |
+    | <latex>E_{nuc}</latex> | Nuclear repulsion energy - nucleus-nucleus interaction |
+    | <latex>E_{elec}</latex> | Electronic energy - total electron energy |
+    | <latex>E_{total}</latex> | Total energy - sum of electronic and nuclear energies |
+    | <latex>N_{occ}</latex> | Number of occupied orbitals (RHF) |
+    | <latex>N_{\alpha}, N_{\beta}</latex> | Number of alpha/beta electrons (UHF) |
+    | <latex>N_{closed}, N_{open}</latex> | Closed/open shell electron counts (ROHF) |
+    | <latex>\langle\hat{S}^2\rangle</latex> | Spin expectation value - spin purity measure |
+    | DIIS | Direct Inversion of Iterative Subspace - convergence accelerator |
+    ----
+    **Data Flow Summary:**
+    |= Data |= From |= To |
+    | atoms, basis_functions | Initialization | Integral Computation |
+    | <latex>N_{occ}</latex> (RHF) | Initialization | SCF Initialization, SCF Iteration Loop |
+    | <latex>N_{\alpha}, N_{\beta}</latex> (UHF) | Initialization | SCF Initialization, SCF Iteration Loop, Post-SCF Analysis |
+    | <latex>N_{closed}, N_{open}</latex> (ROHF) | Initialization | SCF Initialization, SCF Iteration Loop |
+    | <latex>\mathbf{S}</latex> | Integral Computation | SCF Initialization, SCF Iteration Loop, Post-SCF Analysis |
+    | <latex>\mathbf{H}</latex> | Integral Computation | SCF Initialization, SCF Iteration Loop |
+    | ERI | Integral Computation | SCF Iteration Loop |
+    | <latex>E_{nuc}</latex> | Integral Computation | Finalization |
+    | <latex>\mathbf{X}</latex> | SCF Initialization | SCF Iteration Loop |
+    | <latex>\mathbf{C}, \boldsymbol{\varepsilon}</latex> | SCF Iteration Loop | Post-SCF Analysis, Finalization |
+    | <latex>E_{elec}</latex> | SCF Iteration Loop | Finalization |
+    | <latex>\langle\hat{S}^2\rangle</latex> | Post-SCF Analysis | Finalization |
+    ----
+    **HF Method Colors:**
+    |<#LightGreen> RHF | Restricted Closed-Shell |
+    |<#LightCoral> UHF | Unrestricted Open-Shell |
+    |<#LightYellow> ROHF | Restricted Open-Shell |
+endlegend
+
+footer
+    Hartree-Fock Self-Consistent Field Algorithm - Architecture Overview
+    See individual partition files for detailed implementation
+end footer
+
+@enduml

@@ -31,12 +31,23 @@ class AtomicSystem:
                        omitted, an empty :class:`InputData` with the
                        required header is created.
     :type input_data: Optional[InputData]
+    
+    Attributes
+    ----------
+    input_data : InputData
+        Container for atom metadata and Atom instances.
+    is_restricted : Optional[bool]
+        True if alpha and beta electrons share the same spatial orbitals
+        (restricted formalism, closed-shell). False if they have independent
+        spatial orbitals (unrestricted formalism, open-shell). 
+        None if not yet determined.
     """
 
     def __init__(self, input_data: Optional[InputData] = None) -> None:
         if input_data is None:
             input_data = InputData()
         self.input_data: InputData = input_data
+        self.is_restricted: Optional[bool] = None
 
     def __len__(self) -> int:
         """Return the number of atoms stored in the system."""

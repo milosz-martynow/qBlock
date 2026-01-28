@@ -1,0 +1,96 @@
+@startuml SCF Initialization
+
+skinparam ActivityBackgroundColor White
+skinparam ActivityBorderColor Black
+
+!startsub SCF_INITIALIZATION
+partition "SCF Initialization" {
+    :Compute orthogonalization matrix
+    <latex>\mathbf{X} = \mathbf{S}^{-1/2}</latex>;
+    
+    :Initial Fock guess: <latex>\mathbf{F} = \mathbf{H}</latex>
+    (core Hamiltonian for all methods);
+    
+    note right
+        **Common step**: All methods start
+        with core Hamiltonian as initial guess.
+        UHF uses same guess for both spins.
+    end note
+    
+    :Transform to orthogonal basis
+    <latex>\mathbf{F}' = \mathbf{X}^{T}\mathbf{F}\mathbf{X}</latex>;
+    
+    :Diagonalize
+    <latex>\mathbf{F}'\mathbf{C}' = \mathbf{C}'\boldsymbol{\varepsilon}</latex>;
+    
+    :Back-transform
+    <latex>\mathbf{C} = \mathbf{X}\mathbf{C}'</latex>;
+    
+    note right
+        **Common step**: Same eigenvalue
+        problem for initial guess.
+        Differences emerge in how
+        we use the result.
+    end note
+    
+    switch (HF Method?)
+    case (RHF)
+        :Build density matrix
+        <latex>\mathbf{P} = 2\mathbf{C}_{occ}\mathbf{C}_{occ}^{T}</latex>
+        (select first <latex>N_{occ}</latex> columns); <<#LightGreen>>
+        :Initialize DIIS storage
+        for <latex>\mathbf{F}</latex> and <latex>\mathbf{e}</latex>; <<#LightGreen>>
+    case (UHF)
+        :Copy: <latex>\mathbf{C}^{\alpha} = \mathbf{C}^{\beta} = \mathbf{C}</latex>; <<#LightCoral>>
+        :Build density matrices
+        <latex>\mathbf{P}^{\alpha} = \mathbf{C}^{\alpha}_{occ}(\mathbf{C}^{\alpha}_{occ})^{T}</latex>
+        <latex>\mathbf{P}^{\beta} = \mathbf{C}^{\beta}_{occ}(\mathbf{C}^{\beta}_{occ})^{T}</latex>
+        <latex>\mathbf{P}^{T} = \mathbf{P}^{\alpha} + \mathbf{P}^{\beta}</latex>; <<#LightCoral>>
+        :Initialize DIIS storage
+        for <latex>\mathbf{F}^{\alpha}, \mathbf{F}^{\beta}</latex> and <latex>\mathbf{e}^{\alpha}, \mathbf{e}^{\beta}</latex>; <<#LightCoral>>
+    case (ROHF)
+        :Partition columns of <latex>\mathbf{C}</latex>:
+        <latex>\mathbf{C}_{c} = \mathbf{C}[:, 0:N_{closed}]</latex>
+        <latex>\mathbf{C}_{o} = \mathbf{C}[:, N_{closed}:N_{closed}+N_{open}]</latex>
+        <latex>\mathbf{C}_{v} = \mathbf{C}[:, N_{closed}+N_{open}:]</latex>; <<#LightYellow>>
+        note right
+            **Partition**: Extract column slices
+            from the same <latex>\mathbf{C}</latex> matrix.
+            This is index selection, not
+            a separate computation.
+        end note
+        :Build density matrices
+        <latex>\mathbf{P}_{closed} = 2\mathbf{C}_{c}\mathbf{C}_{c}^{T}</latex>
+        <latex>\mathbf{P}_{open} = \mathbf{C}_{o}\mathbf{C}_{o}^{T}</latex>; <<#LightYellow>>
+        :Initialize DIIS storage
+        for <latex>\mathbf{F}_{eff}</latex> and <latex>\mathbf{e}</latex>; <<#LightYellow>>
+    endswitch
+}
+!endsub
+
+legend right
+    **Symbol Legend:**
+    |= Symbol |= Description |
+    | <latex>\mathbf{X}</latex> | Orthogonalization matrix - transforms AO to orthogonal basis |
+    | <latex>\mathbf{S}^{-1/2}</latex> | Inverse square root of overlap matrix |
+    | <latex>\mathbf{F}</latex> | Fock matrix - effective one-electron Hamiltonian |
+    | <latex>\mathbf{F}'</latex> | Fock matrix in orthogonal basis |
+    | <latex>\mathbf{C}</latex> | MO coefficient matrix - transforms AO to MO basis |
+    | <latex>\mathbf{C}'</latex> | MO coefficients in orthogonal basis |
+    | <latex>\boldsymbol{\varepsilon}</latex> | Orbital energies - eigenvalues of Fock matrix |
+    | <latex>\mathbf{P}</latex> | Density matrix - electron probability distribution |
+    | <latex>\mathbf{P}^{\alpha}, \mathbf{P}^{\beta}</latex> | Spin-specific density matrices (UHF) |
+    | <latex>\mathbf{P}^{T}</latex> | Total density matrix (sum of alpha and beta) |
+    | <latex>\mathbf{P}_{closed}</latex> | Closed-shell density matrix (ROHF) |
+    | <latex>\mathbf{P}_{open}</latex> | Open-shell density matrix (ROHF) |
+    | <latex>\mathbf{C}_{occ}</latex> | Occupied orbital coefficients |
+    | <latex>\mathbf{e}</latex> | DIIS error vector - commutator of F, P, and S |
+    | DIIS | Direct Inversion of Iterative Subspace - convergence accelerator |
+    ----
+    **HF Method Colors:**
+    |<#LightGreen> RHF | Restricted Closed-Shell |
+    |<#LightCoral> UHF | Unrestricted Open-Shell |
+    |<#LightYellow> ROHF | Restricted Open-Shell |
+endlegend
+
+@enduml

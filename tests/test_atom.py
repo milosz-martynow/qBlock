@@ -9,6 +9,8 @@ from q_block import Atom, Molecule
 from q_block.constants.atoms_data import (
     ATOMS_SYMBOLS_SYMBOL_TO_Z,
     ATOMS_SYMBOLS_Z_TO_SYMBOL,
+    CLOSED_SHELL_ATOMS,
+    OPEN_SHELL_ATOMS,
 )
 from q_block.io.basis_set_pople import parse_gaussian_basis
 from q_block.models.electron import Shell, SpinOrbital
@@ -293,3 +295,256 @@ def test_golden_gto_population(
     assert snapshot == golden_atom, (
         f"GTO population mismatch for atom {symbol} " f"in basis {basis_name}"
     )
+
+
+# ==============================================================================
+# Tests for open_shell attribute
+# ==============================================================================
+# 
+# CLOSED_SHELL_ATOMS and OPEN_SHELL_ATOMS are imported from
+# q_block.constants.atoms_data and contain all atoms from the periodic table.
+# ==============================================================================
+
+
+@pytest.mark.parametrize("atomic_number", CLOSED_SHELL_ATOMS)
+def test_atom_closed_shell(atomic_number: int) -> None:
+    """Test that closed-shell atoms have open_shell=False.
+    
+    Closed-shell atoms have all electrons paired (no unpaired electrons).
+    This includes noble gases and atoms with completely filled subshells.
+    
+    :param atomic_number: Atomic number of atom to test.
+    """
+    atom = Atom(atomic_number=atomic_number)
+    
+    symbol = ATOMS_SYMBOLS_Z_TO_SYMBOL[atomic_number]
+    assert atom.open_shell is False, (
+        f"Atom {symbol} (Z={atomic_number}) should be closed-shell "
+        f"but open_shell={atom.open_shell}"
+    )
+
+
+@pytest.mark.parametrize("atomic_number", OPEN_SHELL_ATOMS)
+def test_atom_open_shell(atomic_number: int) -> None:
+    """Test that open-shell atoms have open_shell=True.
+    
+    Open-shell atoms have at least one unpaired electron.
+    This includes radicals and atoms with partially filled subshells.
+    
+    :param atomic_number: Atomic number of atom to test.
+    """
+    atom = Atom(atomic_number=atomic_number)
+    
+    symbol = ATOMS_SYMBOLS_Z_TO_SYMBOL[atomic_number]
+    assert atom.open_shell is True, (
+        f"Atom {symbol} (Z={atomic_number}) should be open-shell "
+        f"but open_shell={atom.open_shell}"
+    )
+
+
+def test_atom_open_shell_pure_aufbau() -> None:
+    """Test open_shell attribute with pure Aufbau filling (no empirical exceptions).
+    
+    When empirical_exceptions=None, the Aufbau principle is strictly followed.
+    This should still correctly identify open/closed shell atoms.
+    """
+    # Helium - closed shell
+    he = Atom(atomic_number=2, empirical_exceptions=None)
+    assert he.open_shell is False
+    
+    # Hydrogen - open shell  
+    h = Atom(atomic_number=1, empirical_exceptions=None)
+    assert h.open_shell is True
+    
+    # Carbon - open shell (2p² has 2 unpaired)
+    c = Atom(atomic_number=6, empirical_exceptions=None)
+    assert c.open_shell is True
+    
+    # Nitrogen - open shell (2p³ has 3 unpaired)
+    n = Atom(atomic_number=7, empirical_exceptions=None)
+    assert n.open_shell is True
+    
+    # Neon - closed shell (full 2p⁶)
+    ne = Atom(atomic_number=10, empirical_exceptions=None)
+    assert ne.open_shell is False
+
+
+def test_atom_open_shell_after_refill() -> None:
+    """Test that open_shell is correctly updated after calling fill_occupancy again.
+    
+    The open_shell attribute should be recalculated each time fill_occupancy
+    is called.
+    """
+    atom = Atom(atomic_number=6)  # Carbon, open shell
+    assert atom.open_shell is True
+    
+    # Call fill_occupancy again - should still be open shell
+    atom.fill_occupancy()
+    assert atom.open_shell is True
+
+
+# ==============================================================================
+# Generic tests for CLOSED_SHELL_ATOMS and OPEN_SHELL_ATOMS lists
+# ==============================================================================
+
+
+def test_open_shell_lists_cover_all_elements() -> None:
+    """Test that CLOSED_SHELL_ATOMS and OPEN_SHELL_ATOMS together cover all 118 elements.
+    
+    Every element from Z=1 (H) to Z=118 (Og) must appear in exactly one list.
+    """
+    all_elements = set(range(1, 119))
+    closed_set = set(CLOSED_SHELL_ATOMS)
+    open_set = set(OPEN_SHELL_ATOMS)
+    
+    combined = closed_set | open_set
+    
+    assert combined == all_elements, (
+        f"Missing elements: {all_elements - combined}, "
+        f"Extra elements: {combined - all_elements}"
+    )
+
+
+def test_open_shell_lists_no_overlap() -> None:
+    """Test that CLOSED_SHELL_ATOMS and OPEN_SHELL_ATOMS have no overlap.
+    
+    An atom cannot be both closed-shell and open-shell.
+    """
+    closed_set = set(CLOSED_SHELL_ATOMS)
+    open_set = set(OPEN_SHELL_ATOMS)
+    
+    overlap = closed_set & open_set
+    
+    assert len(overlap) == 0, (
+        f"Atoms appear in both lists: {overlap}"
+    )
+
+
+def test_open_shell_lists_counts() -> None:
+    """Test that the counts of closed and open shell atoms are correct.
+    
+    Total should be 118 elements.
+    """
+    n_closed = len(CLOSED_SHELL_ATOMS)
+    n_open = len(OPEN_SHELL_ATOMS)
+    
+    assert n_closed + n_open == 118, (
+        f"Expected 118 total elements, got {n_closed} closed + {n_open} open = {n_closed + n_open}"
+    )
+
+
+def test_open_shell_lists_no_duplicates() -> None:
+    """Test that neither list contains duplicate entries."""
+    assert len(CLOSED_SHELL_ATOMS) == len(set(CLOSED_SHELL_ATOMS)), (
+        "CLOSED_SHELL_ATOMS contains duplicates"
+    )
+    assert len(OPEN_SHELL_ATOMS) == len(set(OPEN_SHELL_ATOMS)), (
+        "OPEN_SHELL_ATOMS contains duplicates"
+    )
+
+
+def test_open_shell_lists_valid_atomic_numbers() -> None:
+    """Test that all atomic numbers in both lists are valid (1-118)."""
+    for z in CLOSED_SHELL_ATOMS:
+        assert 1 <= z <= 118, f"Invalid atomic number in CLOSED_SHELL_ATOMS: {z}"
+    
+    for z in OPEN_SHELL_ATOMS:
+        assert 1 <= z <= 118, f"Invalid atomic number in OPEN_SHELL_ATOMS: {z}"
+
+
+def test_all_atoms_open_shell_consistency() -> None:
+    """Test that every atom's open_shell attribute matches its list membership.
+    
+    Iterates over all 118 elements and verifies:
+    - Atoms in CLOSED_SHELL_ATOMS have open_shell=False
+    - Atoms in OPEN_SHELL_ATOMS have open_shell=True
+    """
+    closed_set = set(CLOSED_SHELL_ATOMS)
+    open_set = set(OPEN_SHELL_ATOMS)
+    
+    for z in range(1, 119):
+        atom = Atom(atomic_number=z)
+        symbol = ATOMS_SYMBOLS_Z_TO_SYMBOL[z]
+        
+        if z in closed_set:
+            assert atom.open_shell is False, (
+                f"Atom {symbol} (Z={z}) is in CLOSED_SHELL_ATOMS but has open_shell=True"
+            )
+        elif z in open_set:
+            assert atom.open_shell is True, (
+                f"Atom {symbol} (Z={z}) is in OPEN_SHELL_ATOMS but has open_shell=False"
+            )
+        else:
+            raise AssertionError(
+                f"Atom {symbol} (Z={z}) is not in either CLOSED_SHELL_ATOMS or OPEN_SHELL_ATOMS"
+            )
+
+
+def test_noble_gases_are_closed_shell() -> None:
+    """Test that all noble gases are correctly classified as closed-shell.
+    
+    Noble gases have completely filled outer shells and no unpaired electrons.
+    """
+    noble_gases = [2, 10, 18, 36, 54, 86, 118]  # He, Ne, Ar, Kr, Xe, Rn, Og
+    
+    for z in noble_gases:
+        assert z in CLOSED_SHELL_ATOMS, (
+            f"Noble gas Z={z} should be in CLOSED_SHELL_ATOMS"
+        )
+        atom = Atom(atomic_number=z)
+        assert atom.open_shell is False, (
+            f"Noble gas Z={z} should have open_shell=False"
+        )
+
+
+def test_alkali_metals_are_open_shell() -> None:
+    """Test that all alkali metals are correctly classified as open-shell.
+    
+    Alkali metals have one unpaired electron in their outer s orbital.
+    """
+    alkali_metals = [3, 11, 19, 37, 55, 87]  # Li, Na, K, Rb, Cs, Fr
+    
+    for z in alkali_metals:
+        assert z in OPEN_SHELL_ATOMS, (
+            f"Alkali metal Z={z} should be in OPEN_SHELL_ATOMS"
+        )
+        atom = Atom(atomic_number=z)
+        assert atom.open_shell is True, (
+            f"Alkali metal Z={z} should have open_shell=True"
+        )
+
+
+def test_halogens_are_open_shell() -> None:
+    """Test that all halogens are correctly classified as open-shell.
+    
+    Halogens have one unpaired electron (p⁵ configuration).
+    """
+    halogens = [9, 17, 35, 53, 85, 117]  # F, Cl, Br, I, At, Ts
+    
+    for z in halogens:
+        assert z in OPEN_SHELL_ATOMS, (
+            f"Halogen Z={z} should be in OPEN_SHELL_ATOMS"
+        )
+        atom = Atom(atomic_number=z)
+        assert atom.open_shell is True, (
+            f"Halogen Z={z} should have open_shell=True"
+        )
+
+
+def test_alkaline_earth_metals_are_closed_shell() -> None:
+    """Test that all alkaline earth metals are correctly classified as closed-shell.
+    
+    Alkaline earth metals have a filled s² outer orbital with all electrons paired.
+    """
+    alkaline_earth = [4, 12, 20, 38, 56, 88]  # Be, Mg, Ca, Sr, Ba, Ra
+    
+    for z in alkaline_earth:
+        assert z in CLOSED_SHELL_ATOMS, (
+            f"Alkaline earth metal Z={z} should be in CLOSED_SHELL_ATOMS"
+        )
+        atom = Atom(atomic_number=z)
+        assert atom.open_shell is False, (
+            f"Alkaline earth metal Z={z} should have open_shell=False"
+        )
+
+

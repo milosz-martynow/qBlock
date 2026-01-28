@@ -1,0 +1,43 @@
+@startuml Integral Computation
+
+skinparam ActivityBackgroundColor White
+skinparam ActivityBorderColor Black
+
+!startsub INTEGRAL_COMPUTATION
+partition "Integral Computation" {
+    fork
+        :Compute Overlap Matrix <latex>\mathbf{S}</latex>
+        (McMurchie-Davidson);
+    fork again
+        :Compute Kinetic Matrix <latex>\mathbf{T}</latex>;
+    fork again
+        :Compute Nuclear Attraction <latex>\mathbf{V}</latex>;
+    end fork
+    
+    :Compute Core Hamiltonian
+    <latex>\mathbf{H} = \mathbf{T} + \mathbf{V}</latex>;
+    
+    :Compute Two-Electron Integrals
+    <latex>(\mu\nu|\lambda\sigma)</latex> (ERI tensor);
+    
+    :Compute Nuclear Repulsion
+    <latex>E_{nuc} = \sum_{A<B} \frac{Z_A Z_B}{R_{AB}}</latex>;
+}
+!endsub
+
+legend right
+    **Symbol Legend:**
+    |= Symbol |= Description |
+    | <latex>\mathbf{S}</latex> | Overlap matrix - measures how much basis functions overlap |
+    | <latex>\mathbf{T}</latex> | Kinetic energy matrix - electron kinetic energy integrals |
+    | <latex>\mathbf{V}</latex> | Nuclear attraction matrix - electron-nucleus Coulomb interaction |
+    | <latex>\mathbf{H}</latex> | Core Hamiltonian - one-electron part of the Hamiltonian |
+    | <latex>(\mu\nu\|\lambda\sigma)</latex> | Two-electron repulsion integral (ERI) in chemist notation |
+    | ERI | Electron Repulsion Integrals - four-index tensor of two-electron interactions |
+    | <latex>E_{nuc}</latex> | Nuclear repulsion energy - classical Coulomb repulsion between nuclei |
+    | <latex>Z_A</latex> | Atomic number (nuclear charge) of atom A |
+    | <latex>R_{AB}</latex> | Distance between nuclei A and B |
+    | McMurchie-Davidson | Efficient algorithm for computing Gaussian integrals |
+endlegend
+
+@enduml

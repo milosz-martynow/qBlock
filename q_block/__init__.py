@@ -15,6 +15,18 @@ from .io.coordinates import Coordinates, CartesianCoordinates
 from .systems.molecule import Molecule
 from .systems.crystal import Crystal
 
+# Theory module - wavefunctions for electronic structure methods
+from .theory.wavefunction import (
+    Wavefunction,
+    Restricted,
+    RestrictedClosedShell,
+    RestrictedOpenShell,
+    UnrestrictedOpenShell,
+    SlaterDeterminant,
+    generate_singles,
+    generate_doubles,
+)
+
 __all__ = [
     "Atom",
     "AtomicSystem",

@@ -91,6 +91,10 @@ class Atom:
             n: Shell(n=n) for n in range(1, maximal_principal_quantum_number + 1)
         }
         self.basis_set = basis_set
+        
+        # Open-shell flag: True if atom has unpaired electrons, False if closed-shell
+        # This is set automatically by fill_occupancy() based on electron configuration
+        self.open_shell: Optional[bool] = None
 
         # Build the ground-state electronic configuration immediately.
         self.fill_occupancy()
@@ -252,6 +256,24 @@ class Atom:
                 for i in range(second):
                     orbitals[i].spin_down.occupied = True
                 remaining -= second
+
+        # ==================================================================
+        # D E T E R M I N E   O P E N - S H E L L   S T A T U S
+        # ------------------------------------------------------------------
+        # Count unpaired electrons (orbitals with only one spin occupied).
+        # If any unpaired electrons exist, the atom is open-shell.
+        # ==================================================================
+        n_unpaired = 0
+        for subshell in self._all_subshells:
+            for orb in subshell.orbitals:
+                up_occupied = orb.spin_up.occupied
+                down_occupied = orb.spin_down.occupied
+                if up_occupied and not down_occupied:
+                    n_unpaired = n_unpaired + 1
+                elif down_occupied and not up_occupied:
+                    n_unpaired = n_unpaired + 1
+        
+        self.open_shell = (n_unpaired > 0)
 
     def __repr__(self) -> str:
         if (

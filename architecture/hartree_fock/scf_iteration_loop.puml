@@ -1,0 +1,147 @@
+@startuml SCF Iteration Loop
+
+skinparam ActivityBackgroundColor White
+skinparam ActivityBorderColor Black
+
+!startsub SCF_ITERATION_LOOP
+partition "SCF Iteration Loop" {
+    repeat
+        
+        switch (HF Method?)
+        case (RHF)
+            :|RHF| Build Fock matrix
+            <latex>F_{\mu\nu} = H_{\mu\nu} + \sum_{\lambda\sigma} P_{\lambda\sigma} [(\mu\nu|\lambda\sigma) - \frac{1}{2}(\mu\lambda|\nu\sigma)]</latex>; <<#LightGreen>>
+            :Compute energy
+            <latex>E_{elec} = \frac{1}{2} \sum_{\mu\nu} P_{\mu\nu}(H_{\mu\nu} + F_{\mu\nu})</latex>; <<#LightGreen>>
+            :Compute error
+            <latex>\mathbf{e} = \mathbf{FPS} - \mathbf{SPF}</latex>; <<#LightGreen>>
+            :DIIS: store <latex>\mathbf{F}, \mathbf{e}</latex>
+            and extrapolate <latex>\mathbf{F}</latex>; <<#LightGreen>>
+            
+        case (UHF)
+            :|UHF| Build two Fock matrices
+            <latex>F^{\alpha}_{\mu\nu} = H_{\mu\nu} + \sum_{\lambda\sigma} P^{T}_{\lambda\sigma}(\mu\nu|\lambda\sigma) - \sum_{\lambda\sigma} P^{\alpha}_{\lambda\sigma}(\mu\lambda|\nu\sigma)</latex>
+            <latex>F^{\beta}_{\mu\nu} = H_{\mu\nu} + \sum_{\lambda\sigma} P^{T}_{\lambda\sigma}(\mu\nu|\lambda\sigma) - \sum_{\lambda\sigma} P^{\beta}_{\lambda\sigma}(\mu\lambda|\nu\sigma)</latex>; <<#LightCoral>>
+            note right
+                Coulomb uses <latex>\mathbf{P}^{T}</latex>
+                Exchange uses spin-specific <latex>\mathbf{P}^{\alpha/\beta}</latex>
+            end note
+            :Compute energy
+            <latex>E_{elec} = \frac{1}{2}\sum_{\mu\nu} [P^{\alpha}_{\mu\nu}(H_{\mu\nu} + F^{\alpha}_{\mu\nu}) + P^{\beta}_{\mu\nu}(H_{\mu\nu} + F^{\beta}_{\mu\nu})]</latex>; <<#LightCoral>>
+            :Compute errors
+            <latex>\mathbf{e}^{\alpha} = \mathbf{F}^{\alpha}\mathbf{P}^{\alpha}\mathbf{S} - \mathbf{S}\mathbf{P}^{\alpha}\mathbf{F}^{\alpha}</latex>
+            <latex>\mathbf{e}^{\beta} = \mathbf{F}^{\beta}\mathbf{P}^{\beta}\mathbf{S} - \mathbf{S}\mathbf{P}^{\beta}\mathbf{F}^{\beta}</latex>; <<#LightCoral>>
+            :DIIS: store <latex>\mathbf{F}^{\alpha}, \mathbf{F}^{\beta}, \mathbf{e}^{\alpha}, \mathbf{e}^{\beta}</latex>
+            and extrapolate both Fock matrices; <<#LightCoral>>
+            
+        case (ROHF)
+            :|ROHF| Build shell-specific Fock matrices
+            <latex>\mathbf{F}_{c} = \mathbf{H} + \mathbf{G}(\mathbf{P}_{closed} + \mathbf{P}_{open})</latex>
+            <latex>\mathbf{F}_{o} = \mathbf{H} + \mathbf{G}(\mathbf{P}_{closed} + \frac{1}{2}\mathbf{P}_{open})</latex>; <<#LightYellow>>
+            :Build Roothaan effective Fock
+            <latex>\mathbf{F}_{eff} = \mathbf{P}_{c}\mathbf{F}_{c}\mathbf{P}_{c} + \mathbf{P}_{o}\mathbf{F}_{o}\mathbf{P}_{o} + \mathbf{P}_{v}\mathbf{F}_{c}\mathbf{P}_{v}</latex>
+            + off-diagonal coupling terms; <<#LightYellow>>
+            note right
+                <latex>\mathbf{P}_{c}, \mathbf{P}_{o}, \mathbf{P}_{v}</latex> are
+                **projection operators** (not densities)
+            end note
+            :Compute energy
+            <latex>E_{elec} = \frac{1}{2}Tr[\mathbf{P}_{closed}(\mathbf{H}+\mathbf{F}_{c})] + \frac{1}{2}Tr[\mathbf{P}_{open}(\mathbf{H}+\mathbf{F}_{o})]</latex>; <<#LightYellow>>
+            :Compute error
+            <latex>\mathbf{e} = \mathbf{F}_{eff}\mathbf{P}\mathbf{S} - \mathbf{S}\mathbf{P}\mathbf{F}_{eff}</latex>; <<#LightYellow>>
+            :DIIS: store <latex>\mathbf{F}_{eff}, \mathbf{e}</latex>
+            and extrapolate <latex>\mathbf{F}_{eff}</latex>; <<#LightYellow>>
+        endswitch
+        
+        :Calculate <latex>\Delta E = E_{elec} - E_{old}</latex>;
+        :Calculate RMS of error matrix/matrices;
+        
+        if (<latex>|\Delta E| < \tau</latex> AND RMS <latex>< \tau</latex>?) then (converged)
+            :SCF Converged!;
+            break
+        else (not converged)
+            
+            note right
+                **Common procedure**: Transform → Diagonalize → Back-transform
+                The Fock matrix input differs per method,
+                but the mathematical operations are identical.
+            end note
+            
+            switch (HF Method?)
+            case (RHF)
+                :Input: <latex>\mathbf{F}</latex> (single Fock matrix); <<#LightGreen>>
+            case (UHF)
+                :Input: <latex>\mathbf{F}^{\alpha}</latex> and <latex>\mathbf{F}^{\beta}</latex> (two Fock matrices)
+                Process each independently; <<#LightCoral>>
+            case (ROHF)
+                :Input: <latex>\mathbf{F}_{eff}</latex> (effective Fock matrix); <<#LightYellow>>
+            endswitch
+            
+            :Transform to orthogonal basis
+            <latex>\mathbf{F}' = \mathbf{X}^{T}\mathbf{F}\mathbf{X}</latex>;
+            
+            :Diagonalize (eigenvalue problem)
+            <latex>\mathbf{F}'\mathbf{C}' = \mathbf{C}'\boldsymbol{\varepsilon}</latex>;
+            
+            :Back-transform to AO basis
+            <latex>\mathbf{C} = \mathbf{X}\mathbf{C}'</latex>;
+            
+            switch (HF Method?)
+            case (RHF)
+                :Update density
+                <latex>\mathbf{P} = 2\mathbf{C}_{occ}\mathbf{C}_{occ}^{T}</latex>; <<#LightGreen>>
+                
+            case (UHF)
+                :Update densities (from each diagonalization)
+                <latex>\mathbf{P}^{\alpha} = \mathbf{C}^{\alpha}_{occ}(\mathbf{C}^{\alpha}_{occ})^{T}</latex>
+                <latex>\mathbf{P}^{\beta} = \mathbf{C}^{\beta}_{occ}(\mathbf{C}^{\beta}_{occ})^{T}</latex>
+                <latex>\mathbf{P}^{T} = \mathbf{P}^{\alpha} + \mathbf{P}^{\beta}</latex>; <<#LightCoral>>
+                
+            case (ROHF)
+                :Partition columns of <latex>\mathbf{C}</latex>
+                (same index selection as initialization)
+                <latex>\mathbf{C}_{c}, \mathbf{C}_{o}, \mathbf{C}_{v}</latex>; <<#LightYellow>>
+                :Update densities
+                <latex>\mathbf{P}_{closed} = 2\mathbf{C}_{c}\mathbf{C}_{c}^{T}</latex>
+                <latex>\mathbf{P}_{open} = \mathbf{C}_{o}\mathbf{C}_{o}^{T}</latex>; <<#LightYellow>>
+            endswitch
+            
+            :<latex>E_{old} = E_{elec}</latex>;
+            
+        endif
+        
+    repeat while (iter < max_iter?) is (yes)
+    -> no;
+    
+    :Warning: SCF not converged!;
+}
+!endsub
+
+legend right
+    **Symbol Legend:**
+    |= Symbol |= Description |
+    | <latex>\mathbf{F}</latex> | Fock matrix - effective one-electron Hamiltonian |
+    | <latex>\mathbf{F}^{\alpha}, \mathbf{F}^{\beta}</latex> | Spin-specific Fock matrices (UHF) |
+    | <latex>\mathbf{F}_{c}, \mathbf{F}_{o}</latex> | Closed/open shell Fock matrices (ROHF) |
+    | <latex>\mathbf{F}_{eff}</latex> | Effective Fock matrix for ROHF (Roothaan) |
+    | <latex>\mathbf{P}</latex> | Density matrix - electron probability distribution |
+    | <latex>\mathbf{P}^{T}</latex> | Total density matrix (alpha + beta) |
+    | <latex>\mathbf{G}</latex> | Two-electron contribution to Fock matrix |
+    | <latex>E_{elec}</latex> | Electronic energy - total electron energy |
+    | <latex>\Delta E</latex> | Energy change between iterations |
+    | <latex>\tau</latex> | Convergence threshold (typically 10⁻⁸) |
+    | <latex>\mathbf{e}</latex> | DIIS error vector - FPS - SPF commutator |
+    | RMS | Root Mean Square of error matrix |
+    | <latex>\mathbf{X}</latex> | Orthogonalization matrix |
+    | <latex>\mathbf{C}</latex> | MO coefficient matrix |
+    | <latex>\boldsymbol{\varepsilon}</latex> | Orbital energies |
+    | <latex>\mathbf{P}_{c}, \mathbf{P}_{o}, \mathbf{P}_{v}</latex> | Projection operators for closed/open/virtual spaces |
+    | DIIS | Direct Inversion of Iterative Subspace - convergence accelerator |
+    ----
+    **HF Method Colors:**
+    |<#LightGreen> RHF | Restricted Closed-Shell |
+    |<#LightCoral> UHF | Unrestricted Open-Shell |
+    |<#LightYellow> ROHF | Restricted Open-Shell |
+endlegend
+
+@enduml

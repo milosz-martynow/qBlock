@@ -1,0 +1,51 @@
+@startuml Post-SCF Analysis
+
+skinparam ActivityBackgroundColor White
+skinparam ActivityBorderColor Black
+
+!startsub POST_SCF_ANALYSIS
+partition "Post-SCF Analysis" {
+    switch (HF Method?)
+    case (RHF)
+        :Singlet state <latex>(S=0)</latex>
+        No spin contamination check needed; <<#LightGreen>>
+        
+    case (UHF)
+        :Calculate <latex>\langle\hat{S}^2\rangle</latex> expectation value
+        <latex>\langle\hat{S}^2\rangle = S(S+1) + N_{\beta} - \sum_{ij}|\langle\psi^{\alpha}_i|\psi^{\beta}_j\rangle|^2</latex>; <<#LightCoral>>
+        if (<latex>\langle\hat{S}^2\rangle \neq S_{ideal}(S_{ideal}+1)</latex>?) then (contaminated)
+            :⚠ Spin contamination detected!
+            Wavefunction contains higher spin states; <<#LightCoral>>
+        else (pure)
+            :Spin contamination acceptable; <<#LightCoral>>
+        endif
+        
+    case (ROHF)
+        :<latex>\langle\hat{S}^2\rangle = S(S+1)</latex> exactly
+        Spin-pure by construction ✓; <<#LightYellow>>
+    endswitch
+}
+!endsub
+
+legend right
+    **Symbol Legend:**
+    |= Symbol |= Description |
+    | <latex>\langle\hat{S}^2\rangle</latex> | Expectation value of spin-squared operator |
+    | <latex>S</latex> | Total spin quantum number |
+    | <latex>S(S+1)</latex> | Ideal spin expectation value for pure spin state |
+    | <latex>S_{ideal}</latex> | Expected spin quantum number based on multiplicity |
+    | <latex>\psi^{\alpha}_i</latex> | Alpha (spin-up) molecular orbital i |
+    | <latex>\psi^{\beta}_j</latex> | Beta (spin-down) molecular orbital j |
+    | <latex>\langle\psi^{\alpha}_i\|\psi^{\beta}_j\rangle</latex> | Overlap between alpha orbital i and beta orbital j |
+    | Spin contamination | Mixing of unwanted higher spin states in UHF |
+    | Singlet | Spin state with S=0 (all electrons paired) |
+    | Doublet | Spin state with S=1/2 (one unpaired electron) |
+    | Triplet | Spin state with S=1 (two unpaired electrons) |
+    ----
+    **HF Method Colors:**
+    |<#LightGreen> RHF | Restricted Closed-Shell |
+    |<#LightCoral> UHF | Unrestricted Open-Shell |
+    |<#LightYellow> ROHF | Restricted Open-Shell |
+endlegend
+
+@enduml

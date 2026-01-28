@@ -1,0 +1,47 @@
+@startuml Legend
+
+!startsub LEGEND
+legend right
+    **Symbol Legend:**
+    |= Symbol |= Description |
+    | <latex>\mathbf{S}</latex> | Overlap matrix - measures basis function overlap |
+    | <latex>\mathbf{T}</latex> | Kinetic energy matrix - electron kinetic energy |
+    | <latex>\mathbf{V}</latex> | Nuclear attraction matrix - electron-nucleus interaction |
+    | <latex>\mathbf{H}</latex> | Core Hamiltonian - one-electron energy operator |
+    | <latex>\mathbf{F}</latex> | Fock matrix - effective one-electron operator |
+    | <latex>\mathbf{P}</latex> | Density matrix - electron probability distribution |
+    | <latex>\mathbf{C}</latex> | MO coefficient matrix - orbital expansion coefficients |
+    | <latex>\mathbf{X}</latex> | Orthogonalization matrix - transforms to orthogonal basis |
+    | <latex>\boldsymbol{\varepsilon}</latex> | Orbital energies - eigenvalues of Fock matrix |
+    | ERI | Electron repulsion integrals - two-electron interactions |
+    | <latex>E_{nuc}</latex> | Nuclear repulsion energy - nucleus-nucleus interaction |
+    | <latex>E_{elec}</latex> | Electronic energy - total electron energy |
+    | <latex>E_{total}</latex> | Total energy - sum of electronic and nuclear energies |
+    | <latex>N_{occ}</latex> | Number of occupied orbitals (RHF) |
+    | <latex>N_{\alpha}, N_{\beta}</latex> | Number of alpha/beta electrons (UHF) |
+    | <latex>N_{closed}, N_{open}</latex> | Closed/open shell electron counts (ROHF) |
+    | <latex>\langle\hat{S}^2\rangle</latex> | Spin expectation value - spin purity measure |
+    | DIIS | Direct Inversion of Iterative Subspace - convergence accelerator |
+    ----
+    **Method Comparison:**
+    |= Component |= RHF |= UHF |= ROHF |
+    | Fock input | <latex>\mathbf{F}</latex> | <latex>\mathbf{F}^{\alpha}, \mathbf{F}^{\beta}</latex> | <latex>\mathbf{F}_{eff}</latex> |
+    | Density | <latex>\mathbf{P}</latex> | <latex>\mathbf{P}^{\alpha}, \mathbf{P}^{\beta}, \mathbf{P}^{T}</latex> | <latex>\mathbf{P}_{closed}, \mathbf{P}_{open}</latex> |
+    | DIIS stores | <latex>\mathbf{F}, \mathbf{e}</latex> | <latex>\mathbf{F}^{\alpha/\beta}, \mathbf{e}^{\alpha/\beta}</latex> | <latex>\mathbf{F}_{eff}, \mathbf{e}</latex> |
+    | # Diagonalizations | 1 | 2 (α and β) | 1 |
+    | MO extraction | first <latex>N_{occ}</latex> cols | first <latex>N_{\alpha/\beta}</latex> cols | partition by shell |
+    |<#LightGreen> Color |= RHF |<#LightCoral> UHF |<#LightYellow> ROHF |
+endlegend
+!endsub
+
+!startsub FOOTER
+footer
+    Hartree-Fock Self-Consistent Field Algorithm
+    ──────────────────────────────────────────────
+    RHF: Szabo & Ostlund, "Modern Quantum Chemistry" (1996)
+    UHF: Pople & Nesbet, J. Chem. Phys. 22, 571 (1954)
+    ROHF: Roothaan, Rev. Mod. Phys. 32, 179 (1960)
+end footer
+!endsub
+
+@enduml

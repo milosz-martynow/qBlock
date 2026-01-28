@@ -1,0 +1,54 @@
+@startuml Initialization
+
+skinparam ActivityBackgroundColor White
+skinparam ActivityBorderColor Black
+
+!startsub INITIALIZATION
+partition "Initialization" {
+    :Process atoms
+    (convert coordinates to Bohr);
+    :Load basis set
+    (parse .gbs file);
+    :Build basis functions
+    (contracted Gaussians);
+    
+    switch (HF Method?)
+    case (RHF)
+        :Calculate <latex>N_{elec}</latex>
+        (must be even); <<#LightGreen>>
+        :<latex>N_{occ} = N_{elec} / 2</latex>; <<#LightGreen>>
+        :Restricted Closed-Shell
+        Same orbitals for α and β; <<#LightGreen>>
+    case (UHF)
+        :Calculate <latex>N_{\alpha}</latex> and <latex>N_{\beta}</latex>
+        (can be different); <<#LightCoral>>
+        :Unrestricted
+        Different orbitals for α and β; <<#LightCoral>>
+    case (ROHF)
+        :Calculate <latex>N_{closed}</latex> (doubly occ.)
+        and <latex>N_{open}</latex> (singly occ.); <<#LightYellow>>
+        :Multiplicity <latex>= N_{open} + 1</latex>; <<#LightYellow>>
+        :Restricted Open-Shell
+        Same orbitals, spin-pure; <<#LightYellow>>
+    endswitch
+}
+!endsub
+
+legend right
+    **Symbol Legend:**
+    |= Symbol |= Description |
+    | <latex>N_{elec}</latex> | Total number of electrons in the system |
+    | <latex>N_{occ}</latex> | Number of doubly occupied orbitals (RHF) |
+    | <latex>N_{\alpha}</latex> | Number of alpha (spin-up) electrons |
+    | <latex>N_{\beta}</latex> | Number of beta (spin-down) electrons |
+    | <latex>N_{closed}</latex> | Number of doubly occupied (closed-shell) orbitals |
+    | <latex>N_{open}</latex> | Number of singly occupied (open-shell) orbitals |
+    | Bohr | Atomic unit of length (1 Bohr ≈ 0.529 Å) |
+    ----
+    **HF Method Colors:**
+    |<#LightGreen> RHF | Restricted Closed-Shell |
+    |<#LightCoral> UHF | Unrestricted Open-Shell |
+    |<#LightYellow> ROHF | Restricted Open-Shell |
+endlegend
+
+@enduml
