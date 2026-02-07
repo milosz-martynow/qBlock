@@ -148,6 +148,20 @@ class CartesianCoordinates(Coordinates):
         """
         return f"CartesianCoordinates(x={self.x:.3f}, y={self.y:.3f}, z={self.z:.3f})"
 
+    def to_bohr(self) -> "CartesianCoordinates":
+        """Return a new :class:`CartesianCoordinates` converted to Bohr.
+
+        :returns: New CartesianCoordinates with values in Bohr.
+        :rtype: CartesianCoordinates
+        """
+        from q_block.constants.atoms_data import ANGSTROM_TO_BOHR
+
+        return CartesianCoordinates(
+            x=self.x * ANGSTROM_TO_BOHR,
+            y=self.y * ANGSTROM_TO_BOHR,
+            z=self.z * ANGSTROM_TO_BOHR,
+        )
+
     def to_list(self) -> list[float]:
         """Return coordinates as a plain list [x, y, z]."""
         return [self.x, self.y, self.z]

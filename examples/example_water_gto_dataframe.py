@@ -12,7 +12,7 @@ import pandas as pd
 
 from q_block.io.input_data import InputData
 from q_block.systems.molecule import Molecule
-from q_block.io.basis_set_pople import parse_gaussian_basis
+from q_block.io.basis_set import Pople
 
 
 # Work from the project root directory
@@ -26,9 +26,9 @@ basis_6_31G_path = project_root / "data" / "basis_set" / "gto_gaussian_format" /
 input_data = InputData()
 input_data.from_xyz_file(xyz_path=xyz_path)
 
-# 2. Load Pople basis sets
-basis_3_21G = parse_gaussian_basis(filepath=str(basis_3_21G_path))
-basis_6_31G = parse_gaussian_basis(filepath=str(basis_6_31G_path))
+# 2. Load Pople basis set objects
+basis_3_21G = Pople(filepath=str(basis_3_21G_path))
+basis_6_31G = Pople(filepath=str(basis_6_31G_path))
 
 # 3. Attach basis sets to atoms: 3-21G for H, 6-31G for O
 for row in input_data.atoms.itertuples():
@@ -36,9 +36,9 @@ for row in input_data.atoms.itertuples():
     symbol = row.symbol
 
     if symbol == "H":
-        atom.basis_set = basis_3_21G["H"]
+        atom.basis_set = basis_3_21G
     elif symbol == "O":
-        atom.basis_set = basis_6_31G["O"]
+        atom.basis_set = basis_6_31G
 
 # 4. Build the Molecule; spin-orbitals are populated with GTO data
 water = Molecule(input_data=input_data)

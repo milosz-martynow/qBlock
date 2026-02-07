@@ -101,12 +101,18 @@ class InputData:
         The expected input format is::
 
             [[symbol, x, y, z], ...]
+            [[symbol, x, y, z, basis_set], ...]
+
+        An optional fifth element in each entry is a
+        :class:`~q_block.io.basis_set.BasisSet` instance to attach to
+        the :class:`~q_block.models.atom.Atom`.
 
         This method clears and repopulates the internal :class:`pandas.DataFrame`
         stored in :attr:`atoms`.
 
-        :param atom_data: List of atomic records ``[symbol, x, y, z]``.
-        :type atom_data: List[List[str, float, float, float]]
+        :param atom_data: List of atomic records ``[symbol, x, y, z]`` or
+            ``[symbol, x, y, z, basis_set]``.
+        :type atom_data: List[List[str, float, float, float, Optional[BasisSet]]]
         :param atom_prefix: Optional prefix for generated atom identifiers.
         :type atom_prefix: str
         :raises ValueError: If the input data are malformed or contain
@@ -117,7 +123,8 @@ class InputData:
         for idx, entry in enumerate(atom_data):
             if not isinstance(entry, (list, tuple)) or len(entry) < 4:
                 raise ValueError(
-                    f"Each entry must be [symbol, x, y, z]; got {entry!r} at index {idx}"
+                    f"Each entry must be [symbol, x, y, z] or "
+                    f"[symbol, x, y, z, basis_set]; got {entry!r} at index {idx}"
                 )
 
             symbol = self._check_atom_symbol(entry[0])
@@ -134,9 +141,15 @@ class InputData:
             atomic_number = ATOMS_SYMBOLS_SYMBOL_TO_Z[symbol]
             atom_id = f"{atom_prefix}{idx + 1}"
 
+            basis_set = entry[4] if len(entry) > 4 else None
+
             from q_block.models.atom import Atom
 
-            atom = Atom(atomic_number=atomic_number, coordinates=coordinates)
+            atom = Atom(
+                atomic_number=atomic_number,
+                coordinates=coordinates,
+                basis_set=basis_set,
+            )
 
             rows.append(
                 {

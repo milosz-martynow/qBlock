@@ -20,7 +20,7 @@ from q_block.constants.atoms_data import (
     ATOMS_SYMBOLS_SYMBOL_TO_Z,
     ATOMS_SYMBOLS_Z_TO_SYMBOL,
 )
-from q_block.io.basis_set_pople import parse_gaussian_basis
+from q_block.io.basis_set import Pople
 from q_block.io.input_data import InputData
 from q_block.systems.molecule import Molecule
 
@@ -120,12 +120,12 @@ def test_molecule_golden_gto_population(basis_file: str, symbol: str) -> None:
     with golden_path.open() as f:
         golden = json.load(f)
 
-    basis = parse_gaussian_basis(filepath=str(basis_path))
+    basis = Pople(filepath=str(basis_path))
     golden_atom = golden["atoms"][symbol]
 
     atom = Atom(
         atomic_number=ATOMS_SYMBOLS_SYMBOL_TO_Z[symbol],
-        basis_set=basis[symbol],
+        basis_set=basis,
     )
 
     row = {

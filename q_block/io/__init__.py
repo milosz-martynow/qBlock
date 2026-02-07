@@ -1,11 +1,12 @@
 """Input/output helpers and basis-set utilities for q_block."""
 
-from .basis_set_pople import parse_gaussian_basis
+from .basis_set import BasisSet, Pople
 from .input_data import InputData
 from .coordinates import Coordinates, CartesianCoordinates
 
 __all__ = [
-    "parse_gaussian_basis",
+    "BasisSet",
+    "Pople",
     "InputData",
     "Coordinates",
     "CartesianCoordinates",

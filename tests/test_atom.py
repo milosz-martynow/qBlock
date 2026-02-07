@@ -12,7 +12,7 @@ from q_block.constants.atoms_data import (
     CLOSED_SHELL_ATOMS,
     OPEN_SHELL_ATOMS,
 )
-from q_block.io.basis_set_pople import parse_gaussian_basis
+from q_block.io.basis_set import Pople
 from q_block.models.electron import Shell, SpinOrbital
 from q_block.io.input_data import InputData
 from tests.verification_data.expected_atom_pure import EXPECTED_ATOM_PURE
@@ -266,12 +266,12 @@ def test_golden_gto_population(
     with golden_path.open() as f:
         golden = json.load(f)
 
-    basis = parse_gaussian_basis(filepath=str(basis_path))
+    basis = Pople(filepath=str(basis_path))
     golden_atom = golden["atoms"][symbol]
 
     atom = Atom(
         atomic_number=ATOMS_SYMBOLS_SYMBOL_TO_Z[symbol],
-        basis_set=basis[symbol],
+        basis_set=basis,
     )
     # Wrap the single atom into InputData/Molecule so that GTO population
     # is performed at the molecular level.

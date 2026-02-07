@@ -432,3 +432,12 @@ OPEN_SHELL_ATOMS: List[int] = [
     100,  # Fm: [Rn] 5f¹² 7s²
     101,  # Md: [Rn] 5f¹³ 7s²
 ]
+
+# ---------------------------------------------------------------------------
+# Physical constants
+# ---------------------------------------------------------------------------
+
+# Conversion factor from Ångströms to Bohr (atomic units of length).
+# 1 Å = 1 / a₀ ≈ 1.8897259886 Bohr, where a₀ = 0.529177210903 Å is the
+# Bohr radius (NIST 2018 CODATA value).
+ANGSTROM_TO_BOHR: float = 1.8897259886

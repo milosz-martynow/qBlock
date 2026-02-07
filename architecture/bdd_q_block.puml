@@ -5,26 +5,22 @@
 
 package "q_block" {
 
+    ' ----------------------------------------------------------
+    ' models
+    ' ----------------------------------------------------------
+
     class "Atom" {
         atomic_number: int
         maximal_principal_quantum_number: int
-        shells: Dict<int,Shell>
-        basis_set: Optional[Dict]
+        shells: Dict<int, Shell>
+        basis_set: Optional[BasisSet]
         coordinates: Optional[CartesianCoordinates]
+        open_shell: Optional[bool]
+        --
+        n_electrons: int <<property>>
+        --
         fill_occupancy(): None
-        populate_spinorbitals_with_gto(): None
-    }
-
-    class "CartesianCoordinates" {
-        x: float
-        y: float
-        z: float
-        from_sequence(seq): CartesianCoordinates
-        to_list(): List<float>
-    }
-
-    class "Coordinates" {
-        as_tuple(): Tuple<float, float, float>
+        to_bohr(): None
     }
 
     class "SpinOrbital" {
@@ -55,55 +51,125 @@ package "q_block" {
         subshells: List<SubShell>
     }
 
+    ' ----------------------------------------------------------
+    ' io
+    ' ----------------------------------------------------------
+
+    class "Coordinates" {
+        as_tuple(): Tuple<float, float, float>
+    }
+
+    class "CartesianCoordinates" {
+        x: float
+        y: float
+        z: float
+        --
+        {static} from_sequence(seq): CartesianCoordinates
+        to_bohr(): CartesianCoordinates
+        to_list(): List<float>
+    }
+
     class "InputData" {
         atoms: pd.DataFrame
+        --
+        from_script(atom_data, atom_prefix): None
+        from_xyz_file(xyz_path, atom_prefix): None
     }
+
+    class "BasisSet" as BS {
+        filepath: str
+        data: BasisSetData
+        --
+        elements: List[str] <<property>>
+        --
+        {static} parse(filepath: str): BasisSetData
+    }
+
+    class "Pople" as BSP {
+        {static} parse(filepath: str): BasisSetData
+    }
+
+    ' ----------------------------------------------------------
+    ' systems
+    ' ----------------------------------------------------------
 
     class "AtomicSystem" {
         input_data: InputData
+        is_restricted: Optional[bool]
     }
 
     class "Molecule" {
+        atoms: List<Atom>
+        --
+        total_atomic_number: int <<property>>
+        n_electrons: int <<property>>
+        --
+        to_bohr(): None
+        populate_spinorbitals_with_gto(): None
+        to_dataframe(): pd.DataFrame
     }
 
     class "Crystal" {
     }
 
+    ' ----------------------------------------------------------
+    ' theory.initialization
+    ' ----------------------------------------------------------
+
+    class "Initialization" {
+        molecule: Molecule
+        charge: int
+        multiplicity: int
+        n_electrons: int
+    }
+
+    class "HartreeFock" {
+        hf_method: HFMethod
+        n_basis: int
+        n_occ: Optional[int]
+        n_alpha: Optional[int]
+        n_beta: Optional[int]
+        n_closed: Optional[int]
+        n_open: Optional[int]
+    }
+
+    ' ----------------------------------------------------------
+    ' constants
+    ' ----------------------------------------------------------
+
     class "atoms_data" as AD <<module>> {
         ATOMS_SYMBOLS_Z_TO_SYMBOL: Dict
         ATOMS_SYMBOLS_SYMBOL_TO_Z: Dict
-        ANGULAR_MOMENTUM_MAP: Dict[str,int]
-        EMPIRICAL_EXCEPTIONS: Dict[int, List[Dict[str,int]]]
+        ANGULAR_MOMENTUM_MAP: Dict[str, int]
+        EMPIRICAL_EXCEPTIONS: Dict[int, List[Dict[str, int]]]
+        ANGSTROM_TO_BOHR: float
     }
 
-    class "basis_set_pople" as BSP <<module>> {
-        parse_gaussian_basis(filepath: str): BasisSet
-    }
-
-    class "input_data" as ID <<module>> {
-        InputData
-    }
-
+    ' ----------------------------------------------------------
+    ' Inheritance
+    ' ----------------------------------------------------------
 
     CartesianCoordinates --|> Coordinates
+    BSP                  --|> BS
+    Molecule             --|> AtomicSystem
+    Crystal              --|> AtomicSystem
+    HartreeFock          --|> Initialization
 }
 
 ' ----------------------------------------------------------
 ' Relationships
 ' ----------------------------------------------------------
 
-"Atom" "1" *--> "*" "Shell"
-"Shell" "1" *--> "*" "SubShell"
-"SubShell" "1" *--> "*" "Orbital"
-"Orbital" "1" *--> "2" "SpinOrbital"
+"Atom"         "1" *--> "*" "Shell"
+"Shell"        "1" *--> "*" "SubShell"
+"SubShell"     "1" *--> "*" "Orbital"
+"Orbital"      "1" *--> "2" "SpinOrbital"
 "AtomicSystem" "1" *--> "*" "Atom"
 
-"Molecule" --|> "AtomicSystem"
-"Crystal"  --|> "AtomicSystem"
-
-"Atom" ..> AD  : depends on
-"Atom" ..> BSP : depends on
-"AtomicSystem" ..> ID : uses
-"Atom" ..> "CartesianCoordinates" : uses
+"Atom"           ..> AD  : depends on
+"Atom"           ..> "CartesianCoordinates" : uses
+"Molecule"       ..> BS  : uses
+"Initialization" ..> "Molecule" : uses
+"HartreeFock"    ..> BS  : uses
 
 @enduml

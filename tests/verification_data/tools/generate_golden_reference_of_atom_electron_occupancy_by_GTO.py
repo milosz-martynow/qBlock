@@ -18,7 +18,7 @@ from typing import Any, Dict, List
 
 from q_block.models.atom import Atom
 from q_block.constants.atoms_data import ATOMS_SYMBOLS_SYMBOL_TO_Z
-from q_block.io.basis_set_pople import parse_gaussian_basis
+from q_block.io.basis_set import Pople
 from tests.test_atom import _serialize_atom_for_test
 
 # ---------------------------------------------------------------------------
@@ -59,16 +59,16 @@ def generate_golden() -> None:
     for filename in BASIS_FILES:
 
         basis_path: Path = BASIS_ROOT / filename
-        basis = parse_gaussian_basis(filepath=str(basis_path))
+        basis = Pople(filepath=str(basis_path))
 
         basis_name: str = basis_path.stem
 
         atoms_data: Dict[str, Dict[str, Any]] = OrderedDict()
 
-        for symbol, atom_basis in basis.items():
+        for symbol in basis.elements:
             atom = Atom(
                 Z=ATOMS_SYMBOLS_SYMBOL_TO_Z[symbol],
-                basis_set=atom_basis,
+                basis_set=basis,
             )
             atom.populate_spinorbitals_with_gto()
 

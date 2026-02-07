@@ -6,12 +6,14 @@ for molecular systems that extends :class:`q_block.atomic_system.AtomicSystem`.
 
 from __future__ import annotations
 
-from typing import Optional, Dict, List, Any
+from typing import Optional, Dict, List, Any, Union
 
 import pandas as pd
 
 from q_block.systems.atomic_system import AtomicSystem
 from q_block.io.input_data import InputData
+from q_block.io.coordinates import CartesianCoordinates
+from q_block.io.basis_set import BasisSet
 from q_block.models.electron import SubShell
 from q_block.models.atom import Atom
 
@@ -26,34 +28,106 @@ class Molecule(AtomicSystem):
     immediately populates their spin-orbitals with GTO data if a
     ``basis_set`` is attached to a given atom.
 
+    A :class:`~q_block.io.basis_set.BasisSet` instance (e.g.
+    :class:`~q_block.io.basis_set.Pople`) can be passed to the
+    constructor via the ``basis_set`` parameter to automatically assign
+    the correct per-element regions to every atom in the molecule before
+    GTO population.
+
     :param input_data: Optional :class:`InputData` instance describing
         the atoms in the molecular system.
     :type input_data: Optional[InputData]
+    :param basis_set: Optional :class:`BasisSet` instance.  When
+        provided, the per-element basis set data is automatically
+        assigned to each atom based on its symbol before GTO
+        population.
+    :type basis_set: Optional[BasisSet]
     """
 
-    def __init__(self, input_data: Optional[InputData] = None) -> None:
+    def __init__(
+        self,
+        input_data: Optional[InputData] = None,
+        basis_set: Optional[BasisSet] = None,
+    ) -> None:
         super().__init__(input_data=input_data)
 
         # Cache atoms list for convenience
         self.atoms: List[Atom] = list(self.input_data.atoms["atom"])
+
+        # If a BasisSet object was provided, assign it to every atom
+        if basis_set is not None:
+            for atom in self.atoms:
+                atom.basis_set = basis_set
+
         # Automatically populate GTO data for all atoms that have a basis set
         self.populate_spinorbitals_with_gto()
+
+    @property
+    def total_atomic_number(self) -> int:
+        """Total number of protons (sum of atomic numbers) in the molecule.
+
+        For a neutral molecule this equals the total number of electrons.
+        To obtain the electron count for a charged system, subtract the
+        charge from this value.
+
+        :returns: Sum of atomic numbers over all atoms.
+        :rtype: int
+        """
+        return sum(atom.atomic_number for atom in self.atoms)
+
+    @property
+    def n_electrons(self) -> int:
+        """Total number of electrons in the neutral molecule.
+
+        Equals the sum of :attr:`Atom.n_electrons` over all atoms,
+        which for neutral atoms is equivalent to
+        :attr:`total_atomic_number`.
+
+        To obtain the electron count for a charged system, subtract
+        the charge from this value.
+
+        :returns: Sum of electron counts over all atoms.
+        :rtype: int
+        """
+        return sum(atom.n_electrons for atom in self.atoms)
+
+    def to_bohr(self) -> None:
+        """Convert all atom coordinates from Ångström to Bohr in place.
+
+        Iterates over every :class:`Atom` in :attr:`atoms` and calls
+        :meth:`Atom.to_bohr`, which replaces each atom's
+        :class:`CartesianCoordinates` with a Bohr-scaled copy.
+
+        :raises TypeError: If any atom's coordinates are not of type
+            :class:`~q_block.io.coordinates.CartesianCoordinates`.
+        """
+
+        for atom in self.atoms:
+            if atom.coordinates is not None and not isinstance(
+                atom.coordinates, CartesianCoordinates
+            ):
+                raise TypeError(
+                    f"Only CartesianCoordinates can be converted to Bohr; "
+                    f"atom {atom!r} has {type(atom.coordinates).__name__}."
+                )
+            atom.to_bohr()
 
     def populate_spinorbitals_with_gto(self) -> None:
         """Attach GTO basis data to occupied spin-orbitals for all atoms.
 
         This method iterates over all :class:`Atom` objects stored in the
         :attr:`atoms` list and, for each atom that has a non-``None``
-        ``basis_set``, attaches Gaussian-type orbital (GTO) data to
-        occupied spin-orbitals using the same algorithm previously
-        implemented on :class:`Atom`.
+        :attr:`~Atom.basis_set`, attaches Gaussian-type orbital (GTO)
+        data to occupied spin-orbitals.
 
-        Atoms without an associated ``basis_set`` are left unchanged.
+        Atoms without an associated :class:`~q_block.io.basis_set.BasisSet`
+        or whose element is absent from the basis set are left unchanged.
         """
 
         for atom in self.atoms:
-            if atom.basis_set is None:
+            if atom.basis_set is None or atom.atomic_number not in atom.basis_set:
                 continue
+            regions = atom.basis_set[atom.atomic_number]
 
             # ------------------------------------------------------------
             # Group occupied subshells by angular momentum
@@ -80,7 +154,7 @@ class Molecule(AtomicSystem):
                 basis_shells: List[Dict[str, List[float]]] = []
                 for region in ("core", "valence_inner", "valence_outer"):
                     basis_shells.extend(
-                        atom.basis_set.get(region, {}).get(l, [])  # type: ignore[union-attr]
+                        regions.get(region, {}).get(l, [])
                     )
 
                 if len(basis_shells) < len(subshells):

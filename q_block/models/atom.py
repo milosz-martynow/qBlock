@@ -15,6 +15,7 @@ from q_block.constants.atoms_data import (
     EMPIRICAL_EXCEPTIONS,
 )
 from q_block.io.coordinates import CartesianCoordinates
+from q_block.io.basis_set import BasisSet
 from q_block.models.electron import Orbital, Shell, SpinOrbital, SubShell
 
 
@@ -26,7 +27,7 @@ class Atom:
         atomic_number: int,
         maximal_principal_quantum_number: int = 7,
         empirical_exceptions: Optional[Dict[int, List[Dict[str, int]]]] = EMPIRICAL_EXCEPTIONS,
-        basis_set: Optional[Dict[str, Any]] = None,
+        basis_set: Optional[BasisSet] = None,
         coordinates: Optional[CartesianCoordinates] = None,
     ) -> None:
         """Initialize an Atom object containing nested shells, subshells, orbitals,
@@ -60,8 +61,10 @@ class Atom:
                 empirical exceptions for certain elements; otherwise pure Aufbau is used.
         :type empirical_exceptions: Optional[Dict[int, List[Dict[str, int]]]]
 
-        :param basis_set: Optional basis-set dictionary to attach to the Atom.
-        :type basis_set: Optional[Dict[str, Any]]
+        :param basis_set: Optional :class:`~q_block.io.basis_set.BasisSet`
+            instance (e.g. :class:`~q_block.io.basis_set.Pople`).  Per-element
+            data can be retrieved via ``basis_set[atomic_number]``.
+        :type basis_set: Optional[BasisSet]
 
         :param coordinates: Optional CartesianCoordinates associated with the atom.
         :type coordinates: Optional[CartesianCoordinates]
@@ -90,7 +93,7 @@ class Atom:
         self.shells: Dict[int, Shell] = {
             n: Shell(n=n) for n in range(1, maximal_principal_quantum_number + 1)
         }
-        self.basis_set = basis_set
+        self.basis_set: Optional[BasisSet] = basis_set
         
         # Open-shell flag: True if atom has unpaired electrons, False if closed-shell
         # This is set automatically by fill_occupancy() based on electron configuration
@@ -109,6 +112,20 @@ class Atom:
         :rtype: List[SubShell]
         """
         return [ss for shell in self.shells.values() for ss in shell.subshells]
+
+    @property
+    def n_electrons(self) -> int:
+        """Number of electrons in the neutral atom.
+
+        For a neutral atom this equals the atomic number :math:`Z`.
+        This property provides a semantically clear name when the
+        quantity of interest is the *electron count* rather than the
+        nuclear charge.
+
+        :returns: Number of electrons.
+        :rtype: int
+        """
+        return self.atomic_number
 
     @staticmethod
     def _aufbau_key(sub: SubShell) -> Tuple[int, int]:
@@ -274,6 +291,27 @@ class Atom:
                     n_unpaired = n_unpaired + 1
         
         self.open_shell = (n_unpaired > 0)
+
+    def to_bohr(self) -> None:
+        """Convert this atom's coordinates from Ångström to Bohr in place.
+
+        Uses :meth:`CartesianCoordinates.to_bohr` to create a new
+        :class:`CartesianCoordinates` instance in Bohr and replaces
+        ``self.coordinates`` with it.
+
+        If the atom has no coordinates (``None``), the call is a no-op.
+
+        :raises TypeError: If the coordinates are not of type
+            :class:`CartesianCoordinates`.
+        """
+        if self.coordinates is None:
+            return
+        if not isinstance(self.coordinates, CartesianCoordinates):
+            raise TypeError(
+                f"Only CartesianCoordinates can be converted to Bohr; "
+                f"got {type(self.coordinates).__name__}."
+            )
+        self.coordinates = self.coordinates.to_bohr()
 
     def __repr__(self) -> str:
         if (

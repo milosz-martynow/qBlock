@@ -8,6 +8,7 @@ from .atoms_data import (
     ATOMS_SYMBOLS_SYMBOL_TO_Z,
     CLOSED_SHELL_ATOMS,
     OPEN_SHELL_ATOMS,
+    ANGSTROM_TO_BOHR,
 )
 
 __all__ = [
@@ -15,5 +16,6 @@ __all__ = [
     "ATOMS_SYMBOLS_SYMBOL_TO_Z",
     "CLOSED_SHELL_ATOMS",
     "OPEN_SHELL_ATOMS",
+    "ANGSTROM_TO_BOHR",
 ]
 
