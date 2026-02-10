@@ -11,6 +11,7 @@ package "q_block" {
 
     class "Atom" {
         atomic_number: int
+        charge: int
         maximal_principal_quantum_number: int
         shells: Dict<int, Shell>
         basis_set: Optional[BasisSet]
@@ -95,7 +96,10 @@ package "q_block" {
 
     class "AtomicSystem" {
         input_data: InputData
+        multiplicity: int
         is_restricted: Optional[bool]
+        --
+        charge: int <<property>>
     }
 
     class "Molecule" {
@@ -103,9 +107,12 @@ package "q_block" {
         --
         total_atomic_number: int <<property>>
         n_electrons: int <<property>>
+        n_basis: int <<property>>
+        charge: int <<property>>
         --
         to_bohr(): None
         populate_spinorbitals_with_gto(): None
+        validate_basis_sets(): None
         to_dataframe(): pd.DataFrame
     }
 
@@ -126,11 +133,26 @@ package "q_block" {
     class "HartreeFock" {
         hf_method: HFMethod
         n_basis: int
-        n_occ: Optional[int]
         n_alpha: Optional[int]
         n_beta: Optional[int]
-        n_closed: Optional[int]
-        n_open: Optional[int]
+    }
+
+    class "RHF" #LightGreen {
+        n_occ: int
+        n_alpha: int
+        n_beta: int
+    }
+
+    class "UHF" #LightCoral {
+        n_alpha: int
+        n_beta: int
+    }
+
+    class "ROHF" #LightYellow {
+        n_closed: int
+        n_open: int
+        n_alpha: int
+        n_beta: int
     }
 
     ' ----------------------------------------------------------
@@ -154,6 +176,9 @@ package "q_block" {
     Molecule             --|> AtomicSystem
     Crystal              --|> AtomicSystem
     HartreeFock          --|> Initialization
+    RHF                  --|> HartreeFock
+    UHF                  --|> HartreeFock
+    ROHF                 --|> HartreeFock
 }
 
 ' ----------------------------------------------------------

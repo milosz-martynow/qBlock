@@ -102,17 +102,20 @@ class InputData:
 
             [[symbol, x, y, z], ...]
             [[symbol, x, y, z, basis_set], ...]
+            [[symbol, x, y, z, basis_set, charge], ...]
 
         An optional fifth element in each entry is a
         :class:`~q_block.io.basis_set.BasisSet` instance to attach to
-        the :class:`~q_block.models.atom.Atom`.
+        the :class:`~q_block.models.atom.Atom`.  An optional sixth
+        element is the formal ``charge`` (int) for that atom.
 
         This method clears and repopulates the internal :class:`pandas.DataFrame`
         stored in :attr:`atoms`.
 
-        :param atom_data: List of atomic records ``[symbol, x, y, z]`` or
-            ``[symbol, x, y, z, basis_set]``.
-        :type atom_data: List[List[str, float, float, float, Optional[BasisSet]]]
+        :param atom_data: List of atomic records ``[symbol, x, y, z]``,
+            ``[symbol, x, y, z, basis_set]``, or
+            ``[symbol, x, y, z, basis_set, charge]``.
+        :type atom_data: List[List[Any]]
         :param atom_prefix: Optional prefix for generated atom identifiers.
         :type atom_prefix: str
         :raises ValueError: If the input data are malformed or contain
@@ -142,6 +145,7 @@ class InputData:
             atom_id = f"{atom_prefix}{idx + 1}"
 
             basis_set = entry[4] if len(entry) > 4 else None
+            charge = entry[5] if len(entry) > 5 else 0
 
             from q_block.models.atom import Atom
 
@@ -149,6 +153,7 @@ class InputData:
                 atomic_number=atomic_number,
                 coordinates=coordinates,
                 basis_set=basis_set,
+                charge=charge,
             )
 
             rows.append(

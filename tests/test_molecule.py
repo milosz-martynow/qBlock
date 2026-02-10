@@ -4,13 +4,17 @@ This module validates that :class:`q_block.systems.molecule.Molecule` correctly
 populates Gaussian-type orbital (GTO) data on :class:`q_block.models.atom.Atom`
 instances using the same golden-reference data as the original
 Atom-level implementation.
+
+It also tests charge and electron-count calculations across all
+combinations of per-atom charges (+2, +1, 0, -1, -2).
 """
 
 from __future__ import annotations
 
+import itertools
 import json
 from pathlib import Path
-from typing import Any, Dict, Iterator, Tuple
+from typing import Any, Dict, Iterator, List, Tuple
 
 import pandas as pd
 import pytest
@@ -22,6 +26,7 @@ from q_block.constants.atoms_data import (
 )
 from q_block.io.basis_set import Pople
 from q_block.io.input_data import InputData
+from q_block.systems.atomic_system import AtomicSystem
 from q_block.systems.molecule import Molecule
 
 BASIS_ROOT: Path = Path("./data/basis_set/gto_gaussian_format")
@@ -139,7 +144,10 @@ def test_molecule_golden_gto_population(basis_file: str, symbol: str) -> None:
     }
     input_data = InputData(atoms=pd.DataFrame([row]))
 
-    molecule = Molecule(input_data=input_data)
+    # Choose multiplicity compatible with the atom's electron count
+    n_el = atom.atomic_number
+    mult = 1 if n_el % 2 == 0 else 2
+    molecule = Molecule(input_data=input_data, multiplicity=mult)
     assert len(molecule.atoms) == 1
 
     snapshot = _serialize_atom_for_test(atom=atom, basis_name=basis_name)
@@ -147,3 +155,213 @@ def test_molecule_golden_gto_population(basis_file: str, symbol: str) -> None:
     assert snapshot == golden_atom, (
         f"GTO population mismatch for atom {symbol} " f"in basis {basis_name}"
     )
+
+
+# ==============================================================================
+# Helpers for charge / n_electrons tests
+# ==============================================================================
+
+CHARGE_VALUES: List[int] = [+2, +1, 0, -1, -2]
+
+# Default basis set for charge/electron tests (lightweight Pople set)
+_DEFAULT_BASIS = Pople(filepath="data/basis_set/gto_gaussian_format/6-31G.gbs")
+
+
+def _make_input_data(
+    atoms_spec: List[Tuple[str, int]],
+) -> InputData:
+    """Build an InputData from a list of (symbol, charge) tuples.
+
+    All atoms are placed at the origin with 6-31G basis set.
+
+    :param atoms_spec: List of ``(symbol, charge)`` pairs.
+    :returns: Populated :class:`InputData`.
+    """
+    atom_data = []
+    for symbol, charge in atoms_spec:
+        atom_data.append([symbol, 0.0, 0.0, 0.0, _DEFAULT_BASIS, charge])
+
+    inp = InputData()
+    inp.from_script(atom_data=atom_data, atom_prefix="T")
+    return inp
+
+
+def _total_n_electrons(atoms_spec: List[Tuple[str, int]]) -> int:
+    """Expected total electron count: sum(Z_i + q_i)."""
+    return sum(
+        ATOMS_SYMBOLS_SYMBOL_TO_Z[sym] + q for sym, q in atoms_spec
+    )
+
+
+# ==============================================================================
+# AtomicSystem.charge tests
+# ==============================================================================
+
+
+@pytest.mark.parametrize("charge", CHARGE_VALUES)
+def test_atomic_system_charge_single_atom(charge: int) -> None:
+    """AtomicSystem.charge equals the single atom's charge."""
+    inp = _make_input_data([("O", charge)])
+    system = AtomicSystem(input_data=inp)
+    assert system.charge == charge
+
+
+@pytest.mark.parametrize(
+    "q1, q2",
+    list(itertools.product(CHARGE_VALUES, repeat=2)),
+)
+def test_atomic_system_charge_two_atoms(q1: int, q2: int) -> None:
+    """AtomicSystem.charge equals the sum of per-atom charges (H₂)."""
+    inp = _make_input_data([("H", q1), ("H", q2)])
+    system = AtomicSystem(input_data=inp)
+    assert system.charge == q1 + q2
+
+
+# ==============================================================================
+# Molecule.n_electrons – single atom, all charges
+# ==============================================================================
+
+
+@pytest.mark.parametrize("charge", CHARGE_VALUES)
+def test_molecule_n_electrons_single_oxygen(charge: int) -> None:
+    """Molecule.n_electrons for a single O atom with various charges.
+
+    O has Z=8, so n_electrons = 8 + charge.  All values from 6 to 10
+    are non-negative, so no validation error should occur.
+    Multiplicity chosen to match parity.
+    """
+    n_el = 8 + charge
+    mult = 1 if n_el % 2 == 0 else 2
+    inp = _make_input_data([("O", charge)])
+    mol = Molecule(input_data=inp, multiplicity=mult)
+    assert mol.n_electrons == 8 + charge
+
+
+# ==============================================================================
+# Molecule.n_electrons – two atoms, all 25 charge combinations
+# ==============================================================================
+
+
+def _valid_h2_charge_combos() -> List[Tuple[int, int, int]]:
+    """Return (q1, q2, mult) tuples where total n_electrons for H₂ is >= 0.
+
+    H has Z=1, so n_electrons = (1 + q1) + (1 + q2) = 2 + q1 + q2.
+    Require 2 + q1 + q2 >= 0 and parity-compatible multiplicity.
+    """
+    results = []
+    for q1, q2 in itertools.product(CHARGE_VALUES, repeat=2):
+        n_el = 2 + q1 + q2
+        if n_el < 0:
+            continue
+        mult = 1 if n_el % 2 == 0 else 2
+        if n_el == 0:
+            mult = 1
+        results.append((q1, q2, mult))
+    return results
+
+
+@pytest.mark.parametrize("q1, q2, mult", _valid_h2_charge_combos())
+def test_molecule_n_electrons_h2_charge_combos(
+    q1: int, q2: int, mult: int,
+) -> None:
+    """Molecule.n_electrons for H₂ with all valid charge combinations.
+
+    Expected: (1 + q1) + (1 + q2) = 2 + q1 + q2.
+    """
+    inp = _make_input_data([("H", q1), ("H", q2)])
+    mol = Molecule(input_data=inp, multiplicity=mult)
+    expected = 2 + q1 + q2
+    assert mol.n_electrons == expected
+    assert mol.charge == q1 + q2
+
+
+# ==============================================================================
+# Molecule.n_electrons – three atoms (water-like), all 125 combos
+# ==============================================================================
+
+
+def _valid_water_charge_combos() -> List[Tuple[int, int, int, int]]:
+    """Return (qO, qH1, qH2, mult) where total n_electrons >= 0 and parity-compatible."""
+    results = []
+    for qo, qh1, qh2 in itertools.product(CHARGE_VALUES, repeat=3):
+        n_el = (8 + qo) + (1 + qh1) + (1 + qh2)
+        if n_el < 0:
+            continue
+        mult = 1 if n_el % 2 == 0 else 2
+        if n_el == 0:
+            mult = 1
+        results.append((qo, qh1, qh2, mult))
+    return results
+
+
+@pytest.mark.parametrize("qo, qh1, qh2, mult", _valid_water_charge_combos())
+def test_molecule_n_electrons_water_charge_combos(
+    qo: int, qh1: int, qh2: int, mult: int,
+) -> None:
+    """Molecule.n_electrons for water-like O-H-H with all valid charge combos."""
+    inp = _make_input_data([("O", qo), ("H", qh1), ("H", qh2)])
+    mol = Molecule(input_data=inp, multiplicity=mult)
+    expected = (8 + qo) + (1 + qh1) + (1 + qh2)
+    assert mol.n_electrons == expected
+    assert mol.charge == qo + qh1 + qh2
+
+
+# ==============================================================================
+# Molecule validation: negative electron count raises
+# ==============================================================================
+
+
+def _negative_h2_charge_combos() -> List[Tuple[int, int]]:
+    """Return (q1, q2) pairs where total n_electrons for H₂ is negative."""
+    results = []
+    for q1, q2 in itertools.product(CHARGE_VALUES, repeat=2):
+        n_el = 2 + q1 + q2
+        if n_el < 0:
+            results.append((q1, q2))
+    return results
+
+
+@pytest.mark.parametrize("q1, q2", _negative_h2_charge_combos())
+def test_molecule_negative_electrons_raises(q1: int, q2: int) -> None:
+    """Molecule construction should raise ValueError when n_electrons < 0."""
+    inp = _make_input_data([("H", q1), ("H", q2)])
+    with pytest.raises(ValueError, match="Negative electron count"):
+        Molecule(input_data=inp)
+
+
+# ==============================================================================
+# Molecule validation: multiplicity parity mismatch raises
+# ==============================================================================
+
+
+def test_molecule_multiplicity_parity_mismatch_raises() -> None:
+    """Molecule should raise when multiplicity is incompatible with n_electrons."""
+    # Water has 10 electrons (even). Multiplicity 2 requires odd n_electrons.
+    inp = _make_input_data([("O", 0), ("H", 0), ("H", 0)])
+    with pytest.raises(ValueError, match="parity mismatch"):
+        Molecule(input_data=inp, multiplicity=2)
+
+
+def test_molecule_multiplicity_exceeds_electrons_raises() -> None:
+    """Molecule should raise when multiplicity implies more unpaired than total."""
+    # Single H (Z=1, charge=0) -> 1 electron. Multiplicity 4 needs 3 unpaired.
+    inp = _make_input_data([("H", 0)])
+    with pytest.raises(ValueError, match="unpaired electrons"):
+        Molecule(input_data=inp, multiplicity=4)
+
+
+# ==============================================================================
+# Molecule.total_atomic_number
+# ==============================================================================
+
+
+@pytest.mark.parametrize("charge", CHARGE_VALUES)
+def test_molecule_total_atomic_number_independent_of_charge(
+    charge: int,
+) -> None:
+    """total_atomic_number is sum of Z values and does not depend on charge."""
+    n_el = 8 + charge
+    mult = 1 if n_el % 2 == 0 else 2
+    inp = _make_input_data([("O", charge)])
+    mol = Molecule(input_data=inp, multiplicity=mult)
+    assert mol.total_atomic_number == 8

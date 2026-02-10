@@ -1,49 +1,35 @@
 """Example: water molecule and spin-orbital DataFrame
 
-This example shows how to construct a `Molecule` from an XYZ geometry,
-attach different Pople basis sets to hydrogen and oxygen atoms,
-and then export the occupied spin-orbitals into a single
-`pandas.DataFrame` using `Molecule.to_dataframe`.
+This example shows how to construct a `Molecule` with different
+Pople basis sets on hydrogen and oxygen atoms, and then export the
+occupied spin-orbitals into a single `pandas.DataFrame` using
+`Molecule.to_dataframe`.
 """
-
-from pathlib import Path
 
 import pandas as pd
 
 from q_block.io.input_data import InputData
-from q_block.systems.molecule import Molecule
 from q_block.io.basis_set import Pople
+from q_block.systems.molecule import Molecule
 
+# ── 1. Create Pople basis set objects ────────────────────────────────
+basis_3_21G = Pople(filepath="data/basis_set/gto_gaussian_format/3-21G.gbs")
+basis_6_31G = Pople(filepath="data/basis_set/gto_gaussian_format/6-31G.gbs")
 
-# Work from the project root directory
-project_root = Path.cwd()
+# ── 2. Define atoms: [symbol, x, y, z, basis_set] ───────────────────
+water_input = InputData()
+water_input.from_script(
+    atom_data=[
+        ["O",  0.0000,  0.0000,  0.1173, basis_6_31G],
+        ["H",  0.0000,  0.7572, -0.4692, basis_3_21G],
+        ["H",  0.0000, -0.7572, -0.4692, basis_3_21G],
+    ],
+)
 
-xyz_path = project_root / "tests" / "verification_data" / "geometries" / "water.xyz"
-basis_3_21G_path = project_root / "data" / "basis_set" / "gto_gaussian_format" / "3-21G.gbs"
-basis_6_31G_path = project_root / "data" / "basis_set" / "gto_gaussian_format" / "6-31G.gbs"
+# ── 3. Build the Molecule (GTO population automatic) ─────────────────
+water = Molecule(input_data=water_input)
 
-# 1. Load geometry into InputData
-input_data = InputData()
-input_data.from_xyz_file(xyz_path=xyz_path)
-
-# 2. Load Pople basis set objects
-basis_3_21G = Pople(filepath=str(basis_3_21G_path))
-basis_6_31G = Pople(filepath=str(basis_6_31G_path))
-
-# 3. Attach basis sets to atoms: 3-21G for H, 6-31G for O
-for row in input_data.atoms.itertuples():
-    atom = row.atom
-    symbol = row.symbol
-
-    if symbol == "H":
-        atom.basis_set = basis_3_21G
-    elif symbol == "O":
-        atom.basis_set = basis_6_31G
-
-# 4. Build the Molecule; spin-orbitals are populated with GTO data
-water = Molecule(input_data=input_data)
-
-# 5. Export occupied spin-orbital data to a multi-index DataFrame
+# ── 4. Export occupied spin-orbital data to a multi-index DataFrame ──
 spinorb_df = water.to_dataframe()
 
 pd.set_option("display.max_columns", None)

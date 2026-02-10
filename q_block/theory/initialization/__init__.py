@@ -11,14 +11,25 @@ Initialization
     converts coordinates to Bohr, computes the total electron count.
 
 HartreeFock
-    Hartree-Fock-specific initialization: inherits the generic class and
-    adds HF method selection (RHF/UHF/ROHF), basis-set validation, and
-    electron-count bookkeeping appropriate for each HF variant.
+    Common Hartree-Fock base class: inherits the generic class and adds
+    basis-set validation and shared electron-count attributes.
+
+RHF
+    Restricted Closed-Shell Hartree-Fock (singlet, even electrons).
+
+UHF
+    Unrestricted Hartree-Fock (any multiplicity).
+
+ROHF
+    Restricted Open-Shell Hartree-Fock.
 """
 
-from .initialization import Initialization, HartreeFock
+from .initialization import Initialization, HartreeFock, RHF, UHF, ROHF
 
 __all__ = [
     "Initialization",
     "HartreeFock",
+    "RHF",
+    "UHF",
+    "ROHF",
 ]

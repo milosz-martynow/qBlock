@@ -7,9 +7,12 @@ initialization
     Hartree-Fock, etc.).
 """
 
-from .initialization import Initialization, HartreeFock
+from .initialization import Initialization, HartreeFock, RHF, UHF, ROHF
 
 __all__ = [
     "Initialization",
     "HartreeFock",
+    "RHF",
+    "UHF",
+    "ROHF",
 ]

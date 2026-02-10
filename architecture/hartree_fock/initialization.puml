@@ -4,51 +4,103 @@ skinparam ActivityBackgroundColor White
 skinparam ActivityBorderColor Black
 
 !startsub INITIALIZATION
-partition "Initialization" {
-    :Process atoms
-    (convert coordinates to Bohr);
-    :Load basis set
-    (parse .gbs file);
-    :Build basis functions
-    (contracted Gaussians);
-    
+partition "Initialization (base)" {
+    :Receive **Molecule**
+    (atoms, per-atom charges, multiplicity,
+     basis sets already validated);
+
+    :Read **charge** = Σ atom.charge
+    Read **multiplicity** from Molecule;
+
+    :Compute total electron count
+    <latex>N_{elec} = \sum_i Z_i + \text{charge}</latex>;
+
+    :Convert coordinates
+    Ångström → Bohr;
+}
+
+partition "HartreeFock (base)" {
+    :Compute **n_basis**
+    (total contracted Gaussians);
+    :Declare shared attributes
+    <latex>N_{\alpha}</latex>, <latex>N_{\beta}</latex> (set by subclass);
+
     switch (HF Method?)
     case (RHF)
-        :Calculate <latex>N_{elec}</latex>
-        (must be even); <<#LightGreen>>
-        :<latex>N_{occ} = N_{elec} / 2</latex>; <<#LightGreen>>
-        :Restricted Closed-Shell
-        Same orbitals for α and β; <<#LightGreen>>
+        partition "RHF – Restricted Closed-Shell" <<#LightGreen>> {
+            if (<latex>N_{elec}</latex> is odd?) then (yes)
+                :Raise **ValueError**
+                "RHF requires even electrons"; <<#tomato>>
+                end
+            else (no)
+            endif
+            if (multiplicity ≠ 1?) then (yes)
+                :Raise **ValueError**
+                "RHF requires singlet"; <<#tomato>>
+                end
+            else (no)
+            endif
+            :<latex>N_{occ} = N_{elec} / 2</latex>
+            <latex>N_{\alpha} = N_{\beta} = N_{occ}</latex>; <<#LightGreen>>
+        }
     case (UHF)
-        :Calculate <latex>N_{\alpha}</latex> and <latex>N_{\beta}</latex>
-        (can be different); <<#LightCoral>>
-        :Unrestricted
-        Different orbitals for α and β; <<#LightCoral>>
+        partition "UHF – Unrestricted" <<#LightCoral>> {
+            :<latex>n_{unpaired} = M - 1</latex>; <<#LightCoral>>
+            :<latex>N_{\beta} = (N_{elec} - n_{unpaired}) / 2</latex>
+            <latex>N_{\alpha} = N_{\beta} + n_{unpaired}</latex>; <<#LightCoral>>
+        }
     case (ROHF)
-        :Calculate <latex>N_{closed}</latex> (doubly occ.)
-        and <latex>N_{open}</latex> (singly occ.); <<#LightYellow>>
-        :Multiplicity <latex>= N_{open} + 1</latex>; <<#LightYellow>>
-        :Restricted Open-Shell
-        Same orbitals, spin-pure; <<#LightYellow>>
+        partition "ROHF – Restricted Open-Shell" <<#LightYellow>> {
+            :<latex>n_{unpaired} = M - 1</latex>
+            <latex>n_{paired} = N_{elec} - n_{unpaired}</latex>; <<#LightYellow>>
+            if (<latex>n_{paired}</latex> is odd?) then (yes)
+                :Raise **ValueError**
+                "Paired electrons not even"; <<#tomato>>
+                end
+            else (no)
+            endif
+            :<latex>N_{closed} = n_{paired} / 2</latex>
+            <latex>N_{open}   = n_{unpaired}</latex>; <<#LightYellow>>
+            :<latex>N_{\beta}  = N_{closed}</latex>
+            <latex>N_{\alpha} = N_{closed} + N_{open}</latex>; <<#LightYellow>>
+            :Verify <latex>M = N_{open} + 1</latex>; <<#LightYellow>>
+        }
     endswitch
 }
+
+:▼ **Transfer to Integral Computation →**
+• Molecule (atoms in Bohr)
+• <latex>N_{elec}</latex>, charge, multiplicity
+• n_basis (contracted Gaussians)
+• RHF: <latex>N_{occ}</latex>
+  UHF: <latex>N_{\alpha}, N_{\beta}</latex>
+  ROHF: <latex>N_{closed}, N_{open}</latex>
+• hf_method ∈ {RHF, UHF, ROHF}; <<#LightBlue>>
+
+stop
 !endsub
 
 legend right
     **Symbol Legend:**
     |= Symbol |= Description |
-    | <latex>N_{elec}</latex> | Total number of electrons in the system |
-    | <latex>N_{occ}</latex> | Number of doubly occupied orbitals (RHF) |
-    | <latex>N_{\alpha}</latex> | Number of alpha (spin-up) electrons |
-    | <latex>N_{\beta}</latex> | Number of beta (spin-down) electrons |
-    | <latex>N_{closed}</latex> | Number of doubly occupied (closed-shell) orbitals |
-    | <latex>N_{open}</latex> | Number of singly occupied (open-shell) orbitals |
+    | <latex>Z_i</latex> | Atomic number of atom //i// |
+    | charge | Sum of per-atom formal charges |
+    | <latex>N_{elec}</latex> | Total number of electrons |
+    | <latex>N_{occ}</latex> | Doubly-occupied orbitals (RHF) |
+    | <latex>N_{\alpha}</latex> | Alpha (spin-up) electrons |
+    | <latex>N_{\beta}</latex> | Beta (spin-down) electrons |
+    | <latex>N_{closed}</latex> | Doubly-occupied orbitals (ROHF) |
+    | <latex>N_{open}</latex> | Singly-occupied orbitals (ROHF) |
+    | <latex>M</latex> | Spin multiplicity (2S + 1) |
     | Bohr | Atomic unit of length (1 Bohr ≈ 0.529 Å) |
     ----
     **HF Method Colors:**
     |<#LightGreen> RHF | Restricted Closed-Shell |
-    |<#LightCoral> UHF | Unrestricted Open-Shell |
+    |<#LightCoral> UHF | Unrestricted |
     |<#LightYellow> ROHF | Restricted Open-Shell |
+    ----
+    **Class Hierarchy:**
+    Initialization → HartreeFock → { RHF, UHF, ROHF }
 endlegend
 
 @enduml

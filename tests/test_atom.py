@@ -285,7 +285,9 @@ def test_golden_gto_population(
         "atom": atom,
     }
     input_data = InputData(atoms=pd.DataFrame([row]))
-    Molecule(input_data=input_data)
+    n_el = atom.atomic_number
+    mult = 1 if n_el % 2 == 0 else 2
+    Molecule(input_data=input_data, multiplicity=mult)
 
     snapshot = _serialize_atom_for_test(
         atom=atom,
@@ -546,5 +548,72 @@ def test_alkaline_earth_metals_are_closed_shell() -> None:
         assert atom.open_shell is False, (
             f"Alkaline earth metal Z={z} should have open_shell=False"
         )
+
+
+# ==============================================================================
+# Tests for charge and n_electrons on Atom
+# ==============================================================================
+
+
+CHARGE_VALUES = [+2, +1, 0, -1, -2]
+
+
+@pytest.mark.parametrize("charge", CHARGE_VALUES)
+def test_atom_charge_stored(charge: int) -> None:
+    """Test that the charge attribute is stored correctly on the Atom."""
+    atom = Atom(atomic_number=8, charge=charge)
+    assert atom.charge == charge
+
+
+@pytest.mark.parametrize("charge", CHARGE_VALUES)
+def test_atom_n_electrons_with_charge(charge: int) -> None:
+    """Test n_electrons = Z + q for a single atom across charge values.
+
+    :param charge: formal charge on the atom.
+    """
+    z = 8  # Oxygen
+    atom = Atom(atomic_number=z, charge=charge)
+    assert atom.n_electrons == z + charge
+
+
+@pytest.mark.parametrize("atomic_number", [1, 6, 8, 26, 79])
+@pytest.mark.parametrize("charge", CHARGE_VALUES)
+def test_atom_n_electrons_various_elements(
+    atomic_number: int, charge: int
+) -> None:
+    """Test n_electrons = Z + q for several elements and all charge values."""
+    atom = Atom(atomic_number=atomic_number, charge=charge)
+    assert atom.n_electrons == atomic_number + charge
+
+
+def test_atom_default_charge_is_zero() -> None:
+    """Test that the default charge is 0 (neutral atom)."""
+    atom = Atom(atomic_number=6)
+    assert atom.charge == 0
+    assert atom.n_electrons == 6
+
+
+def test_atom_n_electrons_neutral_equals_atomic_number() -> None:
+    """For a neutral atom, n_electrons must equal Z for all elements."""
+    for z in range(1, 119):
+        atom = Atom(atomic_number=z)
+        assert atom.n_electrons == z, (
+            f"Neutral Atom(Z={z}) should have n_electrons={z}, "
+            f"got {atom.n_electrons}"
+        )
+
+
+def test_atom_cation_fewer_electrons() -> None:
+    """A cation (negative charge in our convention) should have fewer electrons."""
+    # Na+ (sodium cation): Z=11, charge=-1 → N=10
+    atom = Atom(atomic_number=11, charge=-1)
+    assert atom.n_electrons == 10
+
+
+def test_atom_anion_more_electrons() -> None:
+    """An anion (positive charge in our convention) should have more electrons."""
+    # Cl- (chloride): Z=17, charge=+1 → N=18
+    atom = Atom(atomic_number=17, charge=+1)
+    assert atom.n_electrons == 18
 
 

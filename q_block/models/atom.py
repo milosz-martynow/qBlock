@@ -29,6 +29,7 @@ class Atom:
         empirical_exceptions: Optional[Dict[int, List[Dict[str, int]]]] = EMPIRICAL_EXCEPTIONS,
         basis_set: Optional[BasisSet] = None,
         coordinates: Optional[CartesianCoordinates] = None,
+        charge: int = 0,
     ) -> None:
         """Initialize an Atom object containing nested shells, subshells, orbitals,
         and spin-orbitals up to a chosen maximum principal quantum number.
@@ -69,6 +70,11 @@ class Atom:
         :param coordinates: Optional CartesianCoordinates associated with the atom.
         :type coordinates: Optional[CartesianCoordinates]
 
+        :param charge: Formal charge on this atom.  Default ``0``
+            (neutral atom).  The total system charge is the sum of all
+            per-atom charges.
+        :type charge: int
+
         Notes
         -----
         - All quantum objects are pre-constructed so that ``fill_occupancy()`` only marks
@@ -85,6 +91,9 @@ class Atom:
         self.atomic_number = atomic_number
         self.maximal_principal_quantum_number = maximal_principal_quantum_number
         self._empirical_exceptions = empirical_exceptions
+
+        # Formal charge on this atom (default 0 = neutral)
+        self.charge: int = charge
 
         # Coordinates (CartesianCoordinates instance or None)
         self.coordinates: Optional[CartesianCoordinates] = coordinates
@@ -115,17 +124,20 @@ class Atom:
 
     @property
     def n_electrons(self) -> int:
-        """Number of electrons in the neutral atom.
+        """Number of electrons on this atom accounting for formal charge.
 
-        For a neutral atom this equals the atomic number :math:`Z`.
-        This property provides a semantically clear name when the
-        quantity of interest is the *electron count* rather than the
-        nuclear charge.
+        For a neutral atom (:attr:`charge` ``= 0``) this equals the
+        atomic number :math:`Z`.  A negative charge (anion) adds
+        electrons and a positive charge (cation) is stored as a
+        positive value but the sign convention of :attr:`charge`
+        already encodes the direction:
+
+        .. math:: N = Z + q
 
         :returns: Number of electrons.
         :rtype: int
         """
-        return self.atomic_number
+        return self.atomic_number + self.charge
 
     @staticmethod
     def _aufbau_key(sub: SubShell) -> Tuple[int, int]:

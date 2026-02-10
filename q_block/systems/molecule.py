@@ -42,14 +42,18 @@ class Molecule(AtomicSystem):
         assigned to each atom based on its symbol before GTO
         population.
     :type basis_set: Optional[BasisSet]
+    :param multiplicity: Spin multiplicity :math:`2S+1`.  Default ``1``
+        (singlet).
+    :type multiplicity: int
     """
 
     def __init__(
         self,
         input_data: Optional[InputData] = None,
         basis_set: Optional[BasisSet] = None,
+        multiplicity: int = 1,
     ) -> None:
-        super().__init__(input_data=input_data)
+        super().__init__(input_data=input_data, multiplicity=multiplicity)
 
         # Cache atoms list for convenience
         self.atoms: List[Atom] = list(self.input_data.atoms["atom"])
@@ -61,6 +65,11 @@ class Molecule(AtomicSystem):
 
         # Automatically populate GTO data for all atoms that have a basis set
         self.populate_spinorbitals_with_gto()
+
+        # Validate basis sets, electron count, and multiplicity consistency
+        self.validate_basis_sets()
+        self._validate_n_electrons()
+        self._validate_multiplicity()
 
     @property
     def total_atomic_number(self) -> int:
@@ -77,19 +86,59 @@ class Molecule(AtomicSystem):
 
     @property
     def n_electrons(self) -> int:
-        """Total number of electrons in the neutral molecule.
+        """Total number of electrons in the molecule.
 
-        Equals the sum of :attr:`Atom.n_electrons` over all atoms,
-        which for neutral atoms is equivalent to
-        :attr:`total_atomic_number`.
+        Each :class:`~q_block.models.atom.Atom` already accounts for
+        its own formal charge via :attr:`Atom.n_electrons`
+        (:math:`Z_i - q_i`), so the molecule-level count is simply the
+        sum over all atoms:
 
-        To obtain the electron count for a charged system, subtract
-        the charge from this value.
+        .. math:: N = \\sum_i (Z_i - q_i)
 
-        :returns: Sum of electron counts over all atoms.
+        :returns: Total electron count.
         :rtype: int
         """
         return sum(atom.n_electrons for atom in self.atoms)
+
+    def _validate_n_electrons(self) -> None:
+        """Verify that the electron count is non-negative.
+
+        :raises ValueError: If :attr:`n_electrons` is negative, meaning
+            the charge exceeds the total neutral electron count.
+        """
+        if self.n_electrons < 0:
+            raise ValueError(
+                f"Negative electron count ({self.n_electrons}): charge "
+                f"({self.charge}) exceeds total nuclear charge "
+                f"({self.total_atomic_number})."
+            )
+
+    def _validate_multiplicity(self) -> None:
+        """Validate that the multiplicity is consistent with the electron count.
+
+        The number of unpaired electrons implied by the multiplicity is
+        :math:`n_{unpaired} = 2S = M - 1` where :math:`M` is the
+        multiplicity.  :math:`n_{unpaired}` must have the same parity as
+        :math:`N_{elec}` and must not exceed :math:`N_{elec}`.
+
+        :raises ValueError: On parity mismatch or impossible multiplicity.
+        """
+        if self.multiplicity < 1:
+            raise ValueError(
+                f"Multiplicity must be >= 1; got {self.multiplicity}."
+            )
+        n_unpaired = self.multiplicity - 1
+        if (self.n_electrons - n_unpaired) % 2 != 0:
+            raise ValueError(
+                f"Multiplicity {self.multiplicity} is incompatible with "
+                f"{self.n_electrons} electrons (parity mismatch)."
+            )
+        if n_unpaired > self.n_electrons:
+            raise ValueError(
+                f"Multiplicity {self.multiplicity} requires {n_unpaired} "
+                f"unpaired electrons, but only {self.n_electrons} electrons "
+                f"are present."
+            )
 
     def to_bohr(self) -> None:
         """Convert all atom coordinates from Ångström to Bohr in place.
@@ -111,6 +160,48 @@ class Molecule(AtomicSystem):
                     f"atom {atom!r} has {type(atom.coordinates).__name__}."
                 )
             atom.to_bohr()
+
+    def validate_basis_sets(self) -> None:
+        """Verify that every atom has a valid basis set attached.
+
+        :raises ValueError: If any atom is missing basis-set data or
+            its element is absent from the attached basis set.
+        """
+        for atom in self.atoms:
+            if atom.basis_set is None:
+                raise ValueError(
+                    f"Atom {atom!r} has no BasisSet attached. "
+                    f"Assign a BasisSet to each atom before passing "
+                    f"the molecule to HartreeFock."
+                )
+            if atom.atomic_number not in atom.basis_set:
+                raise ValueError(
+                    f"Atom {atom!r} has a BasisSet attached but its "
+                    f"element is not present in the basis set."
+                )
+
+    @property
+    def n_basis(self) -> int:
+        """Total number of contracted basis functions in the molecule.
+
+        A "basis function" here is one contracted Gaussian shell for a
+        given angular momentum :math:`l`, contributing :math:`2l+1`
+        Cartesian/spherical functions.
+
+        :returns: Total number of basis functions across all atoms.
+        :rtype: int
+        """
+        n_basis = 0
+        for atom in self.atoms:
+            if atom.basis_set is None or atom.atomic_number not in atom.basis_set:
+                continue
+            regions = atom.basis_set[atom.atomic_number]
+            for region_name in ("core", "valence_inner", "valence_outer"):
+                region = regions.get(region_name, {})
+                for l_val, shells in region.items():
+                    # Each shell contributes (2l+1) basis functions
+                    n_basis += len(shells) * (2 * l_val + 1)
+        return n_basis
 
     def populate_spinorbitals_with_gto(self) -> None:
         """Attach GTO basis data to occupied spin-orbitals for all atoms.

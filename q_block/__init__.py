@@ -16,7 +16,7 @@ from .systems.molecule import Molecule
 from .systems.crystal import Crystal
 
 # Theory module - initialization for quantum-chemistry calculations
-from .theory.initialization import Initialization, HartreeFock
+from .theory.initialization import Initialization, HartreeFock, RHF, UHF, ROHF
 from .constants.atoms_data import ANGSTROM_TO_BOHR
 
 __all__ = [
@@ -38,4 +38,7 @@ __all__ = [
     "Crystal",
     "Initialization",
     "HartreeFock",
+    "RHF",
+    "UHF",
+    "ROHF",
 ]
