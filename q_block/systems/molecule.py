@@ -66,8 +66,10 @@ class Molecule(AtomicSystem):
         # Automatically populate GTO data for all atoms that have a basis set
         self.populate_spinorbitals_with_gto()
 
-        # Validate basis sets, electron count, and multiplicity consistency
-        self.validate_basis_sets()
+        # Validate basis sets (only when one was provided), electron count,
+        # and multiplicity consistency
+        if basis_set is not None:
+            self._validate_basis_sets()
         self._validate_n_electrons()
         self._validate_multiplicity()
 
@@ -161,7 +163,7 @@ class Molecule(AtomicSystem):
                 )
             atom.to_bohr()
 
-    def validate_basis_sets(self) -> None:
+    def _validate_basis_sets(self) -> None:
         """Verify that every atom has a valid basis set attached.
 
         :raises ValueError: If any atom is missing basis-set data or
