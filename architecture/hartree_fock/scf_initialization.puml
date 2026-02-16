@@ -69,22 +69,28 @@ partition "SCF Initialization" {
 !endsub
 
 legend right
+    **Index Notation:**
+    |= Index |= Range |= Meaning |
+    | N_occ | - | Number of occupied orbitals |
+    | N_closed | - | Number of doubly occupied (closed-shell) orbitals |
+    | N_open | - | Number of singly occupied (open-shell) orbitals |
+    ----
     **Symbol Legend:**
     |= Symbol |= Description |
-    | <latex>\mathbf{X}</latex> | Orthogonalization matrix - transforms AO to orthogonal basis |
-    | <latex>\mathbf{S}^{-1/2}</latex> | Inverse square root of overlap matrix |
-    | <latex>\mathbf{F}</latex> | Fock matrix - effective one-electron Hamiltonian |
-    | <latex>\mathbf{F}'</latex> | Fock matrix in orthogonal basis |
-    | <latex>\mathbf{C}</latex> | MO coefficient matrix - transforms AO to MO basis |
-    | <latex>\mathbf{C}'</latex> | MO coefficients in orthogonal basis |
-    | <latex>\boldsymbol{\varepsilon}</latex> | Orbital energies - eigenvalues of Fock matrix |
-    | <latex>\mathbf{P}</latex> | Density matrix - electron probability distribution |
-    | <latex>\mathbf{P}^{\alpha}, \mathbf{P}^{\beta}</latex> | Spin-specific density matrices (UHF) |
-    | <latex>\mathbf{P}^{T}</latex> | Total density matrix (sum of alpha and beta) |
-    | <latex>\mathbf{P}_{closed}</latex> | Closed-shell density matrix (ROHF) |
-    | <latex>\mathbf{P}_{open}</latex> | Open-shell density matrix (ROHF) |
-    | <latex>\mathbf{C}_{occ}</latex> | Occupied orbital coefficients |
-    | <latex>\mathbf{e}</latex> | DIIS error vector - commutator of F, P, and S |
+    | **X** | Orthogonalization matrix - transforms AO to orthogonal basis |
+    | **S**^−½ | Inverse square root of overlap matrix |
+    | **F** | Fock matrix - effective one-electron Hamiltonian |
+    | **F**′ | Fock matrix in orthogonal basis |
+    | **C** | MO coefficient matrix - transforms AO to MO basis |
+    | **C**′ | MO coefficients in orthogonal basis |
+    | **ε** | Orbital energies - eigenvalues of Fock matrix |
+    | **P** | Density matrix - electron probability distribution |
+    | **P**^α, **P**^β | Spin-specific density matrices (UHF) |
+    | **P**^T | Total density matrix (sum of alpha and beta) |
+    | **P**_closed | Closed-shell density matrix (ROHF) |
+    | **P**_open | Open-shell density matrix (ROHF) |
+    | **C**_occ | Occupied orbital coefficients |
+    | **e** | DIIS error vector - commutator of F, P, and S |
     | DIIS | Direct Inversion of Iterative Subspace - convergence accelerator |
     ----
     **HF Method Colors:**

@@ -17,6 +17,7 @@ from q_block.constants.atoms_data import (
 from q_block.io.coordinates import CartesianCoordinates
 from q_block.io.basis_set import BasisSet
 from q_block.models.electron import Orbital, Shell, SpinOrbital, SubShell
+from q_block.theory.basis_functions import ContractedGaussianTypeOrbital
 
 
 class Atom:
@@ -107,6 +108,9 @@ class Atom:
         # Open-shell flag: True if atom has unpaired electrons, False if closed-shell
         # This is set automatically by fill_occupancy() based on electron configuration
         self.open_shell: Optional[bool] = None
+
+        # CGTO basis functions — populated by make_contracted_gaussian_type_orbital()
+        self.contracted_gaussian_type_orbitals: Optional[List[ContractedGaussianTypeOrbital]] = None
 
         # Build the ground-state electronic configuration immediately.
         self.fill_occupancy()
@@ -303,6 +307,68 @@ class Atom:
                     n_unpaired = n_unpaired + 1
         
         self.open_shell = (n_unpaired > 0)
+
+    def make_contracted_gaussian_type_orbital(
+        self,
+        atom_index: Optional[int] = None,
+    ) -> None:
+        """Build CGTO basis functions from this atom's basis set and coordinates.
+
+        Walks through the hierarchical basis-set structure
+        (``core → valence_inner → valence_outer``) and creates one
+        :class:`~q_block.theory.basis_functions.ContractedGaussianTypeOrbital`
+        per contracted shell.  The results are stored in
+        :attr:`contracted_gaussian_type_orbitals`.
+
+        Each CGTO carries the atom's coordinates as its centre.  If the
+        atom has no coordinates or no basis set, the method is a no-op
+        (an empty list is stored).
+
+        **Ordering:** regions (core → valence_inner → valence_outer),
+        ascending :math:`l`, shell order within each :math:`l`.
+
+        :param atom_index: Optional molecule-level atom index to stamp
+            onto every CGTO.  When called from
+            :meth:`Molecule.make_contracted_gaussian_type_orbital` this
+            is the position of the atom in :attr:`Molecule.atoms`.
+        :type atom_index: Optional[int]
+
+        """
+        if (
+            self.basis_set is None
+            or self.atomic_number not in self.basis_set
+            or self.coordinates is None
+        ):
+            self.contracted_gaussian_type_orbitals = []
+            return
+
+        center = CartesianCoordinates(
+            x=self.coordinates.x,
+            y=self.coordinates.y,
+            z=self.coordinates.z,
+        )
+        regions = self.basis_set[self.atomic_number]
+
+        cgtos: List[ContractedGaussianTypeOrbital] = []
+
+        for region_name in ("core", "valence_inner", "valence_outer"):
+            region = regions.get(region_name, {})
+
+            for l_val in sorted(region.keys()):
+                shells = region[l_val]
+
+                for shell in shells:
+                    cgtos.append(
+                        ContractedGaussianTypeOrbital(
+                            center=center,
+                            l=l_val,
+                            exponents=shell["exponents"],
+                            contractions=shell["coefficients"],
+                            atom_index=atom_index,
+                        )
+                    )
+
+        self.contracted_gaussian_type_orbitals = cgtos
 
     def to_bohr(self) -> None:
         """Convert this atom's coordinates from Ångström to Bohr in place.

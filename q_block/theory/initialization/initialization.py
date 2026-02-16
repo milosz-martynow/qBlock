@@ -31,9 +31,10 @@ This module implements a three-level hierarchy:
      :math:`N_{closed}`, :math:`N_{open}`, multiplicity check
 """
 
-from typing import Literal, Optional
+from typing import Literal, Optional, List
 
 from q_block.systems.molecule import Molecule
+from q_block.theory.basis_functions import ContractedGaussianTypeOrbital
 
 
 # ──────────────────────────────────────────────────────────────────────
@@ -167,9 +168,30 @@ class HartreeFock(Initialization):
         # ── 3. Compute basis-set size ────────────────────────────
         self.n_basis: int = self.molecule.n_basis
 
-        # ── 4. Common electron-count attributes (set by subclass) ────
+        # ── 4. Lazy CGTO list (built on first access) ───────────────
+        self._cgto: Optional[List[ContractedGaussianTypeOrbital]] = None
+
+        # ── 5. Common electron-count attributes (set by subclass) ────
         self.n_alpha: Optional[int] = None
         self.n_beta: Optional[int] = None
+
+    @property
+    def cgto(self) -> List[ContractedGaussianTypeOrbital]:
+        """Contracted Gaussian-Type Orbital basis for integral computation.
+
+        Built lazily on first access by calling
+        :meth:`Molecule.make_contracted_gaussian_type_orbital`.
+        Subsequent accesses return the cached list.
+
+        :returns: Flat list of
+            :class:`~q_block.theory.basis_functions.ContractedGaussianTypeOrbital`
+            shells.
+        :rtype: list
+        """
+        if self._cgto is None:
+            self.molecule.make_contracted_gaussian_type_orbital()
+            self._cgto = self.molecule.contracted_gaussian_type_orbitals or []
+        return self._cgto
 
     def __repr__(self) -> str:
         return (

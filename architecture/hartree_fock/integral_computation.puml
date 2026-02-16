@@ -2,42 +2,205 @@
 
 skinparam ActivityBackgroundColor White
 skinparam ActivityBorderColor Black
+skinparam NoteBackgroundColor #FFFFDD
+skinparam NoteBorderColor #999999
+
+title Integral Computation Phase
+caption All integrals are **identical** for RHF, UHF, and ROHF — they depend only on geometry and basis set.
+
+' ============================================================
+' START – Input from Initialization
+' ============================================================
+start
+
+:▲ **Input** (from Initialization):
+• Molecule – atomic positions <latex>\{\mathbf{R}_A\}</latex> in Bohr, nuclear charges <latex>\{Z_A\}</latex>
+• **cgto** – flat list of CGTO shells <latex>\{\phi_\mu\}</latex>
+  (lazy property, built on first access via Molecule)
+  each carrying <latex>(\mathbf{R}_A,\, l,\, \{\alpha_p\},\, \{d_p\})</latex>
+  and contributing <latex>2l + 1</latex> basis functions
+• **n_basis** – total number of basis functions (sum of <latex>2l+1</latex> over all shells)
+• HF method tag (RHF / UHF / ROHF) — **not used** in this phase; <<#LightCyan>>
+
+note right
+    Each CGTO is a fixed linear combination
+    of primitive Gaussians:
+    <latex>\phi_\mu(\mathbf{r}) = \sum_{p} d_{p\mu}\, g_{p}(\alpha_{p\mu},\, \mathbf{r} - \mathbf{R}_\mu)</latex>
+    where <latex>g_p</latex> is a Cartesian Gaussian primitive
+    with exponent <latex>\alpha_{p\mu}</latex> and contraction
+    coefficient <latex>d_{p\mu}</latex>.
+end note
 
 !startsub INTEGRAL_COMPUTATION
 partition "Integral Computation" {
+
+    ' ============================================================
+    ' ONE-ELECTRON INTEGRALS (parallel, independent)
+    ' ============================================================
     fork
-        :Compute Overlap Matrix <latex>\mathbf{S}</latex>
-        (McMurchie-Davidson);
+        partition "Overlap Matrix  S" {
+            :Compute **Overlap Matrix** <latex>\mathbf{S}</latex>
+            <latex>S_{\mu\nu} = \langle\phi_\mu | \phi_\nu\rangle = \int \phi_\mu(\mathbf{r})\, \phi_\nu(\mathbf{r})\, d\mathbf{r}</latex>
+
+            Dimension: <latex>n_{basis} \times n_{basis}</latex>
+            Properties: symmetric, positive-definite
+            Algorithm: McMurchie-Davidson recursion; <<#LightCyan>>
+
+            note right
+                Measures non-orthogonality
+                of the AO basis.
+                <latex>S_{\mu\mu} = 1</latex> (normalized),
+                <latex>0 \le S_{\mu\nu} \le 1</latex>.
+            end note
+        }
+
     fork again
-        :Compute Kinetic Matrix <latex>\mathbf{T}</latex>;
+        partition "Kinetic Energy Matrix  T" {
+            :Compute **Kinetic Energy Matrix** <latex>\mathbf{T}</latex>
+            <latex>T_{\mu\nu} = \langle\phi_\mu| -\tfrac{1}{2}\nabla^2 |\phi_\nu\rangle = -\frac{1}{2}\int \phi_\mu(\mathbf{r})\, \nabla^2 \phi_\nu(\mathbf{r})\, d\mathbf{r}</latex>
+
+            Dimension: <latex>n_{basis} \times n_{basis}</latex>
+            Properties: symmetric, positive semi-definite
+            Algorithm: McMurchie-Davidson recursion; <<#LightCyan>>
+
+            note right
+                Electron kinetic energy
+                in atomic units
+                (<latex>\hbar = m_e = 1</latex>).
+            end note
+        }
+
     fork again
-        :Compute Nuclear Attraction <latex>\mathbf{V}</latex>;
+        partition "Nuclear Attraction Matrix  V" {
+            :Compute **Nuclear Attraction Matrix** <latex>\mathbf{V}</latex>
+            <latex>V_{\mu\nu} = \sum_{A}^{N_{atoms}} \langle\phi_\mu| -\frac{Z_A}{|\mathbf{r}-\mathbf{R}_A|} |\phi_\nu\rangle</latex>
+            <latex>= -\sum_{A}^{N_{atoms}} Z_A \int \phi_\mu(\mathbf{r})\, \frac{1}{|\mathbf{r}-\mathbf{R}_A|}\, \phi_\nu(\mathbf{r})\, d\mathbf{r}</latex>
+
+            Dimension: <latex>n_{basis} \times n_{basis}</latex>
+            Properties: symmetric, negative semi-definite
+            Algorithm: McMurchie-Davidson + Boys function; <<#LightCyan>>
+
+            note right
+                Coulomb attraction between
+                each electron and every
+                nucleus. Uses the Boys
+                function <latex>F_n(x)</latex> for the
+                <latex>1/r</latex> integrals over Gaussians.
+            end note
+        }
+
     end fork
-    
-    :Compute Core Hamiltonian
-    <latex>\mathbf{H} = \mathbf{T} + \mathbf{V}</latex>;
-    
-    :Compute Two-Electron Integrals
-    <latex>(\mu\nu|\lambda\sigma)</latex> (ERI tensor);
-    
-    :Compute Nuclear Repulsion
-    <latex>E_{nuc} = \sum_{A<B} \frac{Z_A Z_B}{R_{AB}}</latex>;
+
+    ' ============================================================
+    ' CORE HAMILTONIAN
+    ' ============================================================
+    :Assemble **Core Hamiltonian**
+    <latex>\mathbf{H}^{core} = \mathbf{T} + \mathbf{V}</latex>
+
+    This is the complete one-electron Hamiltonian
+    (kinetic energy + nuclear attraction).
+    Dimension: <latex>n_{basis} \times n_{basis}</latex>; <<#LightCyan>>
+
+    ' ============================================================
+    ' TWO-ELECTRON INTEGRALS (ERI)
+    ' ============================================================
+    :Compute **Two-Electron Repulsion Integrals** (ERI tensor)
+    <latex>(\mu\nu|\lambda\sigma) = \iint \phi_\mu(\mathbf{r}_1)\, \phi_\nu(\mathbf{r}_1)\, \frac{1}{|\mathbf{r}_1 - \mathbf{r}_2|}\, \phi_\lambda(\mathbf{r}_2)\, \phi_\sigma(\mathbf{r}_2)\, d\mathbf{r}_1\, d\mathbf{r}_2</latex>
+
+    Chemist notation: <latex>(\mu\nu|\lambda\sigma)</latex>
+    Dimension: <latex>n_{basis}^4</latex> unique index combinations
+    (reduced by 8-fold permutational symmetry)
+    Algorithm: McMurchie-Davidson + Boys function; <<#LightCyan>>
+
+    note right
+        **Permutational symmetries** of the ERI tensor:
+        <latex>(\mu\nu|\lambda\sigma) = (\nu\mu|\lambda\sigma) = (\mu\nu|\sigma\lambda) = (\nu\mu|\sigma\lambda)</latex>
+        <latex>= (\lambda\sigma|\mu\nu) = (\sigma\lambda|\mu\nu) = (\lambda\sigma|\nu\mu) = (\sigma\lambda|\nu\mu)</latex>
+
+        Only <latex>\sim n_{basis}^4/8</latex> unique integrals
+        need to be computed and stored.
+    end note
+
+    ' ============================================================
+    ' NUCLEAR REPULSION ENERGY
+    ' ============================================================
+    :Compute **Nuclear Repulsion Energy**
+    <latex>E_{nuc} = \sum_{A < B}^{N_{atoms}} \frac{Z_A\, Z_B}{|\mathbf{R}_A - \mathbf{R}_B|}</latex>
+
+    Classical point-charge Coulomb repulsion.
+    This is a scalar constant (no electron dependence).; <<#LightCyan>>
 }
 !endsub
 
+' ============================================================
+' NOTE – Method independence
+' ============================================================
+note right
+    **No RHF / UHF / ROHF branching in this phase.**
+    All integrals <latex>\mathbf{S}, \mathbf{T}, \mathbf{V},</latex>
+    <latex>(\mu\nu|\lambda\sigma)</latex>, and <latex>E_{nuc}</latex> are
+    determined **solely** by the molecular geometry
+    and the basis set. Method-specific logic begins
+    in SCF Initialization and SCF Iteration Loop.
+end note
+
+' ============================================================
+' END – Output to downstream phases
+' ============================================================
+:▼ **Output** (passed to subsequent phases):
+• <latex>\mathbf{S}</latex>  (<latex>n_{basis} \times n_{basis}</latex>)  → SCF Initialization, SCF Iteration Loop, Post-SCF Analysis
+• <latex>\mathbf{H}^{core}</latex>  (<latex>n_{basis} \times n_{basis}</latex>)  → SCF Initialization, SCF Iteration Loop
+• ERI tensor  (<latex>\sim n_{basis}^4/8</latex> unique values)  → SCF Iteration Loop
+• <latex>E_{nuc}</latex>  (scalar)  → Finalization (<latex>E_{total} = E_{elec} + E_{nuc}</latex>); <<#LightCyan>>
+
+stop
+
+' ============================================================
+' LEGEND
+' ============================================================
 legend right
+    **Index Notation:**
+    |= Index |= Range |= Description |
+    | μ, ν, λ, σ | 1 … n_basis | Basis function indices |
+    | p | 1 … K | Primitive Gaussian index within a contraction |
+    | A, B | 1 … N_atoms | Atom indices |
+    | i | 1 … n_basis | Molecular orbital index |
+    ----
     **Symbol Legend:**
     |= Symbol |= Description |
-    | <latex>\mathbf{S}</latex> | Overlap matrix - measures how much basis functions overlap |
-    | <latex>\mathbf{T}</latex> | Kinetic energy matrix - electron kinetic energy integrals |
-    | <latex>\mathbf{V}</latex> | Nuclear attraction matrix - electron-nucleus Coulomb interaction |
-    | <latex>\mathbf{H}</latex> | Core Hamiltonian - one-electron part of the Hamiltonian |
-    | <latex>(\mu\nu\|\lambda\sigma)</latex> | Two-electron repulsion integral (ERI) in chemist notation |
-    | ERI | Electron Repulsion Integrals - four-index tensor of two-electron interactions |
-    | <latex>E_{nuc}</latex> | Nuclear repulsion energy - classical Coulomb repulsion between nuclei |
-    | <latex>Z_A</latex> | Atomic number (nuclear charge) of atom A |
-    | <latex>R_{AB}</latex> | Distance between nuclei A and B |
-    | McMurchie-Davidson | Efficient algorithm for computing Gaussian integrals |
+    | φ_μ(**r**) | Contracted Gaussian-type orbital (CGTO) basis function |
+    | g_p | Primitive Cartesian Gaussian |
+    | d_p | Contraction coefficient of primitive p |
+    | α_p | Gaussian exponent of primitive p |
+    | K | Number of primitives in a CGTO (contraction length) |
+    | l | Angular momentum quantum number (0=s, 1=p, 2=d, …) |
+    | l_x, l_y, l_z | Cartesian angular momentum components (l_x + l_y + l_z = l) |
+    | **r** | Arbitrary evaluation point (CartesianCoordinates) |
+    | **R**_A | Position of atom A / CGTO centre (in Bohr) |
+    | Z_A | Atomic number (nuclear charge) of atom A |
+    | n_basis | Total number of basis functions |
+    | N_atoms | Total number of atoms in the molecule |
+    ----
+    **Matrix/Integral Symbols:**
+    |= Symbol |= Description |
+    | **S** | Overlap matrix – S_μν = ⟨φ_μ|φ_ν⟩ |
+    | **T** | Kinetic energy matrix – T_μν = ⟨φ_μ|−½∇²|φ_ν⟩ |
+    | **V** | Nuclear attraction matrix – electron-nucleus Coulomb |
+    | **H**^core | Core Hamiltonian – **T** + **V** |
+    | (μν|λσ) | Two-electron repulsion integral (ERI) in chemist notation |
+    | E_nuc | Nuclear repulsion energy – classical Coulomb between nuclei |
+    | F_n(x) | Boys function – auxiliary for Coulomb integrals over Gaussians |
+    | McMurchie-Davidson | Efficient recursion scheme for Gaussian integral evaluation |
+    ----
+    **Note:** This phase is **method-independent.**
+    RHF, UHF, and ROHF all compute the same set
+    of integrals. Method-specific logic begins
+    in the SCF Initialization phase.
+    ----
+    **HF Method Colors (for reference):**
+    |<#LightGreen> RHF | Restricted Closed-Shell |
+    |<#LightCoral> UHF | Unrestricted |
+    |<#LightYellow> ROHF | Restricted Open-Shell |
 endlegend
 
 @enduml

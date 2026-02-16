@@ -17,11 +17,13 @@ package "q_block" {
         basis_set: Optional[BasisSet]
         coordinates: Optional[CartesianCoordinates]
         open_shell: Optional[bool]
+        contracted_gaussian_type_orbitals: Optional<List<ContractedGaussianTypeOrbital>>
         --
         n_electrons: int <<property>>
         --
         fill_occupancy(): None
         to_bohr(): None
+        make_contracted_gaussian_type_orbital(atom_index): None
     }
 
     class "SpinOrbital" {
@@ -104,6 +106,7 @@ package "q_block" {
 
     class "Molecule" {
         atoms: List<Atom>
+        contracted_gaussian_type_orbitals: Optional<List<ContractedGaussianTypeOrbital>>
         --
         total_atomic_number: int <<property>>
         n_electrons: int <<property>>
@@ -114,6 +117,8 @@ package "q_block" {
         populate_spinorbitals_with_gto(): None
         validate_basis_sets(): None
         to_dataframe(): pd.DataFrame
+        make_contracted_gaussian_type_orbital(): None
+        molecular_orbital(r, coefficients, angular_components): float
     }
 
     class "Crystal" {
@@ -156,6 +161,23 @@ package "q_block" {
     }
 
     ' ----------------------------------------------------------
+    ' theory.basis_functions
+    ' ----------------------------------------------------------
+
+    class "ContractedGaussianTypeOrbital" as CGTO {
+        center: CartesianCoordinates
+        l: int
+        exponents: List<float>
+        contractions: List<float>
+        atom_index: Optional<int>
+        n_primitives: int
+        n_functions: int
+        --
+        primitive_gaussian(r, primitive_index, lx, ly, lz): float
+        basis_function(r, lx, ly, lz): float
+    }
+
+    ' ----------------------------------------------------------
     ' constants
     ' ----------------------------------------------------------
 
@@ -193,8 +215,12 @@ package "q_block" {
 
 "Atom"           ..> AD  : depends on
 "Atom"           ..> "CartesianCoordinates" : uses
+"Atom"           ..> CGTO : creates
 "Molecule"       ..> BS  : uses
+"Molecule"       ..> CGTO : aggregates
 "Initialization" ..> "Molecule" : uses
 "HartreeFock"    ..> BS  : uses
+"HartreeFock"    ..> CGTO : uses (via Molecule)
+CGTO             ..> "CartesianCoordinates" : uses
 
 @enduml

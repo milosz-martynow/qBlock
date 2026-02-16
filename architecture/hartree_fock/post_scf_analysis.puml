@@ -28,15 +28,20 @@ partition "Post-SCF Analysis" {
 !endsub
 
 legend right
+    **Index Notation:**
+    |= Index |= Range |= Meaning |
+    | i, j | 1 to n_occ | Molecular orbital indices |
+    | N_β | - | Number of beta electrons |
+    ----
     **Symbol Legend:**
     |= Symbol |= Description |
-    | <latex>\langle\hat{S}^2\rangle</latex> | Expectation value of spin-squared operator |
-    | <latex>S</latex> | Total spin quantum number |
-    | <latex>S(S+1)</latex> | Ideal spin expectation value for pure spin state |
-    | <latex>S_{ideal}</latex> | Expected spin quantum number based on multiplicity |
-    | <latex>\psi^{\alpha}_i</latex> | Alpha (spin-up) molecular orbital i |
-    | <latex>\psi^{\beta}_j</latex> | Beta (spin-down) molecular orbital j |
-    | <latex>\langle\psi^{\alpha}_i\|\psi^{\beta}_j\rangle</latex> | Overlap between alpha orbital i and beta orbital j |
+    | ⟨Ŝ²⟩ | Expectation value of spin-squared operator |
+    | S | Total spin quantum number |
+    | S(S+1) | Ideal spin expectation value for pure spin state |
+    | S_ideal | Expected spin quantum number based on multiplicity |
+    | ψ^α_i | Alpha (spin-up) molecular orbital i |
+    | ψ^β_j | Beta (spin-down) molecular orbital j |
+    | ⟨ψ^α_i|ψ^β_j⟩ | Overlap between alpha orbital i and beta orbital j |
     | Spin contamination | Mixing of unwanted higher spin states in UHF |
     | Singlet | Spin state with S=0 (all electrons paired) |
     | Doublet | Spin state with S=1/2 (one unpaired electron) |

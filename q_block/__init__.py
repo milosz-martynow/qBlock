@@ -17,6 +17,7 @@ from .systems.crystal import Crystal
 
 # Theory module - initialization for quantum-chemistry calculations
 from .theory.initialization import Initialization, HartreeFock, RHF, UHF, ROHF
+from .theory.basis_functions import ContractedGaussianTypeOrbital
 from .constants.atoms_data import ANGSTROM_TO_BOHR
 
 __all__ = [
@@ -41,4 +42,5 @@ __all__ = [
     "RHF",
     "UHF",
     "ROHF",
+    "ContractedGaussianTypeOrbital",
 ]

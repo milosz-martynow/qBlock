@@ -34,18 +34,22 @@ partition "Finalization" {
 !endsub
 
 legend right
+    **Index Notation:**
+    |= Index |= Range |= Meaning |
+    | α, β | - | Spin indices (up/down) |
+    ----
     **Symbol Legend:**
     |= Symbol |= Description |
-    | <latex>E_{total}</latex> | Total molecular energy (electronic + nuclear) |
-    | <latex>E_{elec}</latex> | Electronic energy - energy of all electrons |
-    | <latex>E_{nuc}</latex> | Nuclear repulsion energy - classical nucleus-nucleus repulsion |
-    | <latex>\mathbf{C}</latex> | MO coefficient matrix - orbital expansion coefficients |
-    | <latex>\mathbf{C}^{\alpha}, \mathbf{C}^{\beta}</latex> | Spin-specific MO coefficients (UHF) |
-    | <latex>\boldsymbol{\varepsilon}</latex> | Orbital energies - eigenvalues of Fock matrix |
-    | <latex>\boldsymbol{\varepsilon}^{\alpha}, \boldsymbol{\varepsilon}^{\beta}</latex> | Spin-specific orbital energies (UHF) |
-    | <latex>\mathbf{P}</latex> | Density matrix - electron probability distribution |
-    | <latex>\mathbf{P}^{\alpha}, \mathbf{P}^{\beta}</latex> | Spin-specific density matrices (UHF) |
-    | <latex>\langle\hat{S}^2\rangle</latex> | Spin expectation value - spin purity measure |
+    | E_total | Total molecular energy (electronic + nuclear) |
+    | E_elec | Electronic energy - energy of all electrons |
+    | E_nuc | Nuclear repulsion energy - classical nucleus-nucleus repulsion |
+    | **C** | MO coefficient matrix - orbital expansion coefficients |
+    | **C**^α, **C**^β | Spin-specific MO coefficients (UHF) |
+    | **ε** | Orbital energies - eigenvalues of Fock matrix |
+    | **ε**^α, **ε**^β | Spin-specific orbital energies (UHF) |
+    | **P** | Density matrix - electron probability distribution |
+    | **P**^α, **P**^β | Spin-specific density matrices (UHF) |
+    | ⟨Ŝ²⟩ | Spin expectation value - spin purity measure |
     | Wavefunction | Object containing all orbital and energy information |
     | HartreeFockResults | Container for all calculation outputs |
     ----

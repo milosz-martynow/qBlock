@@ -118,25 +118,41 @@ partition "SCF Iteration Loop" {
 !endsub
 
 legend right
-    **Symbol Legend:**
+    **Index Notation:**
+    |= Index |= Range |= Description |
+    | μ, ν, λ, σ | 1 … n_basis | Basis function indices |
+    | i | 1 … n_basis | Molecular orbital index |
+    ----
+    **Matrix Symbols:**
     |= Symbol |= Description |
-    | <latex>\mathbf{F}</latex> | Fock matrix - effective one-electron Hamiltonian |
-    | <latex>\mathbf{F}^{\alpha}, \mathbf{F}^{\beta}</latex> | Spin-specific Fock matrices (UHF) |
-    | <latex>\mathbf{F}_{c}, \mathbf{F}_{o}</latex> | Closed/open shell Fock matrices (ROHF) |
-    | <latex>\mathbf{F}_{eff}</latex> | Effective Fock matrix for ROHF (Roothaan) |
-    | <latex>\mathbf{P}</latex> | Density matrix - electron probability distribution |
-    | <latex>\mathbf{P}^{T}</latex> | Total density matrix (alpha + beta) |
-    | <latex>\mathbf{G}</latex> | Two-electron contribution to Fock matrix |
-    | <latex>E_{elec}</latex> | Electronic energy - total electron energy |
-    | <latex>\Delta E</latex> | Energy change between iterations |
-    | <latex>\tau</latex> | Convergence threshold (typically 10⁻⁸) |
-    | <latex>\mathbf{e}</latex> | DIIS error vector - FPS - SPF commutator |
+    | **F** | Fock matrix – effective one-electron Hamiltonian |
+    | **F**^α, **F**^β | Spin-specific Fock matrices (UHF) |
+    | **F**_c, **F**_o | Closed/open shell Fock matrices (ROHF) |
+    | **F**_eff | Effective Fock matrix for ROHF (Roothaan) |
+    | **H** | Core Hamiltonian (**T** + **V**) |
+    | **P** | Density matrix – P_μν electron probability |
+    | **P**^T | Total density matrix (**P**^α + **P**^β) |
+    | **S** | Overlap matrix |
+    | **G** | Two-electron contribution to Fock matrix |
+    | **C** | MO coefficient matrix – C_μi = coefficient of basis function μ in MO i |
+    | **X** | Orthogonalization matrix (**S**^−½) |
+    | **ε** | Orbital energies (eigenvalues) |
+    ----
+    **Scalar Symbols:**
+    |= Symbol |= Description |
+    | E_elec | Electronic energy – total electron energy |
+    | ΔE | Energy change between iterations |
+    | τ | Convergence threshold (typically 10⁻⁸) |
     | RMS | Root Mean Square of error matrix |
-    | <latex>\mathbf{X}</latex> | Orthogonalization matrix |
-    | <latex>\mathbf{C}</latex> | MO coefficient matrix |
-    | <latex>\boldsymbol{\varepsilon}</latex> | Orbital energies |
-    | <latex>\mathbf{P}_{c}, \mathbf{P}_{o}, \mathbf{P}_{v}</latex> | Projection operators for closed/open/virtual spaces |
-    | DIIS | Direct Inversion of Iterative Subspace - convergence accelerator |
+    ----
+    **DIIS Symbols:**
+    |= Symbol |= Description |
+    | **e** | DIIS error vector – **FPS** − **SPF** commutator |
+    | DIIS | Direct Inversion of Iterative Subspace – convergence accelerator |
+    ----
+    **Projection Operators (ROHF):**
+    |= Symbol |= Description |
+    | **P**_c, **P**_o, **P**_v | Projection operators for closed/open/virtual spaces |
     ----
     **HF Method Colors:**
     |<#LightGreen> RHF | Restricted Closed-Shell |

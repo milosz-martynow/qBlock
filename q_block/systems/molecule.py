@@ -6,7 +6,7 @@ for molecular systems that extends :class:`q_block.atomic_system.AtomicSystem`.
 
 from __future__ import annotations
 
-from typing import Optional, Dict, List, Any, Union
+from typing import Optional, Dict, List, Any, Union, Tuple
 
 import pandas as pd
 
@@ -16,6 +16,7 @@ from q_block.io.coordinates import CartesianCoordinates
 from q_block.io.basis_set import BasisSet
 from q_block.models.electron import SubShell
 from q_block.models.atom import Atom
+from q_block.theory.basis_functions import ContractedGaussianTypeOrbital
 
 
 class Molecule(AtomicSystem):
@@ -65,6 +66,9 @@ class Molecule(AtomicSystem):
 
         # Automatically populate GTO data for all atoms that have a basis set
         self.populate_spinorbitals_with_gto()
+
+        # CGTO basis — populated by make_contracted_gaussian_type_orbital()
+        self.contracted_gaussian_type_orbitals: Optional[List[ContractedGaussianTypeOrbital]] = None
 
         # Validate basis sets (only when one was provided), electron count,
         # and multiplicity consistency
@@ -204,6 +208,101 @@ class Molecule(AtomicSystem):
                     # Each shell contributes (2l+1) basis functions
                     n_basis += len(shells) * (2 * l_val + 1)
         return n_basis
+
+    def make_contracted_gaussian_type_orbital(self) -> None:
+        """Build CGTO basis functions for all atoms in the molecule.
+
+        Iterates over every :class:`Atom` in :attr:`atoms`, calls
+        :meth:`Atom.make_contracted_gaussian_type_orbital` on each, and
+        aggregates the results into a flat list of
+        :class:`~q_block.theory.basis_functions.ContractedGaussianTypeOrbital`.
+
+        Atoms without a basis set or without coordinates are silently
+        skipped (they contribute zero shells).
+
+        The resulting list is stored in
+        :attr:`contracted_gaussian_type_orbitals`.
+
+        **Ordering convention** (deterministic):
+
+        1. Atoms — in the order they appear in :attr:`atoms`.
+        2. Within each atom — regions
+           (``core → valence_inner → valence_outer``),
+           ascending :math:`l`, shell order within each :math:`l`.
+
+        """
+        all_cgtos: List[ContractedGaussianTypeOrbital] = []
+
+        for atom_idx, atom in enumerate(self.atoms):
+            atom.make_contracted_gaussian_type_orbital(atom_index=atom_idx)
+            if atom.contracted_gaussian_type_orbitals:
+                all_cgtos.extend(atom.contracted_gaussian_type_orbitals)
+
+        self.contracted_gaussian_type_orbitals = all_cgtos
+
+    def molecular_orbital(
+        self,
+        r: CartesianCoordinates,
+        coefficients: List[float],
+        angular_components: List[Tuple[int, int, int]],
+    ) -> float:
+        r"""Evaluate a molecular orbital at position r.
+
+        Computes:
+
+        .. math::
+
+            \psi(\mathbf{r}) = \sum_{\mu=1}^{n_{basis}} C_\mu\, \phi_\mu(\mathbf{r})
+
+        where each :math:`\phi_\mu` is a contracted Gaussian basis
+        function with a specific Cartesian angular component.
+
+        :meth:`make_contracted_gaussian_type_orbital` must be called
+        before this method.
+
+        :param r: Point at which to evaluate the molecular orbital.
+        :type r: CartesianCoordinates
+        :param coefficients: MO expansion coefficients :math:`C_\mu`.
+            Length must equal :attr:`n_basis`.
+        :type coefficients: List[float]
+        :param angular_components: Cartesian angular momenta
+            ``(lx, ly, lz)`` for each basis function, in the same
+            order as the coefficient array.  Length must equal
+            :attr:`n_basis`.
+        :type angular_components: List[Tuple[int, int, int]]
+
+        :returns: Value of the molecular orbital at :math:`\mathbf{r}`.
+        :rtype: float
+
+        :raises ValueError: If CGTOs have not been built or lengths
+            mismatch.
+        """
+        if self.contracted_gaussian_type_orbitals is None:
+            raise ValueError(
+                "CGTOs not built; call make_contracted_gaussian_type_orbital() first."
+            )
+        if len(coefficients) != self.n_basis:
+            raise ValueError(
+                f"coefficients length ({len(coefficients)}) must equal "
+                f"n_basis ({self.n_basis})."
+            )
+        if len(angular_components) != self.n_basis:
+            raise ValueError(
+                f"angular_components length ({len(angular_components)}) must "
+                f"equal n_basis ({self.n_basis})."
+            )
+
+        value = 0.0
+        mu = 0
+
+        for cgto in self.contracted_gaussian_type_orbitals:
+            for _ in range(cgto.n_functions):
+                lx, ly, lz = angular_components[mu]
+                coeff = coefficients[mu]
+                value += coeff * cgto.basis_function(r, lx, ly, lz)
+                mu += 1
+
+        return value
 
     def populate_spinorbitals_with_gto(self) -> None:
         """Attach GTO basis data to occupied spin-orbitals for all atoms.

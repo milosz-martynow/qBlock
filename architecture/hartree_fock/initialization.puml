@@ -22,6 +22,25 @@ partition "Initialization (base)" {
 partition "HartreeFock (base)" {
     :Compute **n_basis**
     (total contracted Gaussians);
+
+    :Register lazy **cgto** property
+    (ContractedGaussianTypeOrbital built on first access
+    via **ContractedGaussianTypeOrbital(molecule)**);
+
+    note right
+        For each atom, walk the hierarchical
+        basis-set structure:
+        **regions** (core, valence_inner, valence_outer)
+        → angular momentum <latex>l</latex>
+        → shells (exponents, coefficients)
+
+        Each shell produces one
+        <latex>\textbf{CGTO}(\mathbf{R}_A,\, l,\, \{\alpha_p\},\, \{d_p\})</latex>
+        contributing <latex>2l + 1</latex> basis functions.
+        Magnetic quantum number is resolved
+        during integral evaluation.
+    end note
+
     :Declare shared attributes
     <latex>N_{\alpha}</latex>, <latex>N_{\beta}</latex> (set by subclass);
 
@@ -70,8 +89,12 @@ partition "HartreeFock (base)" {
 
 :▼ **Transfer to Integral Computation →**
 • Molecule (atoms in Bohr)
+• **cgto** (lazy property, built on first access):
+  flat list of CGTO shells, each carrying
+  <latex>(\mathbf{R}_A,\, l,\, \{\alpha_p\},\, \{d_p\})</latex>
+  and contributing <latex>2l + 1</latex> basis functions
 • <latex>N_{elec}</latex>, charge, multiplicity
-• n_basis (contracted Gaussians)
+• n_basis (total number of basis functions)
 • RHF: <latex>N_{occ}</latex>
   UHF: <latex>N_{\alpha}, N_{\beta}</latex>
   ROHF: <latex>N_{closed}, N_{open}</latex>
@@ -81,18 +104,34 @@ stop
 !endsub
 
 legend right
+    **Index Notation:**
+    |= Index |= Range |= Description |
+    | A | 1 … N_atoms | Atom index in molecule |
+    | p | 1 … K | Primitive Gaussian index within a contraction |
+    | μ | 1 … n_basis | Basis function index |
+    ----
     **Symbol Legend:**
     |= Symbol |= Description |
-    | <latex>Z_i</latex> | Atomic number of atom //i// |
+    | Z_A | Atomic number of atom A |
     | charge | Sum of per-atom formal charges |
-    | <latex>N_{elec}</latex> | Total number of electrons |
-    | <latex>N_{occ}</latex> | Doubly-occupied orbitals (RHF) |
-    | <latex>N_{\alpha}</latex> | Alpha (spin-up) electrons |
-    | <latex>N_{\beta}</latex> | Beta (spin-down) electrons |
-    | <latex>N_{closed}</latex> | Doubly-occupied orbitals (ROHF) |
-    | <latex>N_{open}</latex> | Singly-occupied orbitals (ROHF) |
-    | <latex>M</latex> | Spin multiplicity (2S + 1) |
+    | N_elec | Total number of electrons |
+    | N_occ | Doubly-occupied orbitals (RHF) |
+    | N_α | Alpha (spin-up) electrons |
+    | N_β | Beta (spin-down) electrons |
+    | N_closed | Doubly-occupied orbitals (ROHF) |
+    | N_open | Singly-occupied orbitals (ROHF) |
+    | M | Spin multiplicity (2S + 1) |
     | Bohr | Atomic unit of length (1 Bohr ≈ 0.529 Å) |
+    ----
+    **CGTO Parameters:**
+    |= Symbol |= Description |
+    | ContractedGaussianTypeOrbital | CGTO shell object (one per l value per atom) |
+    | **R**_A | Atom centre position (Bohr) |
+    | l | Angular momentum quantum number (0=s, 1=p, 2=d, …) |
+    | K | Number of primitives in contraction |
+    | α_p | Gaussian exponent of primitive p |
+    | d_p | Contraction coefficient of primitive p |
+    | n_basis | Total basis functions (sum of 2l+1 over all shells) |
     ----
     **HF Method Colors:**
     |<#LightGreen> RHF | Restricted Closed-Shell |

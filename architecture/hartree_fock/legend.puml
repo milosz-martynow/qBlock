@@ -2,34 +2,42 @@
 
 !startsub LEGEND
 legend right
+    **Index Notation:**
+    |= Index |= Range |= Meaning |
+    | μ, ν, λ, σ | 1 to n_basis | Basis function (AO) indices |
+    | p | 1 to K | Primitive Gaussian index within contraction |
+    | i, j | 1 to n_occ | Occupied molecular orbital indices |
+    | a, b | n_occ+1 to n_basis | Virtual molecular orbital indices |
+    | A, B | 1 to N_atoms | Atom center indices |
+    ----
     **Symbol Legend:**
     |= Symbol |= Description |
-    | <latex>\mathbf{S}</latex> | Overlap matrix - measures basis function overlap |
-    | <latex>\mathbf{T}</latex> | Kinetic energy matrix - electron kinetic energy |
-    | <latex>\mathbf{V}</latex> | Nuclear attraction matrix - electron-nucleus interaction |
-    | <latex>\mathbf{H}</latex> | Core Hamiltonian - one-electron energy operator |
-    | <latex>\mathbf{F}</latex> | Fock matrix - effective one-electron operator |
-    | <latex>\mathbf{P}</latex> | Density matrix - electron probability distribution |
-    | <latex>\mathbf{C}</latex> | MO coefficient matrix - orbital expansion coefficients |
-    | <latex>\mathbf{X}</latex> | Orthogonalization matrix - transforms to orthogonal basis |
-    | <latex>\boldsymbol{\varepsilon}</latex> | Orbital energies - eigenvalues of Fock matrix |
+    | **S** | Overlap matrix - measures basis function overlap |
+    | **T** | Kinetic energy matrix - electron kinetic energy |
+    | **V** | Nuclear attraction matrix - electron-nucleus interaction |
+    | **H** | Core Hamiltonian - one-electron energy operator |
+    | **F** | Fock matrix - effective one-electron operator |
+    | **P** | Density matrix - electron probability distribution |
+    | **C** | MO coefficient matrix - orbital expansion coefficients |
+    | **X** | Orthogonalization matrix - transforms to orthogonal basis |
+    | **ε** | Orbital energies - eigenvalues of Fock matrix |
     | ERI | Electron repulsion integrals - two-electron interactions |
-    | <latex>E_{nuc}</latex> | Nuclear repulsion energy - nucleus-nucleus interaction |
-    | <latex>E_{elec}</latex> | Electronic energy - total electron energy |
-    | <latex>E_{total}</latex> | Total energy - sum of electronic and nuclear energies |
-    | <latex>N_{occ}</latex> | Number of occupied orbitals (RHF) |
-    | <latex>N_{\alpha}, N_{\beta}</latex> | Number of alpha/beta electrons (UHF) |
-    | <latex>N_{closed}, N_{open}</latex> | Closed/open shell electron counts (ROHF) |
-    | <latex>\langle\hat{S}^2\rangle</latex> | Spin expectation value - spin purity measure |
+    | E_nuc | Nuclear repulsion energy - nucleus-nucleus interaction |
+    | E_elec | Electronic energy - total electron energy |
+    | E_total | Total energy - sum of electronic and nuclear energies |
+    | N_occ | Number of occupied orbitals (RHF) |
+    | N_α, N_β | Number of alpha/beta electrons (UHF) |
+    | N_closed, N_open | Closed/open shell electron counts (ROHF) |
+    | ⟨Ŝ²⟩ | Spin expectation value - spin purity measure |
     | DIIS | Direct Inversion of Iterative Subspace - convergence accelerator |
     ----
     **Method Comparison:**
     |= Component |= RHF |= UHF |= ROHF |
-    | Fock input | <latex>\mathbf{F}</latex> | <latex>\mathbf{F}^{\alpha}, \mathbf{F}^{\beta}</latex> | <latex>\mathbf{F}_{eff}</latex> |
-    | Density | <latex>\mathbf{P}</latex> | <latex>\mathbf{P}^{\alpha}, \mathbf{P}^{\beta}, \mathbf{P}^{T}</latex> | <latex>\mathbf{P}_{closed}, \mathbf{P}_{open}</latex> |
-    | DIIS stores | <latex>\mathbf{F}, \mathbf{e}</latex> | <latex>\mathbf{F}^{\alpha/\beta}, \mathbf{e}^{\alpha/\beta}</latex> | <latex>\mathbf{F}_{eff}, \mathbf{e}</latex> |
+    | Fock input | **F** | **F**^α, **F**^β | **F**_eff |
+    | Density | **P** | **P**^α, **P**^β, **P**^T | **P**_closed, **P**_open |
+    | DIIS stores | **F**, **e** | **F**^α/β, **e**^α/β | **F**_eff, **e** |
     | # Diagonalizations | 1 | 2 (α and β) | 1 |
-    | MO extraction | first <latex>N_{occ}</latex> cols | first <latex>N_{\alpha/\beta}</latex> cols | partition by shell |
+    | MO extraction | first N_occ cols | first N_α/β cols | partition by shell |
     |<#LightGreen> Color |= RHF |<#LightCoral> UHF |<#LightYellow> ROHF |
 endlegend
 !endsub
