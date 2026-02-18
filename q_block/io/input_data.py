@@ -15,8 +15,6 @@ pass structured input data through higher-level APIs without exposing raw
 pandas objects.
 """
 
-from __future__ import annotations
-
 from pathlib import Path
 from typing import Any, List, Union, Optional
 
@@ -24,6 +22,7 @@ import pandas as pd
 
 from q_block.constants.atoms_data import ATOMS_SYMBOLS_SYMBOL_TO_Z
 from q_block.io.coordinates import CartesianCoordinates
+from q_block.models.atom import Atom
 
 
 class InputData:
@@ -146,8 +145,6 @@ class InputData:
 
             basis_set = entry[4] if len(entry) > 4 else None
             charge = entry[5] if len(entry) > 5 else 0
-
-            from q_block.models.atom import Atom
 
             atom = Atom(
                 atomic_number=atomic_number,

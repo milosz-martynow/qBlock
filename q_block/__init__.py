@@ -1,10 +1,4 @@
-"""q_block package public surface.
-
-Expose convenience symbols for quick import in tests and examples.
-
-Prefer importing specific symbols from submodules for clarity when
-modifying the package internals.
-"""
+"""q_block package public API."""
 
 from .models.atom import Atom, Orbital, Shell, SpinOrbital, SubShell
 from .constants.atoms_data import ATOMS_SYMBOLS_SYMBOL_TO_Z, ATOMS_SYMBOLS_Z_TO_SYMBOL

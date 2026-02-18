@@ -1,4 +1,4 @@
-"""Composite physical systems (molecules, crystals, etc.)."""
+"""Composite physical systems (molecules, crystals)."""
 
 from .atomic_system import AtomicSystem
 from .molecule import Molecule

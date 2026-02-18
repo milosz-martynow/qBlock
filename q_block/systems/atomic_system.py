@@ -8,8 +8,6 @@ instance, which itself wraps the canonical :class:`pandas.DataFrame` with
 atom metadata and attached :class:`q_block.atom.Atom` instances.
 """
 
-from __future__ import annotations
-
 from typing import Optional
 
 from q_block.io.input_data import InputData

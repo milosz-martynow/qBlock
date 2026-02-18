@@ -4,8 +4,6 @@ This module defines the :class:`Crystal` class, a minimal placeholder
 for crystalline systems that extends :class:`q_block.systems.atomic_system.AtomicSystem`.
 """
 
-from __future__ import annotations
-
 from typing import Optional
 
 from q_block.systems.atomic_system import AtomicSystem

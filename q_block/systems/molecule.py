@@ -4,8 +4,6 @@ This module defines the :class:`Molecule` class, a minimal placeholder
 for molecular systems that extends :class:`q_block.atomic_system.AtomicSystem`.
 """
 
-from __future__ import annotations
-
 from typing import Optional, Dict, List, Any, Union, Tuple
 
 import pandas as pd

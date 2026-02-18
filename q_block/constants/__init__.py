@@ -1,7 +1,4 @@
-"""Constants and lookup tables used across q_block.
-
-This subpackage groups data-only modules (e.g. atomic symbols and numbers).
-"""
+"""Constants and lookup tables."""
 
 from .atoms_data import (
     ATOMS_SYMBOLS_Z_TO_SYMBOL,

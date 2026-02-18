@@ -4,6 +4,8 @@ Coordinates module for atom representations.
 Defines abstract and concrete classes for spatial coordinates.
 """
 
+from q_block.constants.atoms_data import ANGSTROM_TO_BOHR
+
 
 class Coordinates:
     """
@@ -154,8 +156,6 @@ class CartesianCoordinates(Coordinates):
         :returns: New CartesianCoordinates with values in Bohr.
         :rtype: CartesianCoordinates
         """
-        from q_block.constants.atoms_data import ANGSTROM_TO_BOHR
-
         return CartesianCoordinates(
             x=self.x * ANGSTROM_TO_BOHR,
             y=self.y * ANGSTROM_TO_BOHR,

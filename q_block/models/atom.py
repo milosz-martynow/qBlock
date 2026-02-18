@@ -6,8 +6,6 @@ NIST Atomic Spectra Database (ASD)
 https://physics.nist.gov/PhysRefData/ASD/
 """
 
-from __future__ import annotations
-
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 from q_block.constants.atoms_data import (
