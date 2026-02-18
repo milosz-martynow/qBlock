@@ -16,6 +16,7 @@ from q_block import Atom, Molecule, ContractedGaussianTypeOrbital
 from q_block.io.basis_set import Pople
 from q_block.io.coordinates import CartesianCoordinates
 from q_block.io.input_data import InputData
+from q_block.theory.utils import normalization_constant
 
 
 # ======================================================================
@@ -233,54 +234,6 @@ class TestCGTODunder:
 
 
 # ======================================================================
-# ContractedGaussianTypeOrbital - Static Method Tests
-# ======================================================================
-
-
-class TestCGTOStaticMethods:
-    """Tests for CGTO static helper methods."""
-
-    def test_double_factorial_negative_one(self):
-        """Test double factorial of -1 equals 1."""
-        assert ContractedGaussianTypeOrbital._double_factorial(-1) == 1
-
-    def test_double_factorial_zero(self):
-        """Test double factorial of 0 equals 1."""
-        assert ContractedGaussianTypeOrbital._double_factorial(0) == 1
-
-    def test_double_factorial_one(self):
-        """Test double factorial of 1 equals 1."""
-        assert ContractedGaussianTypeOrbital._double_factorial(1) == 1
-
-    def test_double_factorial_five(self):
-        """Test double factorial of 5 equals 15 (5*3*1)."""
-        assert ContractedGaussianTypeOrbital._double_factorial(5) == 15
-
-    def test_double_factorial_six(self):
-        """Test double factorial of 6 equals 48 (6*4*2)."""
-        assert ContractedGaussianTypeOrbital._double_factorial(6) == 48
-
-    def test_normalisation_constant_s_orbital(self):
-        """Test normalisation constant for s-orbital (l=0)."""
-        alpha = 1.0
-        norm = ContractedGaussianTypeOrbital._normalisation_constant(alpha, 0, 0, 0)
-        # For s-orbital: N = (2*alpha/pi)^(3/4)
-        expected = (2.0 * alpha / math.pi) ** 0.75
-        assert abs(norm - expected) < 1e-10
-
-    def test_normalisation_constant_positive(self):
-        """Test normalisation constant is positive."""
-        for lx in range(3):
-            for ly in range(3 - lx):
-                lz = 2 - lx - ly
-                if lx + ly + lz <= 2:
-                    norm = ContractedGaussianTypeOrbital._normalisation_constant(
-                        1.0, lx, ly, lz
-                    )
-                    assert norm > 0
-
-
-# ======================================================================
 # ContractedGaussianTypeOrbital - Evaluation Tests
 # ======================================================================
 
@@ -293,7 +246,7 @@ class TestCGTOEvaluation:
     ):
         """Test primitive Gaussian at the center is the normalisation constant."""
         value = simple_cgto.primitive_gaussian(origin, 0, 0, 0, 0)
-        expected = ContractedGaussianTypeOrbital._normalisation_constant(1.0, 0, 0, 0)
+        expected = normalization_constant(1.0, 0, 0, 0)
         assert abs(value - expected) < 1e-10
 
     def test_primitive_gaussian_decays(

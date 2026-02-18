@@ -9,11 +9,21 @@ initialization
 basis_functions
     Contracted Gaussian-Type Orbital (CGTO) basis function
     representations for integral computation.
+
+integrals
+    Molecular integral computation (overlap, kinetic, nuclear attraction,
+    electron repulsion).
+
+utils
+    Common mathematical utilities for quantum-chemistry computations
+    (normalization constants, etc.).
 """
 
 from typing import Any
 
 from .basis_functions import ContractedGaussianTypeOrbital
+from .integrals import OverlapMatrix
+from .utils import double_factorial, normalization_constant, get_cartesian_components
 
 __all__ = [
     "Initialization",
@@ -22,6 +32,10 @@ __all__ = [
     "UHF",
     "ROHF",
     "ContractedGaussianTypeOrbital",
+    "OverlapMatrix",
+    "double_factorial",
+    "normalization_constant",
+    "get_cartesian_components",
 ]
 
 

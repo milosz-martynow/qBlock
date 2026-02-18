@@ -41,6 +41,7 @@ import math
 from typing import List, Optional, Tuple
 
 from q_block.io.coordinates import CartesianCoordinates
+from q_block.theory.utils import normalization_constant
 
 
 # ======================================================================
@@ -212,7 +213,7 @@ class ContractedGaussianTypeOrbital:
         r_sq = dx * dx + dy * dy + dz * dz
 
         # Normalisation constant for Cartesian Gaussian
-        norm = self._normalisation_constant(alpha, lx, ly, lz)
+        norm = normalization_constant(alpha, lx, ly, lz)
 
         angular = (dx ** lx) * (dy ** ly) * (dz ** lz)
         radial = math.exp(-alpha * r_sq)
@@ -261,62 +262,3 @@ class ContractedGaussianTypeOrbital:
             value += coeff * self.primitive_gaussian(r, p, lx, ly, lz)
 
         return value
-
-    @staticmethod
-    def _normalisation_constant(
-        alpha: float,
-        lx: int,
-        ly: int,
-        lz: int,
-    ) -> float:
-        r"""Compute normalisation constant for a Cartesian Gaussian primitive.
-
-        .. math::
-
-            N = \left( \frac{2\alpha}{\pi} \right)^{3/4}
-                \left( \frac{(4\alpha)^{l_x + l_y + l_z}}
-                             {(2l_x - 1)!! (2l_y - 1)!! (2l_z - 1)!!}
-                \right)^{1/2}
-
-        :param alpha: Gaussian exponent.
-        :type alpha: float
-        :param lx: Angular momentum in x.
-        :type lx: int
-        :param ly: Angular momentum in y.
-        :type ly: int
-        :param lz: Angular momentum in z.
-        :type lz: int
-
-        :returns: Normalisation constant.
-        :rtype: float
-        """
-        l_total = lx + ly + lz
-
-        prefactor = (2.0 * alpha / math.pi) ** 0.75
-        numerator = (4.0 * alpha) ** l_total
-        denominator = (
-            ContractedGaussianTypeOrbital._double_factorial(2 * lx - 1)
-            * ContractedGaussianTypeOrbital._double_factorial(2 * ly - 1)
-            * ContractedGaussianTypeOrbital._double_factorial(2 * lz - 1)
-        )
-
-        return prefactor * math.sqrt(numerator / denominator)
-
-    @staticmethod
-    def _double_factorial(n: int) -> int:
-        """Compute double factorial n!!.
-
-        By convention, ``(-1)!! = 1`` and ``0!! = 1``.
-
-        :param n: Non-negative integer (or -1).
-        :type n: int
-        :returns: n!!
-        :rtype: int
-        """
-        if n <= 0:
-            return 1
-        result = 1
-        while n > 0:
-            result *= n
-            n -= 2
-        return result
