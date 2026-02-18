@@ -1,25 +1,20 @@
-# ── Example: Hartree-Fock initialization for a water molecule ────────
-# Demonstrates RHF, UHF, and ROHF using mixed basis sets.
+"""
+Example: Hartree-Fock Initialization for Water Molecule
+========================================================
 
-"""Example: RHF / UHF / ROHF initialization for a water molecule
-
-This example demonstrates how to use :class:`RHF`, :class:`UHF`, and
-:class:`ROHF` from ``q_block.theory.initialization`` to set up
-Hartree-Fock calculations for a water molecule with a **mixed** basis
-set (3-21G on H, 6-31G on O).
+This script demonstrates how to use RHF, UHF, and ROHF initialization
+classes for Hartree-Fock calculations.
 
 Three scenarios are shown:
+    1. RHF - Restricted Closed-Shell (neutral water, singlet)
+    2. UHF - Unrestricted (water cation H2O+, doublet)
+    3. ROHF - Restricted Open-Shell (water cation H2O+, doublet)
 
-1. **RHF** – Restricted Closed-Shell (neutral water, singlet).
-2. **UHF** – Unrestricted (water cation H₂O⁺, doublet).
-3. **ROHF** – Restricted Open-Shell (water cation H₂O⁺, doublet).
-
-Steps for each scenario:
-  1. Parse two Pople basis sets.
-  2. Define atoms with coordinates, charges, and basis sets.
-  3. Build a Molecule (GTO population happens automatically).
-  4. Create an RHF / UHF / ROHF initialization.
-  5. Inspect the resulting electron counts and basis-set size.
+Each HF initialization:
+    - Validates the molecule has basis sets on all atoms
+    - Computes electron counts (alpha, beta)
+    - Converts coordinates to Bohr
+    - Prepares data structures for SCF calculation
 """
 
 from q_block.io.input_data import InputData
@@ -27,37 +22,40 @@ from q_block.io.basis_set import Pople
 from q_block.systems.molecule import Molecule
 from q_block.theory.initialization import RHF, UHF, ROHF
 
-# ── 1. Create Pople basis set objects ────────────────────────────────
+# ══════════════════════════════════════════════════════════════════════════════
+# 1. LOAD BASIS SETS
+# ══════════════════════════════════════════════════════════════════════════════
+# We use different basis sets for oxygen and hydrogen to demonstrate
+# that mixed basis sets are supported.
+
 basis_3_21G = Pople(filepath="data/basis_set/gto_gaussian_format/3-21G.gbs")
 basis_6_31G = Pople(filepath="data/basis_set/gto_gaussian_format/6-31G.gbs")
 
 
-# =====================================================================
-# Helper: build a water InputData with per-atom charges
-# =====================================================================
-def _make_water(charge_O: int = 0, charge_H1: int = 0,
-                charge_H2: int = 0) -> InputData:
-    """Return an :class:`InputData` for water with the given per-atom charges."""
-    inp = InputData()
-    inp.from_script(
-        atom_data=[
-            ["O",  0.0000,  0.0000,  0.1173, basis_6_31G, charge_O],
-            ["H",  0.0000,  0.7572, -0.4692, basis_3_21G, charge_H1],
-            ["H",  0.0000, -0.7572, -0.4692, basis_3_21G, charge_H2],
-        ],
-        atom_prefix="W",
-    )
-    return inp
+# ══════════════════════════════════════════════════════════════════════════════
+# 2. RHF - RESTRICTED CLOSED-SHELL (NEUTRAL WATER, SINGLET)
+# ══════════════════════════════════════════════════════════════════════════════
+# RHF is appropriate for closed-shell molecules (all electrons paired).
+# Neutral water has 10 electrons -> 5 doubly-occupied orbitals.
 
+print("=" * 70)
+print("RHF - Restricted Closed-Shell (neutral H2O, singlet)")
+print("=" * 70)
 
-# =====================================================================
-# 2. RHF – Restricted Closed-Shell (neutral water, singlet)
-# =====================================================================
-print("=" * 64)
-print("RHF – Restricted Closed-Shell  (neutral H₂O, singlet)")
-print("=" * 64)
+# Create InputData for neutral water
+# Entry format: [symbol, x, y, z, basis_set, charge]
+# charge=0 (default) means neutral atom
+inp_rhf = InputData()
+inp_rhf.from_script(atom_data=[
+    ["O",  0.0000,  0.0000,  0.1173, basis_6_31G, 0],  # Oxygen with 6-31G
+    ["H",  0.0000,  0.7572, -0.4692, basis_3_21G, 0],  # H with 3-21G
+    ["H",  0.0000, -0.7572, -0.4692, basis_3_21G, 0],  # H with 3-21G
+])
 
-water_rhf = Molecule(input_data=_make_water(), multiplicity=1)
+# Build molecule with singlet multiplicity (default)
+water_rhf = Molecule(input_data=inp_rhf, multiplicity=1)
+
+# Initialize RHF calculation
 rhf = RHF(molecule=water_rhf)
 
 print(rhf)
@@ -71,20 +69,35 @@ print(f"  HF method                : {rhf.hf_method}")
 print(f"  Charge                   : {rhf.charge}")
 print(f"  Multiplicity             : {rhf.multiplicity}")
 
+# Coordinates are converted to Bohr during initialization
 first_atom = rhf.molecule.atoms[0]
-print(f"  First atom in Bohr       : {first_atom.coordinates}")
-
-
-# =====================================================================
-# 3. UHF – Unrestricted  (water cation H₂O⁺, doublet)
-# =====================================================================
+print(f"  First atom coords (Bohr) : {first_atom.coordinates}")
 print()
-print("=" * 64)
-print("UHF – Unrestricted  (H₂O⁺  cation, doublet)")
-print("=" * 64)
 
-# Remove one electron from oxygen (charge_O = -1 → fewer electrons)
-water_uhf = Molecule(input_data=_make_water(charge_O=-1), multiplicity=2)
+
+# ══════════════════════════════════════════════════════════════════════════════
+# 3. UHF - UNRESTRICTED (WATER CATION H2O+, DOUBLET)
+# ══════════════════════════════════════════════════════════════════════════════
+# UHF allows different spatial orbitals for alpha and beta electrons.
+# Water cation has 9 electrons -> doublet (one unpaired electron).
+
+print("=" * 70)
+print("UHF - Unrestricted (H2O+ cation, doublet)")
+print("=" * 70)
+
+# Remove one electron by setting oxygen charge to -1
+# (negative charge = fewer electrons than protons)
+inp_uhf = InputData()
+inp_uhf.from_script(atom_data=[
+    ["O",  0.0000,  0.0000,  0.1173, basis_6_31G, -1],  # O with -1 charge
+    ["H",  0.0000,  0.7572, -0.4692, basis_3_21G, 0],
+    ["H",  0.0000, -0.7572, -0.4692, basis_3_21G, 0],
+])
+
+# Build molecule with doublet multiplicity (2S+1 = 2 -> S = 1/2)
+water_uhf = Molecule(input_data=inp_uhf, multiplicity=2)
+
+# Initialize UHF calculation
 uhf = UHF(molecule=water_uhf)
 
 print(uhf)
@@ -96,18 +109,30 @@ print(f"  Basis functions          : {uhf.n_basis}")
 print(f"  HF method                : {uhf.hf_method}")
 print(f"  Charge                   : {uhf.charge}")
 print(f"  Multiplicity             : {uhf.multiplicity}")
-
-
-# =====================================================================
-# 4. ROHF – Restricted Open-Shell  (water cation H₂O⁺, doublet)
-# =====================================================================
 print()
-print("=" * 64)
-print("ROHF – Restricted Open-Shell  (H₂O⁺  cation, doublet)")
-print("=" * 64)
 
-# Same cation, but treated with ROHF (spin-pure)
-water_rohf = Molecule(input_data=_make_water(charge_O=-1), multiplicity=2)
+
+# ══════════════════════════════════════════════════════════════════════════════
+# 4. ROHF - RESTRICTED OPEN-SHELL (WATER CATION H2O+, DOUBLET)
+# ══════════════════════════════════════════════════════════════════════════════
+# ROHF uses the same spatial orbitals for paired electrons but allows
+# open-shell configuration. Gives spin-pure wavefunctions.
+
+print("=" * 70)
+print("ROHF - Restricted Open-Shell (H2O+ cation, doublet)")
+print("=" * 70)
+
+# Same cation as UHF
+inp_rohf = InputData()
+inp_rohf.from_script(atom_data=[
+    ["O",  0.0000,  0.0000,  0.1173, basis_6_31G, -1],
+    ["H",  0.0000,  0.7572, -0.4692, basis_3_21G, 0],
+    ["H",  0.0000, -0.7572, -0.4692, basis_3_21G, 0],
+])
+
+water_rohf = Molecule(input_data=inp_rohf, multiplicity=2)
+
+# Initialize ROHF calculation
 rohf = ROHF(molecule=water_rohf)
 
 print(rohf)
@@ -121,15 +146,17 @@ print(f"  Basis functions          : {rohf.n_basis}")
 print(f"  HF method                : {rohf.hf_method}")
 print(f"  Charge                   : {rohf.charge}")
 print(f"  Multiplicity             : {rohf.multiplicity}")
-
-
-# =====================================================================
-# 5. Comparison table
-# =====================================================================
 print()
-print("=" * 64)
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# 5. COMPARISON TABLE
+# ══════════════════════════════════════════════════════════════════════════════
+
+print("=" * 70)
 print("Comparison of HF methods for water")
-print("=" * 64)
+print("=" * 70)
+
 header = f"{'':>20}  {'RHF':>6}  {'UHF':>6}  {'ROHF':>6}"
 print(header)
 print("-" * len(header))
