@@ -29,21 +29,20 @@ Overlap
 """
 
 import math
-from typing import List, Tuple, Optional
+from typing import List, Tuple
 
 import numpy as np
 
 from q_block.theory.basis_functions import ContractedGaussianTypeOrbital
-from q_block.theory.utils import normalization_constant, get_cartesian_components
+from q_block.theory.integrals.two_gaussian_integral import TwoGaussianIntegral
+from q_block.theory.utils import normalization_constant
 
 
-# ======================================================================
-# Main overlap matrix class
-# ======================================================================
-
-
-class Overlap:
+class Overlap(TwoGaussianIntegral):
     """Computes and stores the overlap matrix S for a molecular basis.
+
+    Inherits from :class:`TwoGaussianIntegral` to reuse common infrastructure
+    for basis indexing, matrix computation, and Gaussian utilities.
 
     The overlap matrix elements are:
 
@@ -68,125 +67,9 @@ class Overlap:
         The computed overlap matrix of shape ``(n_basis, n_basis)``.
     """
 
-    def __init__(self, cgtos: List[ContractedGaussianTypeOrbital]) -> None:
-        if not cgtos:
-            raise ValueError("Cannot build overlap matrix with empty basis set.")
-
-        self.cgtos: List[ContractedGaussianTypeOrbital] = cgtos
-
-        # Count total basis functions (each shell contributes 2l+1 functions)
-        self.n_basis: int = sum(cgto.n_functions for cgto in cgtos)
-
-        # Build the basis function index mapping
-        self._build_basis_index_map()
-
-        # Compute the overlap matrix
-        self.matrix: np.ndarray = self._compute_overlap_matrix()
-
     # ==================================================================
-    # Static methods for integral computation
+    # Static methods for overlap computation
     # ==================================================================
-
-    @staticmethod
-    def _gaussian_product_center(
-        alpha: float,
-        A: Tuple[float, float, float],
-        beta: float,
-        B: Tuple[float, float, float],
-    ) -> Tuple[float, float, float]:
-        """Compute the center of the Gaussian product.
-
-        When two Gaussians centered at :math:`\\mathbf{A}` and :math:`\\mathbf{B}`
-        with exponents :math:`\\alpha` and :math:`\\beta` are multiplied, the
-        result is a Gaussian centered at:
-
-        .. math::
-
-            \\mathbf{P} = \\frac{\\alpha \\mathbf{A} + \\beta \\mathbf{B}}{\\alpha + \\beta}
-
-        :param alpha: Exponent of the first Gaussian.
-        :type alpha: float
-        :param A: Center of the first Gaussian (x, y, z).
-        :type A: Tuple[float, float, float]
-        :param beta: Exponent of the second Gaussian.
-        :type beta: float
-        :param B: Center of the second Gaussian (x, y, z).
-        :type B: Tuple[float, float, float]
-
-        :returns: Center of the product Gaussian (Px, Py, Pz).
-        :rtype: Tuple[float, float, float]
-        """
-        gamma = alpha + beta
-        Px = (alpha * A[0] + beta * B[0]) / gamma
-        Py = (alpha * A[1] + beta * B[1]) / gamma
-        Pz = (alpha * A[2] + beta * B[2]) / gamma
-        return (Px, Py, Pz)
-
-    @staticmethod
-    def _overlap_1d(
-        l1: int,
-        l2: int,
-        PA: float,
-        PB: float,
-        gamma: float,
-    ) -> float:
-        """Compute 1D overlap integral using Obara-Saika recursion.
-
-        Evaluates the 1D overlap integral:
-
-        .. math::
-
-            S_{l_1, l_2} = \\int_{-\\infty}^{+\\infty}
-                (x - A)^{l_1} (x - B)^{l_2} e^{-\\gamma (x - P)^2} dx
-
-        using the Obara-Saika recurrence relations:
-
-        .. math::
-
-            S_{i+1,j} = PA \\cdot S_{i,j} + \\frac{1}{2\\gamma}(i \\cdot S_{i-1,j} + j \\cdot S_{i,j-1})
-
-            S_{i,j+1} = PB \\cdot S_{i,j} + \\frac{1}{2\\gamma}(i \\cdot S_{i-1,j} + j \\cdot S_{i,j-1})
-
-        :param l1: Angular momentum on center A.
-        :type l1: int
-        :param l2: Angular momentum on center B.
-        :type l2: int
-        :param PA: Distance P - A along this axis.
-        :type PA: float
-        :param PB: Distance P - B along this axis.
-        :type PB: float
-        :param gamma: Sum of exponents (alpha + beta).
-        :type gamma: float
-
-        :returns: Value of the 1D overlap integral.
-        :rtype: float
-        """
-        # Handle negative angular momentum (needed for kinetic energy recursion)
-        if l1 < 0 or l2 < 0:
-            return 0.0
-
-        # Build a 2D array to store S[i][j] for i = 0..l1, j = 0..l2
-        S = [[0.0] * (l2 + 1) for _ in range(l1 + 1)]
-
-        # Base case: S[0][0] = sqrt(pi/gamma)
-        S[0][0] = math.sqrt(math.pi / gamma)
-
-        # Build up S[i][0] using the first recurrence
-        for i in range(l1):
-            S[i + 1][0] = PA * S[i][0]
-            if i > 0:
-                S[i + 1][0] += i * S[i - 1][0] / (2.0 * gamma)
-
-        # Build up S[i][j] for j > 0 using the second recurrence
-        for j in range(l2):
-            for i in range(l1 + 1):
-                S[i][j + 1] = PB * S[i][j]
-                if i > 0:
-                    S[i][j + 1] += i * S[i - 1][j] / (2.0 * gamma)
-                if j > 0:
-                    S[i][j + 1] += j * S[i][j - 1] / (2.0 * gamma)
-
-        return S[l1][l2]
 
     @staticmethod
     def primitive_overlap(
@@ -239,7 +122,7 @@ class Overlap:
         gamma = alpha + beta
 
         # Gaussian product center
-        P = Overlap._gaussian_product_center(alpha, A, beta, B)
+        P = TwoGaussianIntegral._gaussian_product_center(alpha, A, beta, B)
 
         # Distances from product center to original centers
         PA = (P[0] - A[0], P[1] - A[1], P[2] - A[2])
@@ -252,9 +135,9 @@ class Overlap:
         pre_factor = math.exp(-alpha * beta * AB_sq / gamma)
 
         # 1D overlap integrals
-        Sx = Overlap._overlap_1d(lx1, lx2, PA[0], PB[0], gamma)
-        Sy = Overlap._overlap_1d(ly1, ly2, PA[1], PB[1], gamma)
-        Sz = Overlap._overlap_1d(lz1, lz2, PA[2], PB[2], gamma)
+        Sx = TwoGaussianIntegral._overlap_1d(lx1, lx2, PA[0], PB[0], gamma)
+        Sy = TwoGaussianIntegral._overlap_1d(ly1, ly2, PA[1], PB[1], gamma)
+        Sz = TwoGaussianIntegral._overlap_1d(lz1, lz2, PA[2], PB[2], gamma)
 
         # Normalization constants
         N1 = normalization_constant(alpha, lx1, ly1, lz1)
@@ -325,60 +208,27 @@ class Overlap:
         return overlap
 
     # ==================================================================
-    # Instance methods
+    # Abstract method implementation
     # ==================================================================
 
-    def _build_basis_index_map(self) -> None:
-        """Build mapping from basis function index to (shell, angular component).
+    def _compute_element(
+        self,
+        cgto1: ContractedGaussianTypeOrbital,
+        lx1: int,
+        ly1: int,
+        lz1: int,
+        cgto2: ContractedGaussianTypeOrbital,
+        lx2: int,
+        ly2: int,
+        lz2: int,
+    ) -> float:
+        """Compute overlap matrix element.
 
-        Creates ``_basis_map``: a list where each entry is a tuple
-        ``(shell_index, lx, ly, lz)`` identifying which shell and
-        Cartesian component corresponds to each basis function index.
-        """
-        self._basis_map: List[Tuple[int, int, int, int]] = []
+        Implements the abstract method from :class:`Integral`.
 
-        for shell_idx, cgto in enumerate(self.cgtos):
-            components = get_cartesian_components(cgto.l)
-            for lx, ly, lz in components:
-                self._basis_map.append((shell_idx, lx, ly, lz))
-
-    def _compute_overlap_matrix(self) -> np.ndarray:
-        """Compute the full overlap matrix.
-
-        Uses symmetry: only computes upper triangle and mirrors to lower.
-
-        :returns: Overlap matrix of shape ``(n_basis, n_basis)``.
-        :rtype: np.ndarray
-        """
-        S = np.zeros((self.n_basis, self.n_basis))
-
-        for mu in range(self.n_basis):
-            shell_mu, lx1, ly1, lz1 = self._basis_map[mu]
-            cgto1 = self.cgtos[shell_mu]
-
-            for nu in range(mu, self.n_basis):
-                shell_nu, lx2, ly2, lz2 = self._basis_map[nu]
-                cgto2 = self.cgtos[shell_nu]
-
-                S_mn = self.contracted_overlap(
-                    cgto1, lx1, ly1, lz1, cgto2, lx2, ly2, lz2
-                )
-
-                S[mu, nu] = S_mn
-                S[nu, mu] = S_mn  # Symmetry
-
-        return S
-
-    def __repr__(self) -> str:
-        return f"Overlap(n_basis={self.n_basis})"
-
-    def __getitem__(self, key: Tuple[int, int]) -> float:
-        """Access matrix element by index.
-
-        :param key: Tuple of (row, column) indices.
-        :type key: Tuple[int, int]
-
-        :returns: Matrix element S[row, col].
+        :returns: Overlap integral value S_μν.
         :rtype: float
         """
-        return self.matrix[key]
+        return self.contracted_overlap(
+            cgto1, lx1, ly1, lz1, cgto2, lx2, ly2, lz2
+        )

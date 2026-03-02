@@ -33,20 +33,15 @@ from typing import List, Tuple
 import numpy as np
 
 from q_block.theory.basis_functions import ContractedGaussianTypeOrbital
-from q_block.theory.integrals.overlap import Overlap
+from q_block.theory.integrals.two_gaussian_integral import TwoGaussianIntegral
 from q_block.theory.utils import normalization_constant
 
 
-# ======================================================================
-# Main kinetic energy matrix class
-# ======================================================================
-
-
-class KineticEnergy(Overlap):
+class KineticEnergy(TwoGaussianIntegral):
     """Computes and stores the kinetic energy matrix T for a molecular basis.
 
-    Inherits from :class:`Overlap` to reuse Gaussian product center
-    computation and 1D overlap integral methods.
+    Inherits from :class:`TwoGaussianIntegral` to reuse common infrastructure
+    for basis indexing, matrix computation, and Gaussian utilities.
 
     The kinetic energy matrix elements are:
 
@@ -72,21 +67,6 @@ class KineticEnergy(Overlap):
     matrix : np.ndarray
         The computed kinetic energy matrix of shape ``(n_basis, n_basis)``.
     """
-
-    def __init__(self, cgtos: List[ContractedGaussianTypeOrbital]) -> None:
-        if not cgtos:
-            raise ValueError("Cannot build kinetic energy matrix with empty basis set.")
-
-        self.cgtos: List[ContractedGaussianTypeOrbital] = cgtos
-
-        # Count total basis functions (each shell contributes 2l+1 functions)
-        self.n_basis: int = sum(cgto.n_functions for cgto in cgtos)
-
-        # Build the basis function index mapping (inherited from Overlap)
-        self._build_basis_index_map()
-
-        # Compute the kinetic energy matrix
-        self.matrix: np.ndarray = self._compute_kinetic_matrix()
 
     # ==================================================================
     # Static methods for kinetic energy computation
@@ -134,16 +114,16 @@ class KineticEnergy(Overlap):
         :rtype: float
         """
         # Term 1: l1 * l2 * S(l1-1, l2-1)
-        term1 = l1 * l2 * Overlap._overlap_1d(l1 - 1, l2 - 1, PA, PB, gamma)
+        term1 = l1 * l2 * TwoGaussianIntegral._overlap_1d(l1 - 1, l2 - 1, PA, PB, gamma)
 
         # Term 2: -2 * alpha * l2 * S(l1+1, l2-1)
-        term2 = -2.0 * alpha * l2 * Overlap._overlap_1d(l1 + 1, l2 - 1, PA, PB, gamma)
+        term2 = -2.0 * alpha * l2 * TwoGaussianIntegral._overlap_1d(l1 + 1, l2 - 1, PA, PB, gamma)
 
         # Term 3: -2 * beta * l1 * S(l1-1, l2+1)
-        term3 = -2.0 * beta * l1 * Overlap._overlap_1d(l1 - 1, l2 + 1, PA, PB, gamma)
+        term3 = -2.0 * beta * l1 * TwoGaussianIntegral._overlap_1d(l1 - 1, l2 + 1, PA, PB, gamma)
 
         # Term 4: 4 * alpha * beta * S(l1+1, l2+1)
-        term4 = 4.0 * alpha * beta * Overlap._overlap_1d(l1 + 1, l2 + 1, PA, PB, gamma)
+        term4 = 4.0 * alpha * beta * TwoGaussianIntegral._overlap_1d(l1 + 1, l2 + 1, PA, PB, gamma)
 
         return term1 + term2 + term3 + term4
 
@@ -204,8 +184,8 @@ class KineticEnergy(Overlap):
         """
         gamma = alpha + beta
 
-        # Gaussian product center (inherited from Overlap)
-        P = Overlap._gaussian_product_center(alpha, A, beta, B)
+        # Gaussian product center
+        P = TwoGaussianIntegral._gaussian_product_center(alpha, A, beta, B)
 
         # Distances from product center to original centers
         PA = (P[0] - A[0], P[1] - A[1], P[2] - A[2])
@@ -217,10 +197,10 @@ class KineticEnergy(Overlap):
         # Pre-exponential factor
         pre_factor = math.exp(-alpha * beta * AB_sq / gamma)
 
-        # 1D overlap integrals (inherited from Overlap)
-        Sx = Overlap._overlap_1d(lx1, lx2, PA[0], PB[0], gamma)
-        Sy = Overlap._overlap_1d(ly1, ly2, PA[1], PB[1], gamma)
-        Sz = Overlap._overlap_1d(lz1, lz2, PA[2], PB[2], gamma)
+        # 1D overlap integrals
+        Sx = TwoGaussianIntegral._overlap_1d(lx1, lx2, PA[0], PB[0], gamma)
+        Sy = TwoGaussianIntegral._overlap_1d(ly1, ly2, PA[1], PB[1], gamma)
+        Sz = TwoGaussianIntegral._overlap_1d(lz1, lz2, PA[2], PB[2], gamma)
 
         # 1D kinetic energy integrals
         Tx = KineticEnergy._kinetic_1d(lx1, lx2, PA[0], PB[0], gamma, alpha, beta)
@@ -299,46 +279,27 @@ class KineticEnergy(Overlap):
         return kinetic
 
     # ==================================================================
-    # Instance methods
+    # Abstract method implementation
     # ==================================================================
 
-    def _compute_kinetic_matrix(self) -> np.ndarray:
-        """Compute the full kinetic energy matrix.
+    def _compute_element(
+        self,
+        cgto1: ContractedGaussianTypeOrbital,
+        lx1: int,
+        ly1: int,
+        lz1: int,
+        cgto2: ContractedGaussianTypeOrbital,
+        lx2: int,
+        ly2: int,
+        lz2: int,
+    ) -> float:
+        """Compute kinetic energy matrix element.
 
-        Uses symmetry: only computes upper triangle and mirrors to lower.
+        Implements the abstract method from :class:`Integral`.
 
-        :returns: Kinetic energy matrix of shape ``(n_basis, n_basis)``.
-        :rtype: np.ndarray
-        """
-        T = np.zeros((self.n_basis, self.n_basis))
-
-        for mu in range(self.n_basis):
-            shell_mu, lx1, ly1, lz1 = self._basis_map[mu]
-            cgto1 = self.cgtos[shell_mu]
-
-            for nu in range(mu, self.n_basis):
-                shell_nu, lx2, ly2, lz2 = self._basis_map[nu]
-                cgto2 = self.cgtos[shell_nu]
-
-                T_mn = self.contracted_kinetic(
-                    cgto1, lx1, ly1, lz1, cgto2, lx2, ly2, lz2
-                )
-
-                T[mu, nu] = T_mn
-                T[nu, mu] = T_mn  # Symmetry
-
-        return T
-
-    def __repr__(self) -> str:
-        return f"KineticEnergy(n_basis={self.n_basis})"
-
-    def __getitem__(self, key: Tuple[int, int]) -> float:
-        """Access matrix element by index.
-
-        :param key: Tuple of (row, column) indices.
-        :type key: Tuple[int, int]
-
-        :returns: Matrix element T[row, col].
+        :returns: Kinetic energy integral value T_μν.
         :rtype: float
         """
-        return self.matrix[key]
+        return self.contracted_kinetic(
+            cgto1, lx1, ly1, lz1, cgto2, lx2, ly2, lz2
+        )

@@ -28,20 +28,15 @@ from typing import List, Tuple
 import numpy as np
 
 from q_block.theory.basis_functions import ContractedGaussianTypeOrbital
-from q_block.theory.integrals.overlap import Overlap
+from q_block.theory.integrals.two_gaussian_integral import TwoGaussianIntegral
 from q_block.theory.utils import normalization_constant, boys_function
 
 
-# ======================================================================
-# Main nuclear attraction matrix class
-# ======================================================================
-
-
-class NuclearAttraction(Overlap):
+class NuclearAttraction(TwoGaussianIntegral):
     """Computes and stores the nuclear attraction matrix V for a molecular basis.
 
-    Inherits from :class:`Overlap` to reuse Gaussian product center
-    computation and basis index mapping methods.
+    Inherits from :class:`TwoGaussianIntegral` to reuse common infrastructure
+    for basis indexing, matrix computation, and Gaussian utilities.
 
     The nuclear attraction matrix elements are:
 
@@ -79,22 +74,17 @@ class NuclearAttraction(Overlap):
         cgtos: List[ContractedGaussianTypeOrbital],
         nuclei: List[Tuple[int, Tuple[float, float, float]]],
     ) -> None:
-        if not cgtos:
-            raise ValueError("Cannot build nuclear attraction matrix with empty basis set.")
         if not nuclei:
             raise ValueError("Cannot build nuclear attraction matrix without nuclei.")
+        # Call parent constructor with nuclei as keyword argument
+        super().__init__(cgtos, nuclei=nuclei)
 
-        self.cgtos: List[ContractedGaussianTypeOrbital] = cgtos
-        self.nuclei: List[Tuple[int, Tuple[float, float, float]]] = nuclei
+    def _init_params(self, **kwargs) -> None:
+        """Store nuclear positions and charges.
 
-        # Count total basis functions (each shell contributes 2l+1 functions)
-        self.n_basis: int = sum(cgto.n_functions for cgto in cgtos)
-
-        # Build the basis function index mapping (inherited from Overlap)
-        self._build_basis_index_map()
-
-        # Compute the nuclear attraction matrix
-        self.matrix: np.ndarray = self._compute_nuclear_attraction_matrix()
+        :param nuclei: List of (Z, (x, y, z)) tuples.
+        """
+        self.nuclei: List[Tuple[int, Tuple[float, float, float]]] = kwargs["nuclei"]
 
     # ==================================================================
     # Static methods for Hermite Coulomb integrals
@@ -324,8 +314,8 @@ class NuclearAttraction(Overlap):
         """
         gamma = alpha + beta
 
-        # Gaussian product center (inherited from Overlap)
-        P = Overlap._gaussian_product_center(alpha, A, beta, B)
+        # Gaussian product center
+        P = TwoGaussianIntegral._gaussian_product_center(alpha, A, beta, B)
 
         # Distances from product center
         PA = (P[0] - A[0], P[1] - A[1], P[2] - A[2])
@@ -445,50 +435,35 @@ class NuclearAttraction(Overlap):
         return attraction
 
     # ==================================================================
-    # Instance methods
+    # Abstract method implementation
     # ==================================================================
 
-    def _compute_nuclear_attraction_matrix(self) -> np.ndarray:
-        """Compute the full nuclear attraction matrix.
+    def _compute_element(
+        self,
+        cgto1: ContractedGaussianTypeOrbital,
+        lx1: int,
+        ly1: int,
+        lz1: int,
+        cgto2: ContractedGaussianTypeOrbital,
+        lx2: int,
+        ly2: int,
+        lz2: int,
+    ) -> float:
+        """Compute nuclear attraction matrix element.
 
-        Uses symmetry: only computes upper triangle and mirrors to lower.
+        Implements the abstract method from :class:`Integral`.
         Sums contributions from all nuclei.
 
-        :returns: Nuclear attraction matrix of shape ``(n_basis, n_basis)``.
-        :rtype: np.ndarray
-        """
-        V = np.zeros((self.n_basis, self.n_basis))
-
-        for mu in range(self.n_basis):
-            shell_mu, lx1, ly1, lz1 = self._basis_map[mu]
-            cgto1 = self.cgtos[shell_mu]
-
-            for nu in range(mu, self.n_basis):
-                shell_nu, lx2, ly2, lz2 = self._basis_map[nu]
-                cgto2 = self.cgtos[shell_nu]
-
-                # Sum over all nuclei
-                V_mn = 0.0
-                for Z, C in self.nuclei:
-                    V_mn += self.contracted_nuclear_attraction(
-                        cgto1, lx1, ly1, lz1, cgto2, lx2, ly2, lz2, C, Z
-                    )
-
-                V[mu, nu] = V_mn
-                V[nu, mu] = V_mn  # Symmetry
-
-        return V
-
-    def __repr__(self) -> str:
-        return f"NuclearAttraction(n_basis={self.n_basis}, n_nuclei={len(self.nuclei)})"
-
-    def __getitem__(self, key: Tuple[int, int]) -> float:
-        """Access matrix element by index.
-
-        :param key: Tuple of (row, column) indices.
-        :type key: Tuple[int, int]
-
-        :returns: Matrix element V[row, col].
+        :returns: Nuclear attraction integral value V_μν.
         :rtype: float
         """
-        return self.matrix[key]
+        V_mn = 0.0
+        for Z, C in self.nuclei:
+            V_mn += self.contracted_nuclear_attraction(
+                cgto1, lx1, ly1, lz1, cgto2, lx2, ly2, lz2, C, Z
+            )
+        return V_mn
+
+    def __repr__(self) -> str:
+        """String representation with basis size and nuclei count."""
+        return f"NuclearAttraction(n_basis={self.n_basis}, n_nuclei={len(self.nuclei)})"
