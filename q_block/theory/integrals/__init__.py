@@ -1,9 +1,11 @@
 """Integral computation module."""
 
-from .overlap import OverlapMatrix
-
-__all__ = ["OverlapMatrix"]
+from .kinetic_energy import KineticEnergy
+from .nuclear_attraction import NuclearAttraction
+from .overlap import Overlap
 
 __all__ = [
-    "OverlapMatrix",
+    "KineticEnergy",
+    "NuclearAttraction",
+    "Overlap",
 ]

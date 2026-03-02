@@ -1,59 +1,64 @@
-"""Overlap matrix computation for Gaussian basis functions.
+"""Kinetic energy matrix computation for Gaussian basis functions.
 
-This module computes the overlap matrix :math:`S` between contracted
+This module computes the kinetic energy matrix :math:`T` between contracted
 Gaussian-type orbitals (CGTOs):
 
 .. math::
 
-    S_{\\mu\\nu} = \\int \\phi_\\mu(\\mathbf{r})\\, \\phi_\\nu(\\mathbf{r})\\, d\\mathbf{r}
+    T_{\\mu\\nu} = \\int \\phi_\\mu(\\mathbf{r})\\,
+        \\left(-\\frac{1}{2}\\nabla^2\\right)\\,
+        \\phi_\\nu(\\mathbf{r})\\, d\\mathbf{r}
 
 where :math:`\\phi_\\mu` is a contracted Gaussian basis function.
 
-For primitive Gaussians centered at :math:`\\mathbf{A}` and :math:`\\mathbf{B}`
-with exponents :math:`\\alpha` and :math:`\\beta`:
+Using integration by parts, this becomes:
 
 .. math::
 
-    \\langle g_a | g_b \\rangle = N_a\\, N_b\\,
-        \\left(\\frac{\\pi}{\\alpha + \\beta}\\right)^{3/2}
-        e^{-\\frac{\\alpha \\beta}{\\alpha + \\beta}|\\mathbf{A} - \\mathbf{B}|^2}
-        \\prod_{i=x,y,z} S_i(l_{ai}, l_{bi})
+    T_{\\mu\\nu} = \\frac{1}{2} \\int
+        \\nabla\\phi_\\mu(\\mathbf{r}) \\cdot \\nabla\\phi_\\nu(\\mathbf{r})\\, d\\mathbf{r}
 
-where :math:`S_i` are 1D overlap integrals computed via the Obara-Saika
-recurrence relations.
+For primitive Gaussians, the kinetic energy integral is computed as a sum
+of overlap-like integrals with modified angular momentum indices.
 
 Classes
 -------
-Overlap
-    Computes and stores the full overlap matrix for a molecular basis.
+KineticEnergy
+    Computes and stores the full kinetic energy matrix for a molecular basis.
 """
 
 import math
-from typing import List, Tuple, Optional
+from typing import List, Tuple
 
 import numpy as np
 
 from q_block.theory.basis_functions import ContractedGaussianTypeOrbital
-from q_block.theory.utils import normalization_constant, get_cartesian_components
+from q_block.theory.integrals.overlap import Overlap
+from q_block.theory.utils import normalization_constant
 
 
 # ======================================================================
-# Main overlap matrix class
+# Main kinetic energy matrix class
 # ======================================================================
 
 
-class Overlap:
-    """Computes and stores the overlap matrix S for a molecular basis.
+class KineticEnergy(Overlap):
+    """Computes and stores the kinetic energy matrix T for a molecular basis.
 
-    The overlap matrix elements are:
+    Inherits from :class:`Overlap` to reuse Gaussian product center
+    computation and 1D overlap integral methods.
+
+    The kinetic energy matrix elements are:
 
     .. math::
 
-        S_{\\mu\\nu} = \\int \\phi_\\mu(\\mathbf{r})\\, \\phi_\\nu(\\mathbf{r})\\, d\\mathbf{r}
+        T_{\\mu\\nu} = \\int \\phi_\\mu(\\mathbf{r})\\,
+            \\left(-\\frac{1}{2}\\nabla^2\\right)\\,
+            \\phi_\\nu(\\mathbf{r})\\, d\\mathbf{r}
 
     where :math:`\\phi_\\mu` are contracted Gaussian basis functions.
 
-    The matrix is symmetric: :math:`S_{\\mu\\nu} = S_{\\nu\\mu}`.
+    The matrix is symmetric: :math:`T_{\\mu\\nu} = T_{\\nu\\mu}`.
 
     :param cgtos: List of contracted Gaussian-type orbitals.
     :type cgtos: List[ContractedGaussianTypeOrbital]
@@ -65,87 +70,50 @@ class Overlap:
     n_basis : int
         Total number of basis functions (counting all angular components).
     matrix : np.ndarray
-        The computed overlap matrix of shape ``(n_basis, n_basis)``.
+        The computed kinetic energy matrix of shape ``(n_basis, n_basis)``.
     """
 
     def __init__(self, cgtos: List[ContractedGaussianTypeOrbital]) -> None:
         if not cgtos:
-            raise ValueError("Cannot build overlap matrix with empty basis set.")
+            raise ValueError("Cannot build kinetic energy matrix with empty basis set.")
 
         self.cgtos: List[ContractedGaussianTypeOrbital] = cgtos
 
         # Count total basis functions (each shell contributes 2l+1 functions)
         self.n_basis: int = sum(cgto.n_functions for cgto in cgtos)
 
-        # Build the basis function index mapping
+        # Build the basis function index mapping (inherited from Overlap)
         self._build_basis_index_map()
 
-        # Compute the overlap matrix
-        self.matrix: np.ndarray = self._compute_overlap_matrix()
+        # Compute the kinetic energy matrix
+        self.matrix: np.ndarray = self._compute_kinetic_matrix()
 
     # ==================================================================
-    # Static methods for integral computation
+    # Static methods for kinetic energy computation
     # ==================================================================
 
     @staticmethod
-    def _gaussian_product_center(
-        alpha: float,
-        A: Tuple[float, float, float],
-        beta: float,
-        B: Tuple[float, float, float],
-    ) -> Tuple[float, float, float]:
-        """Compute the center of the Gaussian product.
-
-        When two Gaussians centered at :math:`\\mathbf{A}` and :math:`\\mathbf{B}`
-        with exponents :math:`\\alpha` and :math:`\\beta` are multiplied, the
-        result is a Gaussian centered at:
-
-        .. math::
-
-            \\mathbf{P} = \\frac{\\alpha \\mathbf{A} + \\beta \\mathbf{B}}{\\alpha + \\beta}
-
-        :param alpha: Exponent of the first Gaussian.
-        :type alpha: float
-        :param A: Center of the first Gaussian (x, y, z).
-        :type A: Tuple[float, float, float]
-        :param beta: Exponent of the second Gaussian.
-        :type beta: float
-        :param B: Center of the second Gaussian (x, y, z).
-        :type B: Tuple[float, float, float]
-
-        :returns: Center of the product Gaussian (Px, Py, Pz).
-        :rtype: Tuple[float, float, float]
-        """
-        gamma = alpha + beta
-        Px = (alpha * A[0] + beta * B[0]) / gamma
-        Py = (alpha * A[1] + beta * B[1]) / gamma
-        Pz = (alpha * A[2] + beta * B[2]) / gamma
-        return (Px, Py, Pz)
-
-    @staticmethod
-    def _overlap_1d(
+    def _kinetic_1d(
         l1: int,
         l2: int,
         PA: float,
         PB: float,
         gamma: float,
+        alpha: float,
+        beta: float,
     ) -> float:
-        """Compute 1D overlap integral using Obara-Saika recursion.
+        """Compute 1D kinetic energy integral.
 
-        Evaluates the 1D overlap integral:
-
-        .. math::
-
-            S_{l_1, l_2} = \\int_{-\\infty}^{+\\infty}
-                (x - A)^{l_1} (x - B)^{l_2} e^{-\\gamma (x - P)^2} dx
-
-        using the Obara-Saika recurrence relations:
+        The 1D kinetic energy integral is computed from the derivative formula:
 
         .. math::
 
-            S_{i+1,j} = PA \\cdot S_{i,j} + \\frac{1}{2\\gamma}(i \\cdot S_{i-1,j} + j \\cdot S_{i,j-1})
+            T_{l_1, l_2} = l_1 l_2 S_{l_1-1, l_2-1}
+                         - 2\\alpha l_2 S_{l_1+1, l_2-1}
+                         - 2\\beta l_1 S_{l_1-1, l_2+1}
+                         + 4\\alpha\\beta S_{l_1+1, l_2+1}
 
-            S_{i,j+1} = PB \\cdot S_{i,j} + \\frac{1}{2\\gamma}(i \\cdot S_{i-1,j} + j \\cdot S_{i,j-1})
+        where :math:`S_{i,j}` is the 1D overlap integral.
 
         :param l1: Angular momentum on center A.
         :type l1: int
@@ -157,39 +125,30 @@ class Overlap:
         :type PB: float
         :param gamma: Sum of exponents (alpha + beta).
         :type gamma: float
+        :param alpha: Exponent of the first Gaussian.
+        :type alpha: float
+        :param beta: Exponent of the second Gaussian.
+        :type beta: float
 
-        :returns: Value of the 1D overlap integral.
+        :returns: Value of the 1D kinetic energy integral.
         :rtype: float
         """
-        # Handle negative angular momentum (needed for kinetic energy recursion)
-        if l1 < 0 or l2 < 0:
-            return 0.0
+        # Term 1: l1 * l2 * S(l1-1, l2-1)
+        term1 = l1 * l2 * Overlap._overlap_1d(l1 - 1, l2 - 1, PA, PB, gamma)
 
-        # Build a 2D array to store S[i][j] for i = 0..l1, j = 0..l2
-        S = [[0.0] * (l2 + 1) for _ in range(l1 + 1)]
+        # Term 2: -2 * alpha * l2 * S(l1+1, l2-1)
+        term2 = -2.0 * alpha * l2 * Overlap._overlap_1d(l1 + 1, l2 - 1, PA, PB, gamma)
 
-        # Base case: S[0][0] = sqrt(pi/gamma)
-        S[0][0] = math.sqrt(math.pi / gamma)
+        # Term 3: -2 * beta * l1 * S(l1-1, l2+1)
+        term3 = -2.0 * beta * l1 * Overlap._overlap_1d(l1 - 1, l2 + 1, PA, PB, gamma)
 
-        # Build up S[i][0] using the first recurrence
-        for i in range(l1):
-            S[i + 1][0] = PA * S[i][0]
-            if i > 0:
-                S[i + 1][0] += i * S[i - 1][0] / (2.0 * gamma)
+        # Term 4: 4 * alpha * beta * S(l1+1, l2+1)
+        term4 = 4.0 * alpha * beta * Overlap._overlap_1d(l1 + 1, l2 + 1, PA, PB, gamma)
 
-        # Build up S[i][j] for j > 0 using the second recurrence
-        for j in range(l2):
-            for i in range(l1 + 1):
-                S[i][j + 1] = PB * S[i][j]
-                if i > 0:
-                    S[i][j + 1] += i * S[i - 1][j] / (2.0 * gamma)
-                if j > 0:
-                    S[i][j + 1] += j * S[i][j - 1] / (2.0 * gamma)
-
-        return S[l1][l2]
+        return term1 + term2 + term3 + term4
 
     @staticmethod
-    def primitive_overlap(
+    def primitive_kinetic(
         alpha: float,
         A: Tuple[float, float, float],
         lx1: int,
@@ -201,16 +160,23 @@ class Overlap:
         ly2: int,
         lz2: int,
     ) -> float:
-        """Compute overlap integral between two primitive Gaussians.
+        """Compute kinetic energy integral between two primitive Gaussians.
 
         Evaluates:
 
         .. math::
 
-            \\langle g_a | g_b \\rangle = \\int g_a(\\mathbf{r})\\, g_b(\\mathbf{r})\\, d\\mathbf{r}
+            \\langle g_a | -\\frac{1}{2}\\nabla^2 | g_b \\rangle
 
         where :math:`g_a` and :math:`g_b` are normalized Cartesian Gaussian
-        primitives.
+        primitives. The integral is computed as:
+
+        .. math::
+
+            T = \\frac{1}{2} N_a N_b e^{-\\mu R_{AB}^2}
+                (T_x S_y S_z + S_x T_y S_z + S_x S_y T_z)
+
+        where :math:`\\mu = \\frac{\\alpha\\beta}{\\alpha+\\beta}`.
 
         :param alpha: Exponent of the first primitive.
         :type alpha: float
@@ -233,12 +199,12 @@ class Overlap:
         :param lz2: Angular momentum in z for the second primitive.
         :type lz2: int
 
-        :returns: Overlap integral value.
+        :returns: Kinetic energy integral value.
         :rtype: float
         """
         gamma = alpha + beta
 
-        # Gaussian product center
+        # Gaussian product center (inherited from Overlap)
         P = Overlap._gaussian_product_center(alpha, A, beta, B)
 
         # Distances from product center to original centers
@@ -251,19 +217,27 @@ class Overlap:
         # Pre-exponential factor
         pre_factor = math.exp(-alpha * beta * AB_sq / gamma)
 
-        # 1D overlap integrals
+        # 1D overlap integrals (inherited from Overlap)
         Sx = Overlap._overlap_1d(lx1, lx2, PA[0], PB[0], gamma)
         Sy = Overlap._overlap_1d(ly1, ly2, PA[1], PB[1], gamma)
         Sz = Overlap._overlap_1d(lz1, lz2, PA[2], PB[2], gamma)
+
+        # 1D kinetic energy integrals
+        Tx = KineticEnergy._kinetic_1d(lx1, lx2, PA[0], PB[0], gamma, alpha, beta)
+        Ty = KineticEnergy._kinetic_1d(ly1, ly2, PA[1], PB[1], gamma, alpha, beta)
+        Tz = KineticEnergy._kinetic_1d(lz1, lz2, PA[2], PB[2], gamma, alpha, beta)
 
         # Normalization constants
         N1 = normalization_constant(alpha, lx1, ly1, lz1)
         N2 = normalization_constant(beta, lx2, ly2, lz2)
 
-        return N1 * N2 * pre_factor * Sx * Sy * Sz
+        # Total kinetic energy: T = (1/2) * (Tx*Sy*Sz + Sx*Ty*Sz + Sx*Sy*Tz)
+        kinetic = 0.5 * (Tx * Sy * Sz + Sx * Ty * Sz + Sx * Sy * Tz)
+
+        return N1 * N2 * pre_factor * kinetic
 
     @staticmethod
-    def contracted_overlap(
+    def contracted_kinetic(
         cgto1: ContractedGaussianTypeOrbital,
         lx1: int,
         ly1: int,
@@ -273,14 +247,14 @@ class Overlap:
         ly2: int,
         lz2: int,
     ) -> float:
-        """Compute overlap integral between two contracted Gaussians.
+        """Compute kinetic energy integral between two contracted Gaussians.
 
         Evaluates:
 
         .. math::
 
-            S_{\\mu\\nu} = \\sum_{p}^{K_\\mu} \\sum_{q}^{K_\\nu}
-                d_p d_q \\langle g_p | g_q \\rangle
+            T_{\\mu\\nu} = \\sum_{p}^{K_\\mu} \\sum_{q}^{K_\\nu}
+                d_p d_q \\langle g_p | -\\frac{1}{2}\\nabla^2 | g_q \\rangle
 
         where :math:`d_p` are contraction coefficients.
 
@@ -301,13 +275,13 @@ class Overlap:
         :param lz2: Angular momentum in z for the second function.
         :type lz2: int
 
-        :returns: Overlap integral value.
+        :returns: Kinetic energy integral value.
         :rtype: float
         """
         A = (cgto1.center.x, cgto1.center.y, cgto1.center.z)
         B = (cgto2.center.x, cgto2.center.y, cgto2.center.z)
 
-        overlap = 0.0
+        kinetic = 0.0
 
         for p in range(cgto1.n_primitives):
             alpha = cgto1.exponents[p]
@@ -317,40 +291,26 @@ class Overlap:
                 beta = cgto2.exponents[q]
                 d_q = cgto2.contractions[q]
 
-                prim_ovlp = Overlap.primitive_overlap(
+                prim_kin = KineticEnergy.primitive_kinetic(
                     alpha, A, lx1, ly1, lz1, beta, B, lx2, ly2, lz2
                 )
-                overlap += d_p * d_q * prim_ovlp
+                kinetic += d_p * d_q * prim_kin
 
-        return overlap
+        return kinetic
 
     # ==================================================================
     # Instance methods
     # ==================================================================
 
-    def _build_basis_index_map(self) -> None:
-        """Build mapping from basis function index to (shell, angular component).
-
-        Creates ``_basis_map``: a list where each entry is a tuple
-        ``(shell_index, lx, ly, lz)`` identifying which shell and
-        Cartesian component corresponds to each basis function index.
-        """
-        self._basis_map: List[Tuple[int, int, int, int]] = []
-
-        for shell_idx, cgto in enumerate(self.cgtos):
-            components = get_cartesian_components(cgto.l)
-            for lx, ly, lz in components:
-                self._basis_map.append((shell_idx, lx, ly, lz))
-
-    def _compute_overlap_matrix(self) -> np.ndarray:
-        """Compute the full overlap matrix.
+    def _compute_kinetic_matrix(self) -> np.ndarray:
+        """Compute the full kinetic energy matrix.
 
         Uses symmetry: only computes upper triangle and mirrors to lower.
 
-        :returns: Overlap matrix of shape ``(n_basis, n_basis)``.
+        :returns: Kinetic energy matrix of shape ``(n_basis, n_basis)``.
         :rtype: np.ndarray
         """
-        S = np.zeros((self.n_basis, self.n_basis))
+        T = np.zeros((self.n_basis, self.n_basis))
 
         for mu in range(self.n_basis):
             shell_mu, lx1, ly1, lz1 = self._basis_map[mu]
@@ -360,17 +320,17 @@ class Overlap:
                 shell_nu, lx2, ly2, lz2 = self._basis_map[nu]
                 cgto2 = self.cgtos[shell_nu]
 
-                S_mn = self.contracted_overlap(
+                T_mn = self.contracted_kinetic(
                     cgto1, lx1, ly1, lz1, cgto2, lx2, ly2, lz2
                 )
 
-                S[mu, nu] = S_mn
-                S[nu, mu] = S_mn  # Symmetry
+                T[mu, nu] = T_mn
+                T[nu, mu] = T_mn  # Symmetry
 
-        return S
+        return T
 
     def __repr__(self) -> str:
-        return f"Overlap(n_basis={self.n_basis})"
+        return f"KineticEnergy(n_basis={self.n_basis})"
 
     def __getitem__(self, key: Tuple[int, int]) -> float:
         """Access matrix element by index.
@@ -378,7 +338,7 @@ class Overlap:
         :param key: Tuple of (row, column) indices.
         :type key: Tuple[int, int]
 
-        :returns: Matrix element S[row, col].
+        :returns: Matrix element T[row, col].
         :rtype: float
         """
         return self.matrix[key]

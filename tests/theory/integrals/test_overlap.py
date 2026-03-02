@@ -17,7 +17,7 @@ TODO:
 import numpy as np
 import pytest
 
-from q_block import ContractedGaussianTypeOrbital, Molecule, OverlapMatrix
+from q_block import ContractedGaussianTypeOrbital, Molecule, Overlap
 from q_block.io.input_data import InputData
 from q_block.theory.utils import get_cartesian_components
 from tests.constants import BASIS_STO_3G, ORIGIN
@@ -69,7 +69,7 @@ def water_molecule() -> Molecule:
 def test_gaussian_product_center_same_center() -> None:
     """Verify product center of identical positions is that position."""
     A: tuple[float, float, float] = (1.0, 2.0, 3.0)
-    P: tuple[float, float, float] = OverlapMatrix._gaussian_product_center(
+    P: tuple[float, float, float] = Overlap._gaussian_product_center(
         alpha=1.0, A=A, beta=1.0, B=A
     )
     assert P == pytest.approx(expected=A)
@@ -79,7 +79,7 @@ def test_gaussian_product_center_equal_exponents() -> None:
     """Verify equal exponents give midpoint."""
     A: tuple[float, float, float] = (0.0, 0.0, 0.0)
     B: tuple[float, float, float] = (2.0, 0.0, 0.0)
-    P: tuple[float, float, float] = OverlapMatrix._gaussian_product_center(
+    P: tuple[float, float, float] = Overlap._gaussian_product_center(
         alpha=1.0, A=A, beta=1.0, B=B
     )
     assert P == pytest.approx(expected=(1.0, 0.0, 0.0))
@@ -89,7 +89,7 @@ def test_gaussian_product_center_unequal_exponents() -> None:
     """Verify larger exponent pulls center toward that Gaussian."""
     A: tuple[float, float, float] = (0.0, 0.0, 0.0)
     B: tuple[float, float, float] = (2.0, 0.0, 0.0)
-    P: tuple[float, float, float] = OverlapMatrix._gaussian_product_center(
+    P: tuple[float, float, float] = Overlap._gaussian_product_center(
         alpha=3.0, A=A, beta=1.0, B=B
     )
     # P = (3*0 + 1*2) / (3+1) = 0.5
@@ -146,7 +146,7 @@ def test_primitive_overlap_self(lx: int, ly: int, lz: int) -> None:
     """
     A: tuple[float, float, float] = (0.0, 0.0, 0.0)
     alpha: float = 1.0
-    overlap: float = OverlapMatrix.primitive_overlap(
+    overlap: float = Overlap.primitive_overlap(
         alpha=alpha, A=A, lx1=lx, ly1=ly, lz1=lz,
         beta=alpha, B=A, lx2=lx, ly2=ly, lz2=lz
     )
@@ -171,7 +171,7 @@ def test_primitive_overlap_same_center_diff_exponents(lx: int, ly: int, lz: int)
     :param lz: int - Angular momentum component in z direction.
     """
     A: tuple[float, float, float] = (0.0, 0.0, 0.0)
-    overlap: float = OverlapMatrix.primitive_overlap(
+    overlap: float = Overlap.primitive_overlap(
         alpha=1.0, A=A, lx1=lx, ly1=ly, lz1=lz,
         beta=2.0, B=A, lx2=lx, ly2=ly, lz2=lz
     )
@@ -202,7 +202,7 @@ def test_primitive_overlap_separated(lx: int, ly: int, lz: int) -> None:
     """
     A: tuple[float, float, float] = (0.0, 0.0, 0.0)
     B: tuple[float, float, float] = (0.0, 0.0, 2.0)
-    overlap: float = OverlapMatrix.primitive_overlap(
+    overlap: float = Overlap.primitive_overlap(
         alpha=1.0, A=A, lx1=lx, ly1=ly, lz1=lz,
         beta=1.0, B=B, lx2=lx, ly2=ly, lz2=lz
     )
@@ -229,7 +229,7 @@ def test_primitive_overlap_far_apart(lx: int, ly: int, lz: int) -> None:
     """
     A: tuple[float, float, float] = (0.0, 0.0, 0.0)
     B: tuple[float, float, float] = (0.0, 0.0, 100.0)
-    overlap: float = OverlapMatrix.primitive_overlap(
+    overlap: float = Overlap.primitive_overlap(
         alpha=1.0, A=A, lx1=lx, ly1=ly, lz1=lz,
         beta=1.0, B=B, lx2=lx, ly2=ly, lz2=lz
     )
@@ -287,7 +287,7 @@ def test_primitive_overlap_orthogonal_same_shell(
     alpha: float = 1.0
     lx1, ly1, lz1 = orbital1
     lx2, ly2, lz2 = orbital2
-    overlap: float = OverlapMatrix.primitive_overlap(
+    overlap: float = Overlap.primitive_overlap(
         alpha=alpha, A=A, lx1=lx1, ly1=ly1, lz1=lz1,
         beta=alpha, B=A, lx2=lx2, ly2=ly2, lz2=lz2
     )
@@ -347,7 +347,7 @@ def test_primitive_overlap_orthogonal_different_shells(
     alpha: float = 1.0
     lx1, ly1, lz1 = orbital1
     lx2, ly2, lz2 = orbital2
-    overlap: float = OverlapMatrix.primitive_overlap(
+    overlap: float = Overlap.primitive_overlap(
         alpha=alpha, A=A, lx1=lx1, ly1=ly1, lz1=lz1,
         beta=alpha, B=A, lx2=lx2, ly2=ly2, lz2=lz2
     )
@@ -367,11 +367,11 @@ def test_contracted_overlap_single_primitive_equals_primitive() -> None:
         exponents=[1.0],
         contractions=[1.0],
     )
-    overlap: float = OverlapMatrix.contracted_overlap(
+    overlap: float = Overlap.contracted_overlap(
         cgto1=cgto, lx1=0, ly1=0, lz1=0,
         cgto2=cgto, lx2=0, ly2=0, lz2=0
     )
-    primitive: float = OverlapMatrix.primitive_overlap(
+    primitive: float = Overlap.primitive_overlap(
         alpha=1.0, A=(0.0, 0.0, 0.0), lx1=0, ly1=0, lz1=0,
         beta=1.0, B=(0.0, 0.0, 0.0), lx2=0, ly2=0, lz2=0
     )
@@ -386,7 +386,7 @@ def test_contracted_overlap_multiple_primitives_positive() -> None:
         exponents=[3.0, 1.0, 0.3],
         contractions=[0.5, 0.3, 0.2],
     )
-    overlap: float = OverlapMatrix.contracted_overlap(
+    overlap: float = Overlap.contracted_overlap(
         cgto1=cgto, lx1=0, ly1=0, lz1=0,
         cgto2=cgto, lx2=0, ly2=0, lz2=0
     )
@@ -394,14 +394,14 @@ def test_contracted_overlap_multiple_primitives_positive() -> None:
 
 
 # ======================================================================
-# OverlapMatrix Initialization Tests
+# Overlap Initialization Tests
 # ======================================================================
 
 
 def test_overlap_matrix_empty_basis_raises() -> None:
     """Verify empty basis set raises ValueError."""
     with pytest.raises(expected_exception=ValueError, match="empty basis set"):
-        OverlapMatrix(cgtos=[])
+        Overlap(cgtos=[])
 
 
 def test_overlap_matrix_single_s_orbital() -> None:
@@ -412,7 +412,7 @@ def test_overlap_matrix_single_s_orbital() -> None:
         exponents=[1.0],
         contractions=[1.0],
     )
-    S: OverlapMatrix = OverlapMatrix(cgtos=[cgto])
+    S: Overlap = Overlap(cgtos=[cgto])
     assert S.n_basis == 1
     assert S.matrix.shape == (1, 1)
 
@@ -425,13 +425,13 @@ def test_overlap_matrix_single_p_orbital() -> None:
         exponents=[1.0],
         contractions=[1.0],
     )
-    S: OverlapMatrix = OverlapMatrix(cgtos=[cgto])
+    S: Overlap = Overlap(cgtos=[cgto])
     assert S.n_basis == 3
     assert S.matrix.shape == (3, 3)
 
 
 # ======================================================================
-# OverlapMatrix Symmetry Tests
+# Overlap Symmetry Tests
 # ======================================================================
 
 
@@ -440,7 +440,7 @@ def test_overlap_matrix_symmetry_h2(h2_molecule: Molecule) -> None:
 
     :param h2_molecule: Molecule - H2 molecule fixture with STO-3G basis.
     """
-    S: OverlapMatrix = OverlapMatrix(cgtos=h2_molecule.contracted_gaussian_type_orbitals)
+    S: Overlap = Overlap(cgtos=h2_molecule.contracted_gaussian_type_orbitals)
     np.testing.assert_array_almost_equal(actual=S.matrix, desired=S.matrix.T)
 
 
@@ -449,12 +449,12 @@ def test_overlap_matrix_symmetry_water(water_molecule: Molecule) -> None:
 
     :param water_molecule: Molecule - Water molecule fixture with STO-3G basis.
     """
-    S: OverlapMatrix = OverlapMatrix(cgtos=water_molecule.contracted_gaussian_type_orbitals)
+    S: Overlap = Overlap(cgtos=water_molecule.contracted_gaussian_type_orbitals)
     np.testing.assert_array_almost_equal(actual=S.matrix, desired=S.matrix.T)
 
 
 # ======================================================================
-# OverlapMatrix Diagonal Tests (Normalization)
+# Overlap Diagonal Tests (Normalization)
 # ======================================================================
 
 
@@ -463,7 +463,7 @@ def test_overlap_matrix_diagonal_ones_h2(h2_molecule: Molecule) -> None:
 
     :param h2_molecule: Molecule - H2 molecule fixture with STO-3G basis.
     """
-    S: OverlapMatrix = OverlapMatrix(cgtos=h2_molecule.contracted_gaussian_type_orbitals)
+    S: Overlap = Overlap(cgtos=h2_molecule.contracted_gaussian_type_orbitals)
     diagonal: np.ndarray = np.diag(v=S.matrix)
     np.testing.assert_array_almost_equal(
         actual=diagonal, desired=np.ones(shape=S.n_basis), decimal=4
@@ -475,7 +475,7 @@ def test_overlap_matrix_diagonal_ones_water(water_molecule: Molecule) -> None:
 
     :param water_molecule: Molecule - Water molecule fixture with STO-3G basis.
     """
-    S: OverlapMatrix = OverlapMatrix(cgtos=water_molecule.contracted_gaussian_type_orbitals)
+    S: Overlap = Overlap(cgtos=water_molecule.contracted_gaussian_type_orbitals)
     diagonal: np.ndarray = np.diag(v=S.matrix)
     np.testing.assert_array_almost_equal(
         actual=diagonal, desired=np.ones(shape=S.n_basis), decimal=4
@@ -483,7 +483,7 @@ def test_overlap_matrix_diagonal_ones_water(water_molecule: Molecule) -> None:
 
 
 # ======================================================================
-# OverlapMatrix Properties Tests
+# Overlap Properties Tests
 # ======================================================================
 
 
@@ -492,7 +492,7 @@ def test_overlap_matrix_positive_definite_h2(h2_molecule: Molecule) -> None:
 
     :param h2_molecule: Molecule - H2 molecule fixture with STO-3G basis.
     """
-    S: OverlapMatrix = OverlapMatrix(cgtos=h2_molecule.contracted_gaussian_type_orbitals)
+    S: Overlap = Overlap(cgtos=h2_molecule.contracted_gaussian_type_orbitals)
     eigenvalues: np.ndarray = np.linalg.eigvalsh(a=S.matrix)
     assert all(ev > 0 for ev in eigenvalues)
 
@@ -502,9 +502,9 @@ def test_overlap_matrix_repr(h2_molecule: Molecule) -> None:
 
     :param h2_molecule: Molecule - H2 molecule fixture with STO-3G basis.
     """
-    S: OverlapMatrix = OverlapMatrix(cgtos=h2_molecule.contracted_gaussian_type_orbitals)
+    S: Overlap = Overlap(cgtos=h2_molecule.contracted_gaussian_type_orbitals)
     repr_str: str = repr(S)
-    assert "OverlapMatrix" in repr_str
+    assert "Overlap" in repr_str
     assert "n_basis" in repr_str
 
 
@@ -513,7 +513,7 @@ def test_overlap_matrix_getitem(h2_molecule: Molecule) -> None:
 
     :param h2_molecule: Molecule - H2 molecule fixture with STO-3G basis.
     """
-    S: OverlapMatrix = OverlapMatrix(cgtos=h2_molecule.contracted_gaussian_type_orbitals)
+    S: Overlap = Overlap(cgtos=h2_molecule.contracted_gaussian_type_orbitals)
     assert S[0, 0] == S.matrix[0, 0]
     assert S[0, 1] == S.matrix[0, 1]
 
@@ -528,7 +528,7 @@ def test_h2_overlap_matrix_dimension(h2_molecule: Molecule) -> None:
 
     :param h2_molecule: Molecule - H2 molecule fixture with STO-3G basis.
     """
-    S: OverlapMatrix = OverlapMatrix(cgtos=h2_molecule.contracted_gaussian_type_orbitals)
+    S: Overlap = Overlap(cgtos=h2_molecule.contracted_gaussian_type_orbitals)
     assert S.n_basis == 2
 
 
@@ -537,7 +537,7 @@ def test_h2_off_diagonal_positive(h2_molecule: Molecule) -> None:
 
     :param h2_molecule: Molecule - H2 molecule fixture with STO-3G basis.
     """
-    S: OverlapMatrix = OverlapMatrix(cgtos=h2_molecule.contracted_gaussian_type_orbitals)
+    S: Overlap = Overlap(cgtos=h2_molecule.contracted_gaussian_type_orbitals)
     # S[0,1] is overlap between 1s on H1 and 1s on H2
     assert S[0, 1] > 0
     assert S[0, 1] < 1.0  # Less than diagonal
@@ -553,7 +553,7 @@ def test_water_overlap_matrix_dimension(water_molecule: Molecule) -> None:
 
     :param water_molecule: Molecule - Water molecule fixture with STO-3G basis.
     """
-    S: OverlapMatrix = OverlapMatrix(cgtos=water_molecule.contracted_gaussian_type_orbitals)
+    S: Overlap = Overlap(cgtos=water_molecule.contracted_gaussian_type_orbitals)
     # O: 1s, 2s, 2px, 2py, 2pz = 5 functions
     # H1: 1s = 1 function
     # H2: 1s = 1 function
@@ -566,5 +566,5 @@ def test_water_overlap_matrix_shape(water_molecule: Molecule) -> None:
 
     :param water_molecule: Molecule - Water molecule fixture with STO-3G basis.
     """
-    S: OverlapMatrix = OverlapMatrix(cgtos=water_molecule.contracted_gaussian_type_orbitals)
+    S: Overlap = Overlap(cgtos=water_molecule.contracted_gaussian_type_orbitals)
     assert S.matrix.shape == (7, 7)

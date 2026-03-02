@@ -12,11 +12,15 @@ normalization_constant
     Computes the normalization constant for Cartesian Gaussian primitives.
 get_cartesian_components
     Returns all Cartesian angular momentum components for given l.
+boys_function
+    Computes the Boys function F_n(x) for Coulomb integrals.
 """
 
 import math
 
+import numpy as np
 from scipy.special import factorial2 as _scipy_factorial2
+from scipy.special import hyp1f1 as _scipy_hyp1f1
 
 
 def double_factorial(n: int) -> int:
@@ -111,4 +115,54 @@ def get_cartesian_components(l: int) -> list:
             lz = l - lx - ly
             components.append((lx, ly, lz))
     return components
+
+
+def boys_function(n: int, x: float) -> float:
+    r"""Compute the Boys function F_n(x).
+
+    The Boys function is defined as:
+
+    .. math::
+
+        F_n(x) = \int_0^1 t^{2n} e^{-x t^2} dt
+
+    This function is essential for evaluating Coulomb integrals
+    (nuclear attraction and electron repulsion) over Gaussian basis
+    functions.
+
+    For small x, the Boys function is computed using the confluent
+    hypergeometric function:
+
+    .. math::
+
+        F_n(x) = \frac{1}{2n+1} \cdot {}_1F_1\left(n + \frac{1}{2}; n + \frac{3}{2}; -x\right)
+
+    For large x, an asymptotic expansion is used:
+
+    .. math::
+
+        F_n(x) \approx \frac{(2n-1)!!}{2^{n+1}} \sqrt{\frac{\pi}{x^{2n+1}}}
+
+    :param n: Order of the Boys function (non-negative integer).
+    :type n: int
+    :param x: Argument of the Boys function (non-negative real).
+    :type x: float
+
+    :returns: Value of F_n(x).
+    :rtype: float
+
+    Examples
+    --------
+    >>> boys_function(0, 0.0)
+    1.0
+    >>> boys_function(0, 1.0)  # doctest: +ELLIPSIS
+    0.746824...
+    """
+    if x < 1e-10:
+        # Taylor expansion for small x: F_n(x) ≈ 1/(2n+1) - x/(2n+3) + ...
+        return 1.0 / (2 * n + 1)
+
+    # Use confluent hypergeometric function for general case
+    # F_n(x) = (1/(2n+1)) * 1F1(n+1/2, n+3/2, -x)
+    return _scipy_hyp1f1(n + 0.5, n + 1.5, -x) / (2 * n + 1)
 
