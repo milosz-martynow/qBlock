@@ -1,9 +1,9 @@
 """
-Example: Overlap Matrix Computation for Water Molecule
-======================================================
+Example: Overlap Matrix Computation for H2 and Water Molecules
+==============================================================
 
 This script demonstrates how to:
-    1. Build a water molecule with different basis sets
+    1. Build molecules with different basis sets
     2. Generate contracted Gaussian-type orbitals (CGTOs)
     3. Compute the overlap matrix S
     4. Inspect matrix properties (symmetry, normalization)
@@ -20,14 +20,33 @@ from q_block.theory.integrals import Overlap
 # 1. LOAD BASIS SETS
 # ══════════════════════════════════════════════════════════════════════════════
 
+basis_sto3g = Pople(filepath="data/basis_set/sto_gaussian_format/STO-3G.gbs")
 basis_3_21G = Pople(filepath="data/basis_set/gto_gaussian_format/3-21G.gbs")
 basis_6_31G = Pople(filepath="data/basis_set/gto_gaussian_format/6-31G.gbs")
 
-print("Loaded basis sets: 3-21G and 6-31G\n")
+print("Loaded basis sets: STO-3G, 3-21G and 6-31G\n")
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# 2. BUILD WATER MOLECULE
+# 2. BUILD H2 MOLECULE
+# ══════════════════════════════════════════════════════════════════════════════
+
+h2_input = InputData()
+h2_input.from_script(atom_data=[
+    ["H", 0.0000, 0.0000, 0.0000, basis_sto3g],
+    ["H", 0.0000, 0.0000, 0.7414, basis_sto3g],  # Bond length ~0.74 Angstrom
+])
+
+h2 = Molecule(input_data=h2_input)
+h2.to_bohr()  # Convert to atomic units (required for integrals)
+h2.make_contracted_gaussian_type_orbital()
+
+print(f"H2 molecule: {h2.n_electrons} electrons")
+print(f"Number of CGTOs: {len(h2.contracted_gaussian_type_orbitals)}\n")
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# 3. BUILD WATER MOLECULE
 # ══════════════════════════════════════════════════════════════════════════════
 
 water_input = InputData()
@@ -46,38 +65,50 @@ print(f"Number of CGTOs: {len(water.contracted_gaussian_type_orbitals)}\n")
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# 3. COMPUTE OVERLAP MATRIX
+# 4. COMPUTE OVERLAP MATRICES
 # ══════════════════════════════════════════════════════════════════════════════
 
-S = Overlap(cgtos=water.contracted_gaussian_type_orbitals)
+S_h2 = Overlap(cgtos=h2.contracted_gaussian_type_orbitals)
+S_water = Overlap(cgtos=water.contracted_gaussian_type_orbitals)
 
-print(f"=== Overlap Matrix S ===")
-print(f"Shape: {S.matrix.shape}")
-print(f"Number of basis functions: {S.n_basis}\n")
+print(f"=== H2: Overlap Matrix S ===")
+print(f"Shape: {S_h2.matrix.shape}")
+print(f"Number of basis functions: {S_h2.n_basis}\n")
+
+print(f"=== Water: Overlap Matrix S ===")
+print(f"Shape: {S_water.matrix.shape}")
+print(f"Number of basis functions: {S_water.n_basis}\n")
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# 4. VERIFY MATRIX PROPERTIES
+# 5. VERIFY MATRIX PROPERTIES (Water)
 # ══════════════════════════════════════════════════════════════════════════════
+
+print("=== Water: Matrix Properties ===")
 
 # Symmetry: S_ij = S_ji
-is_symmetric = np.allclose(S.matrix, S.matrix.T)
+is_symmetric = np.allclose(S_water.matrix, S_water.matrix.T)
 print(f"Symmetric: {is_symmetric}")
 
 # Normalization: diagonal elements should be ~1.0
-diagonal = np.diag(v=S.matrix)
+diagonal = np.diag(v=S_water.matrix)
 print(f"Diagonal (normalization): {diagonal.round(decimals=4)}")
 
 # Positive definite: all eigenvalues > 0
-eigenvalues = np.linalg.eigvalsh(a=S.matrix)
+eigenvalues = np.linalg.eigvalsh(a=S_water.matrix)
 is_positive_definite = all(ev > 0 for ev in eigenvalues)
 print(f"Positive definite: {is_positive_definite}\n")
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# 5. DISPLAY OVERLAP MATRIX
+# 6. DISPLAY OVERLAP MATRICES
 # ══════════════════════════════════════════════════════════════════════════════
 
 np.set_printoptions(precision=4, suppress=True, linewidth=120)
-print("=== Full Overlap Matrix ===")
-print(S.matrix)
+
+print("=== H2: Full Overlap Matrix ===")
+print(S_h2.matrix)
+print()
+
+print("=== Water: Full Overlap Matrix ===")
+print(S_water.matrix)
