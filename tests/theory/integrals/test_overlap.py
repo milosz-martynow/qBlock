@@ -18,47 +18,13 @@ import numpy as np
 import pytest
 
 from q_block import ContractedGaussianTypeOrbital, Molecule, Overlap
-from q_block.io.input_data import InputData
-from q_block.theory.utils import get_cartesian_components
-from tests.constants import BASIS_STO_3G, ORIGIN
-
-
-# ======================================================================
-# Fixtures
-# ======================================================================
-
-
-@pytest.fixture
-def h2_molecule() -> Molecule:
-    """H2 molecule with STO-3G basis, converted to Bohr."""
-    inp: InputData = InputData()
-    inp.from_script(
-        atom_data=[
-            ["H", 0.0, 0.0, 0.0, BASIS_STO_3G],
-            ["H", 0.0, 0.0, 0.74, BASIS_STO_3G],  # ~0.74 Å bond length
-        ]
-    )
-    mol: Molecule = Molecule(input_data=inp)
-    mol.to_bohr()
-    mol.make_contracted_gaussian_type_orbital()
-    return mol
-
-
-@pytest.fixture
-def water_molecule() -> Molecule:
-    """Water molecule with STO-3G basis, converted to Bohr."""
-    inp: InputData = InputData()
-    inp.from_script(
-        atom_data=[
-            ["O", 0.0, 0.0, 0.1173, BASIS_STO_3G],
-            ["H", 0.0, 0.7572, -0.4692, BASIS_STO_3G],
-            ["H", 0.0, -0.7572, -0.4692, BASIS_STO_3G],
-        ]
-    )
-    mol: Molecule = Molecule(input_data=inp)
-    mol.to_bohr()
-    mol.make_contracted_gaussian_type_orbital()
-    return mol
+from tests.constants import ORIGIN
+from tests.theory.integrals.integrals_testing_utils import (
+    ALL_ORBITAL_COMPONENTS,
+    get_orbital_ids,
+    h2_molecule,
+    water_molecule,
+)
 
 
 # ======================================================================
@@ -100,32 +66,6 @@ def test_gaussian_product_center_unequal_exponents() -> None:
 # Primitive Overlap Tests - Parametrized by Orbital Type
 # ======================================================================
 
-# All orbital types: s (l=0), p (l=1), d (l=2)
-ALL_ORBITAL_COMPONENTS = (
-    get_cartesian_components(0)  # s: [(0,0,0)]
-    + get_cartesian_components(1)  # p: [(1,0,0), (0,1,0), (0,0,1)]
-    + get_cartesian_components(2)  # d: [(2,0,0), (1,1,0), (1,0,1), (0,2,0), (0,1,1), (0,0,2)]
-)
-
-# Orbital labels for test IDs
-ORBITAL_LABELS = {
-    (0, 0, 0): "s",
-    (1, 0, 0): "px",
-    (0, 1, 0): "py",
-    (0, 0, 1): "pz",
-    (2, 0, 0): "dxx",
-    (1, 1, 0): "dxy",
-    (1, 0, 1): "dxz",
-    (0, 2, 0): "dyy",
-    (0, 1, 1): "dyz",
-    (0, 0, 2): "dzz",
-}
-
-
-def _orbital_id(component: tuple) -> str:
-    """Generate test ID for orbital component."""
-    return ORBITAL_LABELS.get(component, f"l{sum(component)}")
-
 
 # ----------------------------------------------------------------------
 # Self-Overlap Tests (normalized orbital with itself = 1.0)
@@ -135,7 +75,7 @@ def _orbital_id(component: tuple) -> str:
 @pytest.mark.parametrize(
     "lx, ly, lz",
     ALL_ORBITAL_COMPONENTS,
-    ids=[_orbital_id(c) for c in ALL_ORBITAL_COMPONENTS],
+    ids=get_orbital_ids(),
 )
 def test_primitive_overlap_self(lx: int, ly: int, lz: int) -> None:
     """Verify overlap of identical normalized orbital with itself is 1.0.
@@ -161,7 +101,7 @@ def test_primitive_overlap_self(lx: int, ly: int, lz: int) -> None:
 @pytest.mark.parametrize(
     "lx, ly, lz",
     ALL_ORBITAL_COMPONENTS,
-    ids=[_orbital_id(c) for c in ALL_ORBITAL_COMPONENTS],
+    ids=get_orbital_ids(),
 )
 def test_primitive_overlap_same_center_diff_exponents(lx: int, ly: int, lz: int) -> None:
     """Verify two orbitals at same center with different exponents have positive overlap < 1.
@@ -187,7 +127,7 @@ def test_primitive_overlap_same_center_diff_exponents(lx: int, ly: int, lz: int)
 @pytest.mark.parametrize(
     "lx, ly, lz",
     ALL_ORBITAL_COMPONENTS,
-    ids=[_orbital_id(c) for c in ALL_ORBITAL_COMPONENTS],
+    ids=get_orbital_ids(),
 )
 def test_primitive_overlap_separated(lx: int, ly: int, lz: int) -> None:
     """Verify orbitals separated along z-axis have reduced overlap magnitude.
@@ -218,7 +158,7 @@ def test_primitive_overlap_separated(lx: int, ly: int, lz: int) -> None:
 @pytest.mark.parametrize(
     "lx, ly, lz",
     ALL_ORBITAL_COMPONENTS,
-    ids=[_orbital_id(c) for c in ALL_ORBITAL_COMPONENTS],
+    ids=get_orbital_ids(),
 )
 def test_primitive_overlap_far_apart(lx: int, ly: int, lz: int) -> None:
     """Verify orbitals far apart have near-zero overlap.

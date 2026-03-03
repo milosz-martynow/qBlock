@@ -24,9 +24,10 @@ TwoGaussianIntegral
     Abstract base class for all two-center Gaussian integral matrices.
 """
 
+import itertools
 import math
 from abc import abstractmethod
-from typing import List, Tuple
+from typing import Callable, List, Tuple
 
 import numpy as np
 
@@ -142,6 +143,76 @@ class TwoGaussianIntegral(Integral):
         Py = (alpha * A[1] + beta * B[1]) / gamma
         Pz = (alpha * A[2] + beta * B[2]) / gamma
         return (Px, Py, Pz)
+
+    @staticmethod
+    def _contract_primitives(
+        cgtos: List[ContractedGaussianTypeOrbital],
+        angular_momenta: List[Tuple[int, int, int]],
+        primitive_kernel: Callable[
+            [
+                List[float],
+                List[Tuple[float, float, float]],
+                List[Tuple[int, int, int]],
+            ],
+            float,
+        ],
+    ) -> float:
+        """Compute contracted integral over n Gaussian centers.
+
+        This generic method handles any number of contracted Gaussians by:
+
+        1. Extracting centers, exponents, and coefficients from each CGTO
+        2. Iterating over all primitive combinations (Cartesian product)
+        3. Accumulating weighted primitive integrals
+
+        .. math::
+
+            I = \\sum_{p_1}^{K_1} \\sum_{p_2}^{K_2} \\cdots \\sum_{p_n}^{K_n}
+                d_{p_1} d_{p_2} \\cdots d_{p_n} \\cdot
+                \\text{kernel}(\\alpha_{p_1}, \\alpha_{p_2}, \\ldots)
+
+        :param cgtos: List of n contracted Gaussian-type orbitals.
+        :type cgtos: List[ContractedGaussianTypeOrbital]
+        :param angular_momenta: List of (lx, ly, lz) tuples for each CGTO.
+        :type angular_momenta: List[Tuple[int, int, int]]
+        :param primitive_kernel: Function that computes primitive integral.
+            Signature: kernel(exponents, centers, angular_momenta) -> float
+        :type primitive_kernel: Callable
+
+        :returns: Contracted integral value.
+        :rtype: float
+        """
+        # Extract centers from each CGTO
+        centers = [
+            (cgto.center.x, cgto.center.y, cgto.center.z) for cgto in cgtos
+        ]
+
+        # Build iteration ranges for each primitive
+        primitive_ranges = [range(cgto.n_primitives) for cgto in cgtos]
+
+        integral = 0.0
+
+        # Iterate over all primitive combinations (Cartesian product)
+        for indices in itertools.product(*primitive_ranges):
+            # Collect exponents and coefficients for this combination
+            exponents = [
+                cgtos[i].exponents[idx] for i, idx in enumerate(indices)
+            ]
+            coefficients = [
+                cgtos[i].contractions[idx] for i, idx in enumerate(indices)
+            ]
+
+            # Compute product of contraction coefficients
+            coeff_product = 1.0
+            for c in coefficients:
+                coeff_product *= c
+
+            # Compute primitive integral using the kernel
+            prim_integral = primitive_kernel(exponents, centers, angular_momenta)
+
+            integral += coeff_product * prim_integral
+
+        return integral
 
     @staticmethod
     def _overlap_1d(
