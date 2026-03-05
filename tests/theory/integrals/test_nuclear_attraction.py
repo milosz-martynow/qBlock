@@ -16,7 +16,7 @@ import pytest
 
 from q_block import ContractedGaussianTypeOrbital, Molecule, NuclearAttraction, Overlap
 from tests.constants import ORIGIN
-from tests.theory.integrals.integrals_testing_utils import (
+from tests.utils import (
     ALL_ORBITAL_COMPONENTS,
     get_orbital_ids,
     h2_molecule,

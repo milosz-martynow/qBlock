@@ -32,61 +32,61 @@ note right
 end note
 
 !startsub INTEGRAL_COMPUTATION
-partition "Integral Computation" {
+partition "HartreeFock" {
 
     ' ============================================================
-    ' ONE-ELECTRON INTEGRALS (parallel, independent)
+    ' ALL INTEGRALS (parallel, independent)
+    ' S, T, V, ERI, and E_nuc can all be computed independently
     ' ============================================================
+
     fork
-        partition "Overlap Matrix  S" {
+        partition "Overlap" #LightBlue {
             :Compute **Overlap Matrix** <latex>\mathbf{S}</latex>
             <latex>S_{\mu\nu} = \langle\phi_\mu | \phi_\nu\rangle = \int \phi_\mu(\mathbf{r})\, \phi_\nu(\mathbf{r})\, d\mathbf{r}</latex>
 
             Dimension: <latex>n_{basis} \times n_{basis}</latex>
             Properties: symmetric, positive-definite
-            Algorithm: McMurchie-Davidson recursion; <<#LightCyan>>
-
-            note right
-                Measures non-orthogonality
-                of the AO basis.
-                <latex>S_{\mu\mu} = 1</latex> (normalized),
-                <latex>0 \le S_{\mu\nu} \le 1</latex>.
-            end note
+            Algorithm: Obara-Saika recursion for 1D overlap
+            Info: Measures non-orthogonality of the AO basis. <latex>S_{\mu\mu} = 1</latex> (normalized), <latex>0 \le S_{\mu\nu} \le 1</latex>.; <<#E8F4FD>>
         }
 
     fork again
-        partition "Kinetic Energy Matrix  T" {
+        partition "KineticEnergy" #LightBlue {
             :Compute **Kinetic Energy Matrix** <latex>\mathbf{T}</latex>
             <latex>T_{\mu\nu} = \langle\phi_\mu| -\tfrac{1}{2}\nabla^2 |\phi_\nu\rangle = -\frac{1}{2}\int \phi_\mu(\mathbf{r})\, \nabla^2 \phi_\nu(\mathbf{r})\, d\mathbf{r}</latex>
 
-            Dimension: <latex>n_{basis} \times n_{basis}</latex>
-            Properties: symmetric, positive semi-definite
-            Algorithm: McMurchie-Davidson recursion; <<#LightCyan>>
-
-            note right
-                Electron kinetic energy
-                in atomic units
-                (<latex>\hbar = m_e = 1</latex>).
-            end note
+            Dimension: <latex>n_{basis} \times n_{basis}</latex>.
+            Properties: symmetric, positive semi-definite.
+            Algorithm: Derivative formula with 1D overlap integrals.
+            Info: Electron kinetic energy in atomic units (<latex>\hbar = m_e = 1</latex>). ; <<#E8F4FD>>
         }
 
     fork again
-        partition "Nuclear Attraction Matrix  V" {
+        partition "NuclearAttraction" #LightBlue {
             :Compute **Nuclear Attraction Matrix** <latex>\mathbf{V}</latex>
             <latex>V_{\mu\nu} = \sum_{A}^{N_{atoms}} \langle\phi_\mu| -\frac{Z_A}{|\mathbf{r}-\mathbf{R}_A|} |\phi_\nu\rangle</latex>
             <latex>= -\sum_{A}^{N_{atoms}} Z_A \int \phi_\mu(\mathbf{r})\, \frac{1}{|\mathbf{r}-\mathbf{R}_A|}\, \phi_\nu(\mathbf{r})\, d\mathbf{r}</latex>
 
             Dimension: <latex>n_{basis} \times n_{basis}</latex>
             Properties: symmetric, negative semi-definite
-            Algorithm: McMurchie-Davidson + Boys function; <<#LightCyan>>
+            Algorithm: McMurchie-Davidson + Boys function
+            Info: Coulomb attraction between each electron and every nucleus. Uses the Boys function <latex>F_n(x)</latex> for the <latex>1/r</latex> integrals over Gaussians.; <<#E8F4FD>>
 
-            note right
-                Coulomb attraction between
-                each electron and every
-                nucleus. Uses the Boys
-                function <latex>F_n(x)</latex> for the
-                <latex>1/r</latex> integrals over Gaussians.
-            end note
+        }
+
+    fork again
+        partition "TwoElectronRepulsion" #LightGreen {
+            :Compute **Two-Electron Repulsion Integrals** (ERI tensor)
+            <latex>(\mu\nu|\lambda\sigma) = \iint \phi_\mu(\mathbf{r}_1)\, \phi_\nu(\mathbf{r}_1)\, \frac{1}{|\mathbf{r}_1 - \mathbf{r}_2|}\, \phi_\lambda(\mathbf{r}_2)\, \phi_\sigma(\mathbf{r}_2)\, d\mathbf{r}_1\, d\mathbf{r}_2</latex>
+
+            Chemist notation: <latex>(\mu\nu|\lambda\sigma)</latex>
+            Dimension: <latex>n_{basis}^4</latex> unique index combinations
+            (reduced by 8-fold permutational symmetry)
+            Algorithm: McMurchie-Davidson + Boys function
+            Info: Permutational symmetries of the ERI tensor:
+            <latex>(\mu\nu|\lambda\sigma) = (\nu\mu|\lambda\sigma) = (\mu\nu|\sigma\lambda) = (\nu\mu|\sigma\lambda) = (\lambda\sigma|\mu\nu) = (\sigma\lambda|\mu\nu) = (\lambda\sigma|\nu\mu) = (\sigma\lambda|\nu\mu)</latex>
+            Only <latex>\sim n_{basis}^4/8</latex> unique integralsneed to be computed and stored. ; <<#E8FFE8>>
+
         }
 
     end fork
@@ -100,35 +100,6 @@ partition "Integral Computation" {
     This is the complete one-electron Hamiltonian
     (kinetic energy + nuclear attraction).
     Dimension: <latex>n_{basis} \times n_{basis}</latex>; <<#LightCyan>>
-
-    ' ============================================================
-    ' TWO-ELECTRON INTEGRALS (ERI)
-    ' ============================================================
-    :Compute **Two-Electron Repulsion Integrals** (ERI tensor)
-    <latex>(\mu\nu|\lambda\sigma) = \iint \phi_\mu(\mathbf{r}_1)\, \phi_\nu(\mathbf{r}_1)\, \frac{1}{|\mathbf{r}_1 - \mathbf{r}_2|}\, \phi_\lambda(\mathbf{r}_2)\, \phi_\sigma(\mathbf{r}_2)\, d\mathbf{r}_1\, d\mathbf{r}_2</latex>
-
-    Chemist notation: <latex>(\mu\nu|\lambda\sigma)</latex>
-    Dimension: <latex>n_{basis}^4</latex> unique index combinations
-    (reduced by 8-fold permutational symmetry)
-    Algorithm: McMurchie-Davidson + Boys function; <<#LightCyan>>
-
-    note right
-        **Permutational symmetries** of the ERI tensor:
-        <latex>(\mu\nu|\lambda\sigma) = (\nu\mu|\lambda\sigma) = (\mu\nu|\sigma\lambda) = (\nu\mu|\sigma\lambda)</latex>
-        <latex>= (\lambda\sigma|\mu\nu) = (\sigma\lambda|\mu\nu) = (\lambda\sigma|\nu\mu) = (\sigma\lambda|\nu\mu)</latex>
-
-        Only <latex>\sim n_{basis}^4/8</latex> unique integrals
-        need to be computed and stored.
-    end note
-
-    ' ============================================================
-    ' NUCLEAR REPULSION ENERGY
-    ' ============================================================
-    :Compute **Nuclear Repulsion Energy**
-    <latex>E_{nuc} = \sum_{A < B}^{N_{atoms}} \frac{Z_A\, Z_B}{|\mathbf{R}_A - \mathbf{R}_B|}</latex>
-
-    Classical point-charge Coulomb repulsion.
-    This is a scalar constant (no electron dependence).; <<#LightCyan>>
 }
 !endsub
 
@@ -138,10 +109,20 @@ partition "Integral Computation" {
 note right
     **No RHF / UHF / ROHF branching in this phase.**
     All integrals <latex>\mathbf{S}, \mathbf{T}, \mathbf{V},</latex>
-    <latex>(\mu\nu|\lambda\sigma)</latex>, and <latex>E_{nuc}</latex> are
+    and <latex>(\mu\nu|\lambda\sigma)</latex> are
     determined **solely** by the molecular geometry
     and the basis set. Method-specific logic begins
     in SCF Initialization and SCF Iteration Loop.
+
+    **Note:** <latex>E_{nuc}</latex> is computed during Initialization
+    (not here) since it is a simple classical Coulomb sum
+    that does not involve basis functions.
+
+    **Parallelization opportunity:**
+    Since all four computations are independent,
+    they can be distributed across multiple threads
+    or processes for significant speedup on
+    large molecules.
 end note
 
 ' ============================================================
@@ -150,8 +131,7 @@ end note
 :▼ **Output** (passed to subsequent phases):
 • <latex>\mathbf{S}</latex>  (<latex>n_{basis} \times n_{basis}</latex>)  → SCF Initialization, SCF Iteration Loop, Post-SCF Analysis
 • <latex>\mathbf{H}^{core}</latex>  (<latex>n_{basis} \times n_{basis}</latex>)  → SCF Initialization, SCF Iteration Loop
-• ERI tensor  (<latex>\sim n_{basis}^4/8</latex> unique values)  → SCF Iteration Loop
-• <latex>E_{nuc}</latex>  (scalar)  → Finalization (<latex>E_{total} = E_{elec} + E_{nuc}</latex>); <<#LightCyan>>
+• ERI tensor  (<latex>\sim n_{basis}^4/8</latex> unique values)  → SCF Iteration Loop; <<#LightCyan>>
 
 stop
 
@@ -188,9 +168,14 @@ legend right
     | **V** | Nuclear attraction matrix – electron-nucleus Coulomb |
     | **H**^core | Core Hamiltonian – **T** + **V** |
     | (μν|λσ) | Two-electron repulsion integral (ERI) in chemist notation |
-    | E_nuc | Nuclear repulsion energy – classical Coulomb between nuclei |
     | F_n(x) | Boys function – auxiliary for Coulomb integrals over Gaussians |
-    | McMurchie-Davidson | Efficient recursion scheme for Gaussian integral evaluation |
+    ----
+    **Algorithms Used (code-consistent):**
+    |= Integral |= Algorithm |
+    | **S** (Overlap) | Obara-Saika recursion for 1D overlap integrals |
+    | **T** (Kinetic) | Derivative formula using 1D overlap integrals |
+    | **V** (Nuclear Attr.) | McMurchie-Davidson + Hermite Coulomb + Boys function |
+    | ERI | McMurchie-Davidson + Hermite Coulomb + Boys function |
     ----
     **Note:** This phase is **method-independent.**
     RHF, UHF, and ROHF all compute the same set
@@ -201,6 +186,10 @@ legend right
     |<#LightGreen> RHF | Restricted Closed-Shell |
     |<#LightCoral> UHF | Unrestricted |
     |<#LightYellow> ROHF | Restricted Open-Shell |
+    ----
+    **Parallelization Colors:**
+    |<#LightBlue> One-electron integrals | S, T, V matrices |
+    |<#LightGreen> Two-electron integrals | ERI tensor |
 endlegend
 
 @enduml

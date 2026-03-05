@@ -16,7 +16,7 @@ import pytest
 
 from q_block import ContractedGaussianTypeOrbital, Molecule, TwoElectronRepulsion, Overlap
 from tests.constants import ORIGIN
-from tests.theory.integrals.integrals_testing_utils import (
+from tests.utils import (
     h2_molecule,
     water_molecule,
 )

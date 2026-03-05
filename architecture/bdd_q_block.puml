@@ -140,6 +140,8 @@ package "q_block" {
         n_basis: int
         n_alpha: Optional[int]
         n_beta: Optional[int]
+        --
+        cgto: List<ContractedGaussianTypeOrbital> <<property>>
     }
 
     class "RHF" #LightGreen {
@@ -178,6 +180,73 @@ package "q_block" {
     }
 
     ' ----------------------------------------------------------
+    ' theory.integrals
+    ' ----------------------------------------------------------
+
+    abstract class "Integral" as INT {
+        n_basis: int
+        matrix: np.ndarray
+        --
+        {abstract} _compute_matrix(): np.ndarray
+    }
+
+    abstract class "TwoGaussianIntegral" as TGI {
+        cgtos: List<ContractedGaussianTypeOrbital>
+        n_basis: int
+        matrix: np.ndarray
+        --
+        {static} _gaussian_product_center(alpha, A, beta, B): Tuple
+        {static} _overlap_1d(l1, l2, PA, PB, gamma): float
+        {static} _contract_primitives(cgtos, angular_momenta, kernel): float
+        _compute_element(mu, nu): float
+        _compute_matrix(): np.ndarray
+    }
+
+    class "Overlap" #LightBlue {
+        matrix: np.ndarray
+        --
+        {static} primitive_overlap(...): float
+        {static} contracted_overlap(...): float
+    }
+
+    class "KineticEnergy" #LightBlue {
+        matrix: np.ndarray
+        --
+        {static} primitive_kinetic(...): float
+        {static} contracted_kinetic(...): float
+    }
+
+    class "NuclearAttraction" #LightBlue {
+        nuclei: List<Tuple<int, Tuple<float, float, float>>>
+        matrix: np.ndarray
+        --
+        {static} primitive_nuclear_attraction(...): float
+        {static} contracted_nuclear_attraction(...): float
+        {static} _hermite_coulomb(...): float
+        {static} _hermite_expansion_coefficient(...): float
+    }
+
+    class "TwoElectronRepulsion" #LightBlue {
+        tensor: np.ndarray
+        --
+        {static} primitive_eri(...): float
+        {static} contracted_eri(...): float
+        {static} _hermite_coulomb(...): float
+        {static} _hermite_expansion_coefficient(...): float
+    }
+
+    ' ----------------------------------------------------------
+    ' theory.utils
+    ' ----------------------------------------------------------
+
+    class "utils" as TU <<module>> {
+        {static} double_factorial(n): int
+        {static} normalization_constant(alpha, lx, ly, lz): float
+        {static} get_cartesian_components(l): List<Tuple<int, int, int>>
+        {static} boys_function(n, x): float
+    }
+
+    ' ----------------------------------------------------------
     ' constants
     ' ----------------------------------------------------------
 
@@ -201,6 +270,11 @@ package "q_block" {
     RHF                  --|> HartreeFock
     UHF                  --|> HartreeFock
     ROHF                 --|> HartreeFock
+    TGI                  --|> INT
+    Overlap              --|> TGI
+    KineticEnergy        --|> TGI
+    NuclearAttraction    --|> TGI
+    TwoElectronRepulsion --|> TGI
 }
 
 ' ----------------------------------------------------------
@@ -222,5 +296,13 @@ package "q_block" {
 "HartreeFock"    ..> BS  : uses
 "HartreeFock"    ..> CGTO : uses (via Molecule)
 CGTO             ..> "CartesianCoordinates" : uses
+
+' Integral class dependencies
+TGI              ..> CGTO : uses
+TGI              ..> TU   : uses
+Overlap          ..> TU   : uses (normalization_constant)
+KineticEnergy    ..> TU   : uses (normalization_constant)
+NuclearAttraction ..> TU  : uses (boys_function, normalization_constant)
+TwoElectronRepulsion ..> TU : uses (boys_function, normalization_constant)
 
 @enduml

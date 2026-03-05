@@ -87,6 +87,38 @@ partition "HartreeFock (base)" {
     endswitch
 }
 
+partition "NuclearRepulsionEnergy" #LightYellow {
+    :Compute **Nuclear Repulsion Energy** <latex>E_{nuc}</latex>
+
+    <latex>E_{nuc} = \sum_{A < B}^{N_{atoms}} \frac{Z_A \cdot Z_B}{|\mathbf{R}_A - \mathbf{R}_B|}</latex>
+
+    Each pairwise term:
+    <latex>E_{AB} = \frac{Z_A \cdot Z_B}{R_{AB}}</latex>
+    where <latex>R_{AB} = \sqrt{(x_A-x_B)^2 + (y_A-y_B)^2 + (z_A-z_B)^2}</latex>
+
+    **Physical interpretation:**
+    Classical point-charge Coulomb repulsion
+    between positively charged nuclei.
+    This is a **constant scalar** (no electron dependence).
+
+    **Units:** Hartree (atomic units)
+    **Complexity:** <latex>O(N_{atoms}^2 / 2)</latex> pairs;
+
+    note right
+        **Key properties:**
+        • Always **positive** (repulsive)
+        • Independent of basis set
+        • Independent of HF method
+        • Added to <latex>E_{elec}</latex> at end
+          to get <latex>E_{total}</latex>
+        • Computed here (not in Integral Computation)
+          because it requires **no basis functions**
+
+        **Example (H₂ at 0.74 Å ≈ 1.4 Bohr):**
+        <latex>E_{nuc} = \frac{1 \cdot 1}{1.4} \approx 0.714\,\mathrm{Ha}</latex>
+    end note
+}
+
 :▼ **Transfer to Integral Computation →**
 • Molecule (atoms in Bohr)
 • **cgto** (lazy property, built on first access):
@@ -98,7 +130,8 @@ partition "HartreeFock (base)" {
 • RHF: <latex>N_{occ}</latex>
   UHF: <latex>N_{\alpha}, N_{\beta}</latex>
   ROHF: <latex>N_{closed}, N_{open}</latex>
-• hf_method ∈ {RHF, UHF, ROHF}; <<#LightBlue>>
+• hf_method ∈ {RHF, UHF, ROHF}
+• <latex>E_{nuc}</latex> (scalar) → Finalization (<latex>E_{total} = E_{elec} + E_{nuc}</latex>); <<#LightBlue>>
 
 stop
 !endsub
@@ -121,6 +154,7 @@ legend right
     | N_closed | Doubly-occupied orbitals (ROHF) |
     | N_open | Singly-occupied orbitals (ROHF) |
     | M | Spin multiplicity (2S + 1) |
+    | E_nuc | Nuclear repulsion energy (classical Coulomb) |
     | Bohr | Atomic unit of length (1 Bohr ≈ 0.529 Å) |
     ----
     **CGTO Parameters:**
@@ -140,6 +174,7 @@ legend right
     ----
     **Class Hierarchy:**
     Initialization → HartreeFock → { RHF, UHF, ROHF }
+    NuclearRepulsionEnergy (standalone)
 endlegend
 
 @enduml

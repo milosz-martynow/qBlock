@@ -1,8 +1,7 @@
-"""Common testing utilities for q_block.theory.integrals tests.
+"""Common testing utilities for qBlock tests.
 
 This module provides shared fixtures, constants, and helper functions
-used across all integral test modules (Overlap, KineticEnergy, 
-NuclearAttraction, TwoElectronRepulsion).
+used across all test modules (integrals, initialization, etc.).
 """
 
 from typing import List, Tuple
