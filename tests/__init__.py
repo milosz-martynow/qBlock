@@ -6,7 +6,7 @@ This package contains unit tests organized to mirror the q_block codebase struct
 - tests/models/: Tests for q_block.models module (atom, electron)
 - tests/systems/: Tests for q_block.systems module (molecule)
 - tests/theory/: Tests for q_block.theory module
-  - tests/theory/initialization/: Tests for initialization classes
+  - tests/theory/initialization/: Tests for quantum calculation context classes
   - tests/theory/integrals/: Tests for integral calculations
 - verification_data/: Expected results and golden reference data
 """

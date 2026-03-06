@@ -1,8 +1,8 @@
-"""Initialization classes for quantum-chemistry calculations.
+"""Quantum calculation context classes for quantum-chemistry calculations.
 
 This module implements a three-level hierarchy:
 
-1. :class:`Initialization` – generic parent class that every quantum-chemistry
+1. :class:`QuantumCalculationContext` – generic parent class that every quantum-chemistry
    calculation type needs.  It handles:
 
    * Loading molecular geometry (from an XYZ file *or* a Python structure)
@@ -12,7 +12,7 @@ This module implements a three-level hierarchy:
    * Converting atomic coordinates from Ångström to Bohr (via
      :meth:`Molecule.to_bohr`)
 
-2. :class:`HartreeFock` – inherits from :class:`Initialization` and adds
+2. :class:`HartreeFock` – inherits from :class:`QuantumCalculationContext` and adds
    common Hartree-Fock logic shared by all HF variants:
 
    * Validating that every atom in the molecule carries a
@@ -44,10 +44,10 @@ HFMethod = Literal["RHF", "UHF", "ROHF"]
 
 
 # ======================================================================
-# G E N E R I C   I N I T I A L I Z A T I O N   (parent)
+# Q U A N T U M   C A L C U L A T I O N   C O N T E X T   (parent)
 # ======================================================================
-class Initialization:
-    """Generic initialization common to every quantum-chemistry calculation.
+class QuantumCalculationContext:
+    """Generic context common to every quantum-chemistry calculation.
 
     This class encapsulates the first, method-agnostic, steps that are
     always required:
@@ -103,7 +103,7 @@ class Initialization:
 
     def __repr__(self) -> str:
         return (
-            f"Initialization(n_atoms={len(self.molecule)}, "
+            f"QuantumCalculationContext(n_atoms={len(self.molecule)}, "
             f"charge={self.charge}, multiplicity={self.multiplicity}, "
             f"n_electrons={self.n_electrons})"
         )
@@ -112,10 +112,10 @@ class Initialization:
 # ======================================================================
 # H A R T R E E – F O C K   B A S E   C L A S S
 # ======================================================================
-class HartreeFock(Initialization):
+class HartreeFock(QuantumCalculationContext):
     """Hartree-Fock base class with logic common to all HF variants.
 
-    Inherits all generic setup from :class:`Initialization` and
+    Inherits all generic setup from :class:`QuantumCalculationContext` and
     additionally:
 
     * computes the total number of basis functions;

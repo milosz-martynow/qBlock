@@ -125,10 +125,10 @@ package "q_block" {
     }
 
     ' ----------------------------------------------------------
-    ' theory.initialization
+    ' theory.initialization (quantum_calculation_context)
     ' ----------------------------------------------------------
 
-    class "Initialization" {
+    class "QuantumCalculationContext" {
         molecule: Molecule
         charge: int
         multiplicity: int
@@ -266,7 +266,7 @@ package "q_block" {
     BSP                  --|> BS
     Molecule             --|> AtomicSystem
     Crystal              --|> AtomicSystem
-    HartreeFock          --|> Initialization
+    HartreeFock          --|> QuantumCalculationContext
     RHF                  --|> HartreeFock
     UHF                  --|> HartreeFock
     ROHF                 --|> HartreeFock
@@ -292,7 +292,7 @@ package "q_block" {
 "Atom"           ..> CGTO : creates
 "Molecule"       ..> BS  : uses
 "Molecule"       ..> CGTO : aggregates
-"Initialization" ..> "Molecule" : uses
+"QuantumCalculationContext" ..> "Molecule" : uses
 "HartreeFock"    ..> BS  : uses
 "HartreeFock"    ..> CGTO : uses (via Molecule)
 CGTO             ..> "CartesianCoordinates" : uses

@@ -1,16 +1,16 @@
 """
-Example: Hartree-Fock Initialization for Water Molecule
-========================================================
+Example: Hartree-Fock Quantum Calculation Context for Water Molecule
+====================================================================
 
-This script demonstrates how to use RHF, UHF, and ROHF initialization
-classes for Hartree-Fock calculations.
+This script demonstrates how to use RHF, UHF, and ROHF quantum calculation
+context classes for Hartree-Fock calculations.
 
 Three scenarios are shown:
     1. RHF - Restricted Closed-Shell (neutral water, singlet)
     2. UHF - Unrestricted (water cation H2O+, doublet)
     3. ROHF - Restricted Open-Shell (water cation H2O+, doublet)
 
-Each HF initialization:
+Each HF context:
     - Validates the molecule has basis sets on all atoms
     - Computes electron counts (alpha, beta)
     - Converts coordinates to Bohr

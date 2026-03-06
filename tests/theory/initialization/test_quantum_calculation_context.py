@@ -1,7 +1,7 @@
 """Unit tests for q_block.theory.initialization module.
 
 Tests cover:
-- Initialization: generic parent class
+- QuantumCalculationContext: generic parent class
 - HartreeFock: common HF base class
 - RHF: Restricted Closed-Shell
 - UHF: Unrestricted
@@ -24,7 +24,7 @@ from q_block.io.input_data import InputData
 from q_block.systems.molecule import Molecule
 from q_block.theory.initialization import (
     HartreeFock,
-    Initialization,
+    QuantumCalculationContext,
     ROHF,
     RHF,
     UHF,
@@ -76,25 +76,25 @@ def _n_electrons(atoms_spec: List[Tuple[str, int]]) -> int:
 
 
 # ======================================================================
-# Initialization Tests
+# QuantumCalculationContext Tests
 # ======================================================================
 
 
-def test_initialization_basic_attributes() -> None:
-    """Verify Initialization has correct basic attributes for water."""
+def test_quantum_calculation_context_basic_attributes() -> None:
+    """Verify QuantumCalculationContext has correct basic attributes for water."""
     water: Molecule = _make_molecule([("O", 0), ("H", 0), ("H", 0)])
-    init: Initialization = Initialization(molecule=water)
+    ctx: QuantumCalculationContext = QuantumCalculationContext(molecule=water)
 
-    assert init.molecule is water
-    assert init.charge == 0
-    assert init.multiplicity == 1
-    assert init.n_electrons == 10
+    assert ctx.molecule is water
+    assert ctx.charge == 0
+    assert ctx.multiplicity == 1
+    assert ctx.n_electrons == 10
 
 
-def test_initialization_coordinates_converted_to_bohr() -> None:
-    """Verify coordinates are converted to Bohr after Initialization."""
+def test_quantum_calculation_context_coordinates_converted_to_bohr() -> None:
+    """Verify coordinates are converted to Bohr after QuantumCalculationContext."""
     water: Molecule = _make_molecule([("O", 0), ("H", 0), ("H", 0)])
-    Initialization(molecule=water)
+    QuantumCalculationContext(molecule=water)
 
     for atom in water.atoms:
         assert atom.coordinates is not None
@@ -105,8 +105,8 @@ def test_initialization_coordinates_converted_to_bohr() -> None:
     CHARGE_VALUES,
     ids=charge_ids(),
 )
-def test_initialization_single_atom_charge(charge: int) -> None:
-    """Verify Initialization with single O atom for various charges.
+def test_quantum_calculation_context_single_atom_charge(charge: int) -> None:
+    """Verify QuantumCalculationContext with single O atom for various charges.
 
     :param charge: Charge on the oxygen atom.
     :type charge: int
@@ -114,18 +114,18 @@ def test_initialization_single_atom_charge(charge: int) -> None:
     n_el: int = 8 + charge
     mult: int = 1 if n_el % 2 == 0 else 2
     mol: Molecule = _make_molecule([("O", charge)], multiplicity=mult)
-    init: Initialization = Initialization(molecule=mol)
+    ctx: QuantumCalculationContext = QuantumCalculationContext(molecule=mol)
 
-    assert init.charge == charge
-    assert init.n_electrons == 8 + charge
+    assert ctx.charge == charge
+    assert ctx.n_electrons == 8 + charge
 
 
 @pytest.mark.parametrize(
     "q1, q2",
     list(itertools.product(CHARGE_VALUES, repeat=2)),
 )
-def test_initialization_h2_all_charge_combos(q1: int, q2: int) -> None:
-    """Verify Initialization with H₂ for all 25 charge combinations.
+def test_quantum_calculation_context_h2_all_charge_combos(q1: int, q2: int) -> None:
+    """Verify QuantumCalculationContext with H₂ for all 25 charge combinations.
 
     Skips combos producing negative electrons or odd n_electrons
     (incompatible with singlet multiplicity).
@@ -139,19 +139,19 @@ def test_initialization_h2_all_charge_combos(q1: int, q2: int) -> None:
     if n_el < 0 or n_el % 2 != 0:
         pytest.skip("invalid combo for singlet Molecule")
     mol: Molecule = _make_molecule([("H", q1), ("H", q2)])
-    init: Initialization = Initialization(molecule=mol)
+    ctx: QuantumCalculationContext = QuantumCalculationContext(molecule=mol)
 
-    assert init.n_electrons == n_el
-    assert init.charge == q1 + q2
+    assert ctx.n_electrons == n_el
+    assert ctx.charge == q1 + q2
 
 
-def test_initialization_repr() -> None:
-    """Verify Initialization __repr__ contains expected information."""
+def test_quantum_calculation_context_repr() -> None:
+    """Verify QuantumCalculationContext __repr__ contains expected information."""
     water: Molecule = _make_molecule([("O", 0), ("H", 0), ("H", 0)])
-    init: Initialization = Initialization(molecule=water)
-    r: str = repr(init)
+    ctx: QuantumCalculationContext = QuantumCalculationContext(molecule=water)
+    r: str = repr(ctx)
 
-    assert "Initialization" in r
+    assert "QuantumCalculationContext" in r
     assert "n_electrons=10" in r
 
 
@@ -174,12 +174,12 @@ def test_rhf_water() -> None:
 
 
 def test_rhf_inherits_hartree_fock() -> None:
-    """Verify RHF inherits from HartreeFock and Initialization."""
+    """Verify RHF inherits from HartreeFock and QuantumCalculationContext."""
     water: Molecule = _make_molecule([("O", 0), ("H", 0), ("H", 0)])
     rhf: RHF = RHF(molecule=water)
 
     assert isinstance(rhf, HartreeFock)
-    assert isinstance(rhf, Initialization)
+    assert isinstance(rhf, QuantumCalculationContext)
 
 
 @pytest.mark.parametrize(

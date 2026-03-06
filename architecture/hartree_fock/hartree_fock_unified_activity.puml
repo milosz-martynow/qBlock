@@ -21,7 +21,7 @@ start
 ' INITIALIZATION - Horizontal Band
 ' ============================================================
 :══════════════════════════════════════════════════════════
-**INITIALIZATION** (See: initialization.puml)
+**INITIALIZATION** (See: quantum_calculation_context.puml)
 ══════════════════════════════════════════════════════════; <<#LightBlue>>
 
 :▲ **Input:**
@@ -46,7 +46,7 @@ Count electrons by method;
 ══════════════════════════════════════════════════════════; <<#LightCyan>>
 
 :▲ **Input:**
-• atoms, basis_functions from Initialization; <<#LightCyan>>
+• atoms, basis_functions from QuantumCalculationContext; <<#LightCyan>>
 
 :Compute one & two-electron integrals
 <latex>\mathbf{S}, \mathbf{T}, \mathbf{V} \rightarrow \mathbf{H}</latex>

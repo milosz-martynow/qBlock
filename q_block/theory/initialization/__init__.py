@@ -1,10 +1,10 @@
-"""Initialization helpers for quantum-chemistry calculations."""
+"""Quantum calculation context classes for quantum-chemistry calculations."""
 
-from .initialization import Initialization, HartreeFock, RHF, UHF, ROHF
+from .quantum_calculation_context import QuantumCalculationContext, HartreeFock, RHF, UHF, ROHF
 from .nuclear_repulsion_energy import NuclearRepulsionEnergy
 
 __all__ = [
-    "Initialization",
+    "QuantumCalculationContext",
     "HartreeFock",
     "RHF",
     "UHF",

@@ -1,10 +1,10 @@
-@startuml Initialization
+@startuml QuantumCalculationContext
 
 skinparam ActivityBackgroundColor White
 skinparam ActivityBorderColor Black
 
-!startsub INITIALIZATION
-partition "Initialization (base)" {
+!startsub QUANTUM_CALCULATION_CONTEXT
+partition "QuantumCalculationContext (base)" {
     :Receive **Molecule**
     (atoms, per-atom charges, multiplicity,
      basis sets already validated);
@@ -173,7 +173,7 @@ legend right
     |<#LightYellow> ROHF | Restricted Open-Shell |
     ----
     **Class Hierarchy:**
-    Initialization → HartreeFock → { RHF, UHF, ROHF }
+    QuantumCalculationContext → HartreeFock → { RHF, UHF, ROHF }
     NuclearRepulsionEnergy (standalone)
 endlegend
 

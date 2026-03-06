@@ -9,8 +9,8 @@ from .io.coordinates import Coordinates, CartesianCoordinates
 from .systems.molecule import Molecule
 from .systems.crystal import Crystal
 
-# Theory module - initialization for quantum-chemistry calculations
-from .theory.initialization import Initialization, HartreeFock, RHF, UHF, ROHF
+# Theory module - quantum calculation context for quantum-chemistry calculations
+from .theory.initialization import QuantumCalculationContext, HartreeFock, RHF, UHF, ROHF
 from .theory.basis_functions import ContractedGaussianTypeOrbital
 from .theory.integrals import KineticEnergy, NuclearAttraction, Overlap, TwoElectronRepulsion
 from .constants.atoms_data import ANGSTROM_TO_BOHR
@@ -32,7 +32,7 @@ __all__ = [
     "CartesianCoordinates",
     "Molecule",
     "Crystal",
-    "Initialization",
+    "QuantumCalculationContext",
     "HartreeFock",
     "RHF",
     "UHF",
