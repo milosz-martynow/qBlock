@@ -117,3 +117,16 @@ methods/electronic_density/kohn_sham/    | KS-DFT               | Kohn-Sham DFT 
 methods/electronic_density/orbital_free/ | OF-DFT               | Orbital-free DFT without Kohn-Sham orbitals
 methods/electronic_density/functionals/  | XC functionals       | Exchange-correlation functionals (LDA, GGA, ...)
 """
+
+from .calculation_error_metric import CalculationErrorMetric
+from .diagonalisation import diagonalise_fock, diagonalise_single
+from .diis import DIIS
+from .scf import SCF
+
+__all__ = [
+    "CalculationErrorMetric",
+    "DIIS",
+    "SCF",
+    "diagonalise_fock",
+    "diagonalise_single",
+]
