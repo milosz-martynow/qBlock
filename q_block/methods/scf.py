@@ -322,7 +322,7 @@ class SCF(ABC):
     def _compute_electronic_energy(
         self,
         density: Union[np.ndarray, Tuple[np.ndarray, ...]],
-        fock: Union[np.ndarray, Tuple[np.ndarray, ...]],
+        fock: Optional[Union[np.ndarray, Tuple[np.ndarray, ...]]] = None,
     ) -> float:
         r"""Compute the electronic energy from density and Fock matrices.
 
@@ -331,12 +331,14 @@ class SCF(ABC):
             E_{elec} = f(\mathbf{P}, \mathbf{F}, \mathbf{H})
 
         The exact formula depends on the HF spin treatment (restricted
-        vs. unrestricted).
+        vs. unrestricted).  Some variants (e.g. ROHF) may not need the
+        Fock matrices and can ignore *fock*.
 
         :param density: Current density matrix (or tuple).
         :type density: Union[np.ndarray, Tuple[np.ndarray, ...]]
-        :param fock: Current Fock matrix (or tuple).
-        :type fock: Union[np.ndarray, Tuple[np.ndarray, ...]]
+        :param fock: Current Fock matrix (or tuple).  May be ``None``
+            for methods that compute the energy from cached matrices.
+        :type fock: Optional[Union[np.ndarray, Tuple[np.ndarray, ...]]]
         :returns: Electronic energy in Hartree.
         :rtype: float
         """

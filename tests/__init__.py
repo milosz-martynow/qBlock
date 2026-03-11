@@ -3,6 +3,7 @@
 This package contains unit tests organized to mirror the q_block codebase structure:
 
 - tests/io/: Tests for q_block.io module (coordinates, input_data)
+- tests/methods/: Tests for q_block.methods module (DIIS, diagonalisation, error metrics, SCF)
 - tests/models/: Tests for q_block.models module (atom, electron)
 - tests/systems/: Tests for q_block.systems module (molecule)
 - tests/theory/: Tests for q_block.theory module

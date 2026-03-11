@@ -6,6 +6,7 @@ used across all test modules (integrals, initialization, etc.).
 
 from typing import List, Tuple
 
+import numpy as np
 import pytest
 
 from q_block import Molecule
@@ -83,6 +84,50 @@ def extract_nuclei(molecule: Molecule) -> List[Tuple[int, Tuple[float, float, fl
         (atom.atomic_number, (atom.coordinates.x, atom.coordinates.y, atom.coordinates.z))
         for atom in molecule.atoms
     ]
+
+
+# ======================================================================
+# Matrix Generation Helpers
+# ======================================================================
+
+
+def make_symmetric(n: int, seed: int) -> np.ndarray:
+    """Generate a random symmetric matrix.
+
+    Produces a reproducible n×n symmetric matrix by creating a random
+    matrix and adding its transpose.  Useful for constructing test
+    Fock-like matrices.
+
+    :param n: Matrix dimension.
+    :type n: int
+    :param seed: RNG seed for reproducibility.
+    :type seed: int
+    :returns: Symmetric n×n matrix.
+    :rtype: np.ndarray
+    """
+    rng = np.random.default_rng(seed)
+    A = rng.random((n, n))
+    return A + A.T
+
+
+def make_overlap(n: int, seed: int) -> np.ndarray:
+    """Generate a random positive-definite overlap matrix.
+
+    Constructs a reproducible positive-definite n×n matrix via
+    A @ A.T + n * I, which guarantees all eigenvalues are positive.
+    Useful for constructing test overlap matrices in generalised
+    eigenvalue problems.
+
+    :param n: Matrix dimension.
+    :type n: int
+    :param seed: RNG seed for reproducibility.
+    :type seed: int
+    :returns: Positive-definite symmetric n×n matrix.
+    :rtype: np.ndarray
+    """
+    rng = np.random.default_rng(seed)
+    A = rng.random((n, n))
+    return A @ A.T + n * np.eye(n)
 
 
 # ======================================================================
