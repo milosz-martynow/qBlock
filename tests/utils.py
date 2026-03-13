@@ -11,6 +11,18 @@ import pytest
 
 from q_block import Molecule
 from q_block.io.input_data import InputData
+from q_block.methods.wavefunction.hartree_fock.restricted_hartree_fock import (
+    RestrictedHartreeFock,
+)
+from q_block.methods.wavefunction.hartree_fock.restricted_open_shell_hartree_fock import (
+    RestrictedOpenShellHartreeFock,
+)
+from q_block.methods.wavefunction.hartree_fock.unrestricted_hartree_fock import (
+    UnrestrictedHartreeFock,
+)
+from q_block.theory.initialization.nuclear_repulsion_energy import (
+    NuclearRepulsionEnergy,
+)
 from q_block.theory.utils import get_cartesian_components
 from tests.constants import BASIS_STO_3G
 
@@ -189,4 +201,110 @@ def water_nuclei(water_molecule: Molecule) -> List[Tuple[int, Tuple[float, float
     :returns: List of (Z, (x, y, z)) for each nucleus (O, H, H).
     :rtype: List[Tuple[int, Tuple[float, float, float]]]
     """
-    return extract_nuclei(water_molecule)
+    return extract_nuclei(molecule=water_molecule)
+
+
+@pytest.fixture
+def h2_rhf(h2_molecule: Molecule) -> RestrictedHartreeFock:
+    """RHF instance for H2 / STO-3G (not yet run).
+
+    :param h2_molecule: Pytest fixture providing an H2 Molecule with STO-3G basis in Bohr.
+    :type h2_molecule: Molecule
+    :returns: Uninitialised RHF instance ready for .run().
+    :rtype: RestrictedHartreeFock
+    """
+    nuclei = extract_nuclei(molecule=h2_molecule)
+    cgtos = h2_molecule.contracted_gaussian_type_orbitals
+    e_nuc = NuclearRepulsionEnergy(molecule=h2_molecule).energy
+    return RestrictedHartreeFock(
+        cgtos=cgtos, nuclei=nuclei, e_nuclear=e_nuc, n_electrons=2,
+    )
+
+
+@pytest.fixture
+def h2_uhf(h2_molecule: Molecule) -> UnrestrictedHartreeFock:
+    """UHF instance for H2 / STO-3G, closed-shell (not yet run).
+
+    :param h2_molecule: Pytest fixture providing an H2 Molecule with STO-3G basis in Bohr.
+    :type h2_molecule: Molecule
+    :returns: Uninitialised UHF instance ready for .run().
+    :rtype: UnrestrictedHartreeFock
+    """
+    nuclei = extract_nuclei(molecule=h2_molecule)
+    cgtos = h2_molecule.contracted_gaussian_type_orbitals
+    e_nuc = NuclearRepulsionEnergy(molecule=h2_molecule).energy
+    return UnrestrictedHartreeFock(
+        cgtos=cgtos, nuclei=nuclei, e_nuclear=e_nuc,
+        n_alpha=1, n_beta=1,
+    )
+
+
+@pytest.fixture
+def water_rhf(water_molecule: Molecule) -> RestrictedHartreeFock:
+    """RHF instance for water / STO-3G (not yet run).
+
+    :param water_molecule: Pytest fixture providing a water Molecule with STO-3G basis in Bohr.
+    :type water_molecule: Molecule
+    :returns: Uninitialised RHF instance ready for .run().
+    :rtype: RestrictedHartreeFock
+    """
+    nuclei = extract_nuclei(molecule=water_molecule)
+    cgtos = water_molecule.contracted_gaussian_type_orbitals
+    e_nuc = NuclearRepulsionEnergy(molecule=water_molecule).energy
+    return RestrictedHartreeFock(
+        cgtos=cgtos, nuclei=nuclei, e_nuclear=e_nuc, n_electrons=10,
+    )
+
+
+@pytest.fixture
+def water_uhf(water_molecule: Molecule) -> UnrestrictedHartreeFock:
+    """UHF instance for water / STO-3G, closed-shell (not yet run).
+
+    :param water_molecule: Pytest fixture providing a water Molecule with STO-3G basis in Bohr.
+    :type water_molecule: Molecule
+    :returns: Uninitialised UHF instance ready for .run().
+    :rtype: UnrestrictedHartreeFock
+    """
+    nuclei = extract_nuclei(molecule=water_molecule)
+    cgtos = water_molecule.contracted_gaussian_type_orbitals
+    e_nuc = NuclearRepulsionEnergy(molecule=water_molecule).energy
+    return UnrestrictedHartreeFock(
+        cgtos=cgtos, nuclei=nuclei, e_nuclear=e_nuc,
+        n_alpha=5, n_beta=5,
+    )
+
+
+@pytest.fixture
+def h2_rohf(h2_molecule: Molecule) -> RestrictedOpenShellHartreeFock:
+    """ROHF instance for H2 / STO-3G, closed-shell (n_open=0, not yet run).
+
+    :param h2_molecule: Pytest fixture providing an H2 Molecule with STO-3G basis in Bohr.
+    :type h2_molecule: Molecule
+    :returns: Uninitialised ROHF instance ready for .run().
+    :rtype: RestrictedOpenShellHartreeFock
+    """
+    nuclei = extract_nuclei(molecule=h2_molecule)
+    cgtos = h2_molecule.contracted_gaussian_type_orbitals
+    e_nuc = NuclearRepulsionEnergy(molecule=h2_molecule).energy
+    return RestrictedOpenShellHartreeFock(
+        cgtos=cgtos, nuclei=nuclei, e_nuclear=e_nuc,
+        n_closed=1, n_open=0,
+    )
+
+
+@pytest.fixture
+def water_rohf(water_molecule: Molecule) -> RestrictedOpenShellHartreeFock:
+    """ROHF instance for water / STO-3G, closed-shell (n_open=0, not yet run).
+
+    :param water_molecule: Pytest fixture providing a water Molecule with STO-3G basis in Bohr.
+    :type water_molecule: Molecule
+    :returns: Uninitialised ROHF instance ready for .run().
+    :rtype: RestrictedOpenShellHartreeFock
+    """
+    nuclei = extract_nuclei(molecule=water_molecule)
+    cgtos = water_molecule.contracted_gaussian_type_orbitals
+    e_nuc = NuclearRepulsionEnergy(molecule=water_molecule).energy
+    return RestrictedOpenShellHartreeFock(
+        cgtos=cgtos, nuclei=nuclei, e_nuclear=e_nuc,
+        n_closed=5, n_open=0,
+    )
