@@ -6,6 +6,7 @@ from .atoms_data import (
     CLOSED_SHELL_ATOMS,
     OPEN_SHELL_ATOMS,
     ANGSTROM_TO_BOHR,
+    ATOMS_HOMO_ENERGIES,
 )
 
 __all__ = [
@@ -14,5 +15,6 @@ __all__ = [
     "CLOSED_SHELL_ATOMS",
     "OPEN_SHELL_ATOMS",
     "ANGSTROM_TO_BOHR",
+    "ATOMS_HOMO_ENERGIES",
 ]
 
