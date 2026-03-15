@@ -46,14 +46,14 @@ from tests.validation_tests.validation_data import (
 _rohf_atom_entries = [
     (f"Z{z}_{entry['symbol']}", entry)
     for z, entry in ATOMS_HOMO_ENERGIES.items()
-    if entry["multiplicity"] > 1
+    if entry["proposed_hartree_fock_approach"] == "ROHF"
 ]
 
 # ROHF molecules
 _rohf_mol_entries = [
     (key, entry)
     for key, entry in MOLECULES_HOMO_ENERGIES.items()
-    if entry["method"] == "ROHF"
+    if entry["proposed_hartree_fock_approach"] == "ROHF"
 ]
 
 # ---------------------------------------------------------------------------
