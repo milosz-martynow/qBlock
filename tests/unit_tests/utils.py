@@ -24,7 +24,7 @@ from q_block.theory.initialization.nuclear_repulsion_energy import (
     NuclearRepulsionEnergy,
 )
 from q_block.theory.utils import get_cartesian_components
-from tests.constants import BASIS_STO_3G
+from tests.unit_tests.constants import BASIS_STO_3G
 
 
 # ======================================================================

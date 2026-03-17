@@ -21,7 +21,7 @@ from q_block.methods.calculation_error_metric import CalculationErrorMetric
 from q_block.methods.diis import DIIS
 from q_block.methods.scf import SCF
 from q_block.theory.basis_functions import ContractedGaussianTypeOrbital
-from tests.utils import extract_nuclei, h2_molecule
+from tests.unit_tests.utils import extract_nuclei, h2_molecule
 
 
 # ======================================================================
@@ -183,7 +183,7 @@ class _StubRHF(SCF):
 # ======================================================================
 
 
-# h2_molecule is a pytest fixture imported from tests.utils (defined with
+# h2_molecule is a pytest fixture imported from tests.unit_tests.utils (defined with
 # @pytest.fixture there).  Importing it into this module is enough for
 # pytest to discover it and inject it into any test that declares an
 # ``h2_molecule`` parameter.

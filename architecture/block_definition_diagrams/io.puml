@@ -1,0 +1,30 @@
+@startuml bdd_io
+title BDD — io
+
+package "io" {
+  abstract class Coordinates
+  class CartesianCoordinates
+  abstract class BasisSet
+  class Pople
+  class InputData
+}
+
+' --- External blocks ---
+class Atom <<models>>
+class AtomsData <<constants>>
+
+' ═══ Generalization ═══
+
+CartesianCoordinates -up-|> Coordinates
+Pople -up-|> BasisSet
+
+' ═══ Composition ═══
+
+InputData *-- "1..*" Atom
+
+' ═══ Use ═══
+
+InputData ..> CartesianCoordinates : «use»
+Pople ..> AtomsData : «use»
+
+@enduml

@@ -1,0 +1,43 @@
+@startuml use_case_diagram
+title qBlock — Electronic Structure Calculation Use Case
+
+left to right direction
+
+actor Scientist
+
+rectangle "qBlock" {
+
+  usecase "Define Molecular\nGeometry" as UC_Geom
+  usecase "Select Basis Set" as UC_Basis
+  usecase "Choose Electronic\nStructure Method" as UC_ESMethod
+  usecase "Choose HF Method\n(RHF / UHF / ROHF)" as UC_HFMethod
+  usecase "Run SCF\nCalculation" as UC_SCF
+  usecase "Obtain Electronic\nStructure Properties" as UC_Result
+
+  usecase "Parse Basis Set\nFile" as UC_ParseBasis
+  usecase "Compute\nIntegrals" as UC_Integrals
+  usecase "Build Initial\nGuess" as UC_Guess
+  usecase "Iterate Fock\nEquations" as UC_Iterate
+  usecase "Apply DIIS\nAcceleration" as UC_DIIS
+  usecase "Check\nConvergence" as UC_Conv
+
+  ' --- Actor interactions ---
+  Scientist --> UC_Geom
+  Scientist --> UC_Basis
+  Scientist --> UC_ESMethod
+  Scientist --> UC_SCF
+  Scientist --> UC_Result
+
+  ' --- Include relationships ---
+  UC_Geom ..> UC_ParseBasis : <<include>>
+  UC_SCF ..> UC_Integrals : <<include>>
+  UC_SCF ..> UC_Guess : <<include>>
+  UC_SCF ..> UC_Iterate : <<include>>
+  UC_Iterate ..> UC_Conv : <<include>>
+
+  ' --- Extend relationships ---
+  UC_HFMethod ..> UC_ESMethod : <<extend>>
+  UC_DIIS ..> UC_Iterate : <<extend>>
+}
+
+@enduml

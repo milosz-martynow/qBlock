@@ -17,7 +17,7 @@ import pytest
 
 from q_block.systems.molecule import Molecule
 from q_block.theory.initialization import NuclearRepulsionEnergy
-from tests.utils import (
+from tests.unit_tests.utils import (
     h2_molecule,
     water_molecule,
 )
@@ -59,7 +59,7 @@ def _manual_e_nuc(nuclei: List[Tuple[int, Tuple[float, float, float]]]) -> float
 def test_h2_nuclear_repulsion(h2_molecule: Molecule) -> None:
     """Verify E_nuc for H2 at ~0.74 Angstrom bond length.
     
-    :param h2_molecule: H2 molecule fixture from tests.utils.
+    :param h2_molecule: H2 molecule fixture from tests.unit_tests.utils.
     :type h2_molecule: Molecule
     """
     nuc_rep = NuclearRepulsionEnergy(h2_molecule)
@@ -76,7 +76,7 @@ def test_h2_nuclear_repulsion(h2_molecule: Molecule) -> None:
 def test_water_nuclear_repulsion(water_molecule: Molecule) -> None:
     """Verify E_nuc for water molecule (3 atoms).
     
-    :param water_molecule: Water molecule fixture from tests.utils.
+    :param water_molecule: Water molecule fixture from tests.unit_tests.utils.
     :type water_molecule: Molecule
     """
     nuc_rep = NuclearRepulsionEnergy(water_molecule)
@@ -182,7 +182,7 @@ def test_coincident_nuclei_raises() -> None:
 def test_repr(h2_molecule: Molecule) -> None:
     """Verify __repr__ contains expected information.
     
-    :param h2_molecule: H2 molecule fixture from tests.utils.
+    :param h2_molecule: H2 molecule fixture from tests.unit_tests.utils.
     :type h2_molecule: Molecule
     """
     nuc_rep = NuclearRepulsionEnergy(h2_molecule)
@@ -196,7 +196,7 @@ def test_repr(h2_molecule: Molecule) -> None:
 def test_float_conversion(h2_molecule: Molecule) -> None:
     """Verify __float__ returns the energy value.
     
-    :param h2_molecule: H2 molecule fixture from tests.utils.
+    :param h2_molecule: H2 molecule fixture from tests.unit_tests.utils.
     :type h2_molecule: Molecule
     """
     nuc_rep = NuclearRepulsionEnergy(h2_molecule)
@@ -213,7 +213,7 @@ def test_float_conversion(h2_molecule: Molecule) -> None:
 def test_nuclei_data_correct(water_molecule: Molecule) -> None:
     """Verify nuclei list contains correct charges and positions.
     
-    :param water_molecule: Water molecule fixture from tests.utils.
+    :param water_molecule: Water molecule fixture from tests.unit_tests.utils.
     :type water_molecule: Molecule
     """
     nuc_rep = NuclearRepulsionEnergy(water_molecule)

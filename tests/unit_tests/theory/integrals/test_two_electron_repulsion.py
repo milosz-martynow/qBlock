@@ -15,8 +15,8 @@ import numpy as np
 import pytest
 
 from q_block import ContractedGaussianTypeOrbital, Molecule, TwoElectronRepulsion, Overlap
-from tests.constants import ORIGIN
-from tests.utils import (
+from tests.unit_tests.constants import ORIGIN
+from tests.unit_tests.utils import (
     h2_molecule,
     water_molecule,
 )

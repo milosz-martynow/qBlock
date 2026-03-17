@@ -1,0 +1,55 @@
+@startuml bdd_theory
+title BDD — theory
+
+package "theory" {
+
+  class ContractedGaussianTypeOrbital <<CGTO>>
+
+  package "integrals" {
+    abstract class Integral
+    abstract class TwoGaussianIntegral
+    class Overlap
+    class KineticEnergy
+    class NuclearAttraction
+    class TwoElectronRepulsion
+  }
+
+  package "initialization" {
+    class QuantumCalculationContext
+    class "HartreeFock\n(Context)" as HFContext
+    class "RHF\n(Context)" as RHFContext
+    class "UHF\n(Context)" as UHFContext
+    class "ROHF\n(Context)" as ROHFContext
+    class NuclearRepulsionEnergy
+  }
+}
+
+' --- External blocks ---
+class CartesianCoordinates <<io>>
+class Molecule <<systems>>
+
+' ═══ Generalization ═══
+
+TwoGaussianIntegral -up-|> Integral
+Overlap -up-|> TwoGaussianIntegral
+KineticEnergy -up-|> TwoGaussianIntegral
+NuclearAttraction -up-|> TwoGaussianIntegral
+TwoElectronRepulsion -up-|> TwoGaussianIntegral
+
+HFContext -up-|> QuantumCalculationContext
+RHFContext -up-|> HFContext
+UHFContext -up-|> HFContext
+ROHFContext -up-|> HFContext
+
+' ═══ Composition ═══
+
+ContractedGaussianTypeOrbital *-- "1" CartesianCoordinates
+TwoGaussianIntegral *-- "1..*" ContractedGaussianTypeOrbital
+
+' ═══ Use ═══
+
+QuantumCalculationContext ..> Molecule : «use»
+NuclearRepulsionEnergy ..> Molecule : «use»
+HFContext ..> ContractedGaussianTypeOrbital : «use»
+
+@enduml

@@ -20,23 +20,38 @@ elements.  This tolerance catches implementation bugs (wrong sign, wrong
 units, wrong orbital index) while remaining robust to basis-set effects.
 """
 
-_BASIS = Pople(filepath=str(Path("data/basis_set/gto_gaussian_format/3-21G.gbs")))
+_BASIS_CACHE: Dict[str, Pople] = {}
+
+
+def _get_basis(filename: str) -> Pople:
+    """Return a cached :class:`Pople` basis set loaded from *filename*.
+
+    :param filename: Basis-set file name, e.g. ``"6-311++Gss.gbs"``.
+    """
+    if filename not in _BASIS_CACHE:
+        _BASIS_CACHE[filename] = Pople(
+            filepath=str(Path("data/basis_set/gto_gaussian_format") / filename)
+        )
+    return _BASIS_CACHE[filename]
 
 
 def _build_from_geometry(
     geometry: List[Dict],
     multiplicity: int,
+    basis_set_filename: str = "3-21G.gbs",
 ) -> Tuple:
     """Build a Molecule from a geometry list and return SCF inputs.
 
     :param geometry: List of ``{"symbol", "x", "y", "z"}`` dicts (Å).
     :param multiplicity: Spin multiplicity 2S+1.
+    :param basis_set_filename: Basis-set file name (e.g. ``"6-311++Gss.gbs"``).
     :returns: ``(cgtos, nuclei, e_nuclear)`` ready for HF constructors.
     """
+    basis = _get_basis(basis_set_filename)
     inp = InputData()
     inp.from_script(
         atom_data=[
-            [atom["symbol"], atom["x"], atom["y"], atom["z"], _BASIS]
+            [atom["symbol"], atom["x"], atom["y"], atom["z"], basis]
             for atom in geometry
         ]
     )

@@ -18,7 +18,7 @@ from q_block.io.basis_set import Pople
 from q_block.io.coordinates import CartesianCoordinates
 from q_block.io.input_data import InputData
 from q_block.theory.utils import normalization_constant
-from tests.constants import BASIS_6_31G, BASIS_STO_3G, ORIGIN
+from tests.unit_tests.constants import BASIS_6_31G, BASIS_STO_3G, ORIGIN
 
 
 # ======================================================================

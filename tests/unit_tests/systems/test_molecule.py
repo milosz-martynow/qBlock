@@ -27,7 +27,7 @@ from q_block.io.basis_set import Pople
 from q_block.io.input_data import InputData
 from q_block.systems.atomic_system import AtomicSystem
 from q_block.systems.molecule import Molecule
-from tests.constants import (
+from tests.unit_tests.constants import (
     BASIS_FILES,
     BASIS_ROOT,
     CHARGE_VALUES,

@@ -21,7 +21,7 @@ import pytest
 from scipy.linalg import eigh, fractional_matrix_power
 
 from q_block.methods.diagonalisation import diagonalise_fock, diagonalise_single
-from tests.utils import make_overlap, make_symmetric
+from tests.unit_tests.utils import make_overlap, make_symmetric
 
 
 # ======================================================================

@@ -21,10 +21,10 @@ BASIS_ROOT: Path = Path("./data/basis_set/gto_gaussian_format")
 STO_ROOT: Path = Path("./data/basis_set/sto_gaussian_format")
 """Root directory for Slater-type (STO) basis set files."""
 
-GOLDEN_ROOT: Path = Path("./tests/verification_data/gto_population")
+GOLDEN_ROOT: Path = Path("./tests/unit_tests/verification_data/gto_population")
 """Root directory for golden reference GTO population data."""
 
-GEOMETRIES_DIR: Path = Path("./tests/verification_data/geometries")
+GEOMETRIES_DIR: Path = Path("./tests/unit_tests/verification_data/geometries")
 """Directory containing test molecule geometry files (XYZ format)."""
 
 

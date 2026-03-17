@@ -79,6 +79,7 @@ def uhf_atom_result(request):
     cgtos, nuclei, e_nuclear = _build_from_geometry(
         geometry=[{"symbol": entry["symbol"], "x": 0.0, "y": 0.0, "z": 0.0}],
         multiplicity=entry["multiplicity"],
+        basis_set_filename=entry["proposed_basis_set"],
     )
     hf = UnrestrictedHartreeFock(
         cgtos=cgtos,
@@ -103,6 +104,7 @@ def uhf_molecule_result(request):
     cgtos, nuclei, e_nuclear = _build_from_geometry(
         geometry=entry["geometry"],
         multiplicity=entry["multiplicity"],
+        basis_set_filename=entry["proposed_basis_set"],
     )
     hf = UnrestrictedHartreeFock(
         cgtos=cgtos,

@@ -17,7 +17,7 @@ import pytest
 
 from q_block import AtomicSystem
 from q_block.io.input_data import InputData
-from tests.constants import GEOMETRIES_DIR
+from tests.unit_tests.constants import GEOMETRIES_DIR
 
 
 # ======================================================================

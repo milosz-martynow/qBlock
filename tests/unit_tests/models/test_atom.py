@@ -27,14 +27,14 @@ from q_block.constants.atoms_data import (
 from q_block.io.basis_set import Pople
 from q_block.io.input_data import InputData
 from q_block.models.electron import Shell, SpinOrbital
-from tests.constants import (
+from tests.unit_tests.constants import (
     BASIS_FILES,
     BASIS_ROOT,
     CHARGE_VALUES,
     GOLDEN_ROOT,
     charge_ids,
 )
-from tests.verification_data.expected_atom_pure import EXPECTED_ATOM_PURE
+from tests.unit_tests.verification_data.expected_atom_pure import EXPECTED_ATOM_PURE
 
 
 # Type aliases for spin-orbital mappings

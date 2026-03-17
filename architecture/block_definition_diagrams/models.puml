@@ -1,0 +1,27 @@
+@startuml bdd_models
+title BDD — models
+
+package "models" {
+  class SpinOrbital
+  class Orbital
+  class SubShell
+  class Shell
+  class Atom
+}
+
+' --- External blocks (used by this package) ---
+class CartesianCoordinates <<io>>
+class BasisSet <<io>>
+class ContractedGaussianTypeOrbital <<theory>>
+
+' ═══ Composition ═══
+
+Orbital *-- "2" SpinOrbital
+SubShell *-- "1..*" Orbital
+Shell *-- "1..*" SubShell
+Atom *-- "1..*" Shell
+Atom *-- "0..1" CartesianCoordinates
+Atom *-- "0..1" BasisSet
+Atom *-- "0..*" ContractedGaussianTypeOrbital
+
+@enduml
