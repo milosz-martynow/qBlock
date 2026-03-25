@@ -30,7 +30,12 @@ import numpy as np
 
 from q_block.theory.basis_functions import ContractedGaussianTypeOrbital
 from q_block.theory.integrals.two_gaussian_integral import TwoGaussianIntegral
-from q_block.theory.utils import boys_function, normalization_constant
+from q_block.theory.utils import (
+    boys_function,
+    normalization_constant,
+    hermite_expansion_coefficients,
+    hermite_coulomb_table,
+)
 
 
 class TwoElectronRepulsion(TwoGaussianIntegral):
@@ -375,73 +380,59 @@ class TwoElectronRepulsion(TwoGaussianIntegral):
         N3 = normalization_constant(gamma, lx3, ly3, lz3)
         N4 = normalization_constant(delta, lx4, ly4, lz4)
 
-        # Compute the Coulomb integral using Hermite expansion
+        # Precompute Hermite expansion coefficients (tabular)
+        Ex1 = hermite_expansion_coefficients(lx1, lx2, PA[0], PB[0], p)
+        Ey1 = hermite_expansion_coefficients(ly1, ly2, PA[1], PB[1], p)
+        Ez1 = hermite_expansion_coefficients(lz1, lz2, PA[2], PB[2], p)
+        Ex2 = hermite_expansion_coefficients(lx3, lx4, QC[0], QD[0], q)
+        Ey2 = hermite_expansion_coefficients(ly3, ly4, QC[1], QD[1], q)
+        Ez2 = hermite_expansion_coefficients(lz3, lz4, QC[2], QD[2], q)
+
+        # Precompute Hermite Coulomb integrals (tabular)
+        R_table = hermite_coulomb_table(
+            lx1 + lx2 + lx3 + lx4,
+            ly1 + ly2 + ly3 + ly4,
+            lz1 + lz2 + lz3 + lz4,
+            rho, PQ, PQ_sq,
+        )
+
+        # Precompute sign-weighted E2 products per (t2, u2, v2)
+        # to avoid recomputing them in the inner loops
         integral = 0.0
 
         for t1 in range(lx1 + lx2 + 1):
-            E_x1 = TwoElectronRepulsion._hermite_expansion_coefficient(
-                t1, lx1, lx2, PA[0], PB[0], p
-            )
-            if abs(E_x1) < 1e-15:
+            if abs(Ex1[t1]) < 1e-15:
                 continue
-
             for u1 in range(ly1 + ly2 + 1):
-                E_y1 = TwoElectronRepulsion._hermite_expansion_coefficient(
-                    u1, ly1, ly2, PA[1], PB[1], p
-                )
-                if abs(E_y1) < 1e-15:
+                if abs(Ey1[u1]) < 1e-15:
                     continue
-
+                E1_xy = Ex1[t1] * Ey1[u1]
                 for v1 in range(lz1 + lz2 + 1):
-                    E_z1 = TwoElectronRepulsion._hermite_expansion_coefficient(
-                        v1, lz1, lz2, PA[2], PB[2], p
-                    )
-                    if abs(E_z1) < 1e-15:
+                    if abs(Ez1[v1]) < 1e-15:
                         continue
+                    E1 = E1_xy * Ez1[v1]
 
                     for t2 in range(lx3 + lx4 + 1):
-                        E_x2 = TwoElectronRepulsion._hermite_expansion_coefficient(
-                            t2, lx3, lx4, QC[0], QD[0], q
-                        )
-                        if abs(E_x2) < 1e-15:
+                        if abs(Ex2[t2]) < 1e-15:
                             continue
-
                         for u2 in range(ly3 + ly4 + 1):
-                            E_y2 = TwoElectronRepulsion._hermite_expansion_coefficient(
-                                u2, ly3, ly4, QC[1], QD[1], q
-                            )
-                            if abs(E_y2) < 1e-15:
+                            if abs(Ey2[u2]) < 1e-15:
                                 continue
-
+                            E2_xy = Ex2[t2] * Ey2[u2]
                             for v2 in range(lz3 + lz4 + 1):
-                                E_z2 = TwoElectronRepulsion._hermite_expansion_coefficient(
-                                    v2, lz3, lz4, QC[2], QD[2], q
-                                )
-                                if abs(E_z2) < 1e-15:
+                                if abs(Ez2[v2]) < 1e-15:
                                     continue
 
-                                # Combined Hermite indices
-                                t = t1 + t2
-                                u = u1 + u2
-                                v = v1 + v2
-
-                                # Sign factor from the transformation
                                 sign = (-1) ** (t2 + u2 + v2)
 
-                                # Hermite Coulomb integral
-                                R_tuv = TwoElectronRepulsion._hermite_coulomb(
-                                    t, u, v, 0, rho, PQ, PQ_sq
-                                )
-
                                 integral += (
-                                    E_x1
-                                    * E_y1
-                                    * E_z1
-                                    * E_x2
-                                    * E_y2
-                                    * E_z2
+                                    E1
+                                    * E2_xy
+                                    * Ez2[v2]
                                     * sign
-                                    * R_tuv
+                                    * R_table[
+                                        t1 + t2, u1 + u2, v1 + v2
+                                    ]
                                 )
 
         # Prefactor: 2π^(5/2) / (p*q*sqrt(p+q))
@@ -649,6 +640,7 @@ class TwoElectronRepulsion(TwoGaussianIntegral):
 
         Uses 8-fold permutational symmetry to reduce computation:
         only computes unique elements and fills in symmetric partners.
+        Applies Schwarz screening to skip negligible integrals.
 
         :returns: ERI tensor of shape ``(n_basis, n_basis, n_basis, n_basis)``.
         :rtype: np.ndarray
@@ -656,6 +648,23 @@ class TwoElectronRepulsion(TwoGaussianIntegral):
         tensor = np.zeros(
             (self.n_basis, self.n_basis, self.n_basis, self.n_basis)
         )
+
+        # --- Schwarz screening: precompute (μν|μν) bounds ----
+        schwarz_threshold = 1e-12
+        schwarz = np.zeros((self.n_basis, self.n_basis))
+        for mu in range(self.n_basis):
+            shell_mu, lx1, ly1, lz1 = self._basis_map[mu]
+            cgto1 = self.cgtos[shell_mu]
+            for nu in range(mu + 1):
+                shell_nu, lx2, ly2, lz2 = self._basis_map[nu]
+                cgto2 = self.cgtos[shell_nu]
+                diag = self._compute_element_4center(
+                    cgto1, lx1, ly1, lz1, cgto2, lx2, ly2, lz2,
+                    cgto1, lx1, ly1, lz1, cgto2, lx2, ly2, lz2,
+                )
+                val = math.sqrt(abs(diag))
+                schwarz[mu, nu] = val
+                schwarz[nu, mu] = val
 
         for mu in range(self.n_basis):
             shell_mu, lx1, ly1, lz1 = self._basis_map[mu]
@@ -667,21 +676,26 @@ class TwoElectronRepulsion(TwoGaussianIntegral):
 
                 # Compound index for (μν) pair
                 mn = mu * (mu + 1) // 2 + nu
+                Q_mn = schwarz[mu, nu]
 
                 for lam in range(self.n_basis):
                     shell_lam, lx3, ly3, lz3 = self._basis_map[lam]
                     cgto3 = self.cgtos[shell_lam]
 
                     for sig in range(lam + 1):
-                        shell_sig, lx4, ly4, lz4 = self._basis_map[sig]
-                        cgto4 = self.cgtos[shell_sig]
-
                         # Compound index for (λσ) pair
                         ls = lam * (lam + 1) // 2 + sig
 
                         # Only compute if (μν) >= (λσ) in compound index
                         if mn < ls:
                             continue
+
+                        # Schwarz screening
+                        if Q_mn * schwarz[lam, sig] < schwarz_threshold:
+                            continue
+
+                        shell_sig, lx4, ly4, lz4 = self._basis_map[sig]
+                        cgto4 = self.cgtos[shell_sig]
 
                         element = self._compute_element_4center(
                             cgto1, lx1, ly1, lz1,

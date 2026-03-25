@@ -29,7 +29,12 @@ import numpy as np
 
 from q_block.theory.basis_functions import ContractedGaussianTypeOrbital
 from q_block.theory.integrals.two_gaussian_integral import TwoGaussianIntegral
-from q_block.theory.utils import normalization_constant, boys_function
+from q_block.theory.utils import (
+    normalization_constant,
+    boys_function,
+    hermite_expansion_coefficients,
+    hermite_coulomb_table,
+)
 
 
 class NuclearAttraction(TwoGaussianIntegral):
@@ -333,33 +338,29 @@ class NuclearAttraction(TwoGaussianIntegral):
         N1 = normalization_constant(alpha, lx1, ly1, lz1)
         N2 = normalization_constant(beta, lx2, ly2, lz2)
 
-        # Compute the Coulomb integral using Hermite expansion
+        # Precompute Hermite expansion coefficients (tabular, O(l^2) each)
+        E_x = hermite_expansion_coefficients(lx1, lx2, PA[0], PB[0], gamma)
+        E_y = hermite_expansion_coefficients(ly1, ly2, PA[1], PB[1], gamma)
+        E_z = hermite_expansion_coefficients(lz1, lz2, PA[2], PB[2], gamma)
+
+        # Precompute Hermite Coulomb integrals (tabular, replaces recursive calls)
+        R_table = hermite_coulomb_table(
+            lx1 + lx2, ly1 + ly2, lz1 + lz2, gamma, PC, PC_sq
+        )
+
+        # Sum over all Hermite indices
         integral = 0.0
         for t in range(lx1 + lx2 + 1):
-            E_x = NuclearAttraction._hermite_expansion_coefficient(
-                t, lx1, lx2, PA[0], PB[0], gamma
-            )
-            if abs(E_x) < 1e-15:
+            if abs(E_x[t]) < 1e-15:
                 continue
-
             for u in range(ly1 + ly2 + 1):
-                E_y = NuclearAttraction._hermite_expansion_coefficient(
-                    u, ly1, ly2, PA[1], PB[1], gamma
-                )
-                if abs(E_y) < 1e-15:
+                if abs(E_y[u]) < 1e-15:
                     continue
-
+                E_xy = E_x[t] * E_y[u]
                 for v in range(lz1 + lz2 + 1):
-                    E_z = NuclearAttraction._hermite_expansion_coefficient(
-                        v, lz1, lz2, PA[2], PB[2], gamma
-                    )
-                    if abs(E_z) < 1e-15:
+                    if abs(E_z[v]) < 1e-15:
                         continue
-
-                    R_tuv = NuclearAttraction._hermite_coulomb(
-                        t, u, v, 0, gamma, PC, PC_sq
-                    )
-                    integral += E_x * E_y * E_z * R_tuv
+                    integral += E_xy * E_z[v] * R_table[t, u, v]
 
         # Factor of 2π/γ from the Coulomb integral formula
         integral *= (2.0 * math.pi / gamma) * pre_factor
