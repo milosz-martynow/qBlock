@@ -38,7 +38,7 @@ CGTOBasis
 """
 
 import math
-from typing import List, Optional, Tuple
+from typing import List, Optional
 
 from q_block.io.coordinates import CartesianCoordinates
 from q_block.theory.utils import normalization_constant
@@ -154,7 +154,7 @@ class ContractedGaussianTypeOrbital:
     # Evaluation methods
     # ------------------------------------------------------------------
 
-    def primitive_gaussian(
+    def evaluate_primitive_gaussian(
         self,
         r: CartesianCoordinates,
         primitive_index: int,
@@ -220,7 +220,7 @@ class ContractedGaussianTypeOrbital:
 
         return norm * angular * radial
 
-    def basis_function(
+    def evaluate_basis_function(
         self,
         r: CartesianCoordinates,
         lx: int,
@@ -259,6 +259,6 @@ class ContractedGaussianTypeOrbital:
         value = 0.0
         for p in range(self.n_primitives):
             coeff = self.contractions[p]
-            value += coeff * self.primitive_gaussian(r, p, lx, ly, lz)
+            value += coeff * self.evaluate_primitive_gaussian(r, p, lx, ly, lz)
 
         return value

@@ -9,8 +9,6 @@ Tests cover:
 All tests use pytest with parametrize, no test classes.
 """
 
-from typing import Tuple
-
 import pytest
 
 from q_block.models.electron import Orbital, Shell, SpinOrbital, SubShell

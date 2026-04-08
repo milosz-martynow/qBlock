@@ -37,10 +37,18 @@ import pytest
 from q_block.methods.wavefunction.hartree_fock.unrestricted_hartree_fock import (
     UnrestrictedHartreeFock,
 )
-from tests.validation_tests.utils import ABS_TOL_EV, HARTREE_TO_EV, _build_from_geometry
+from tests.validation_tests.utils import _build_from_geometry
 from tests.validation_tests.validation_data import (
     ATOMS_HOMO_ENERGIES,
     MOLECULES_HOMO_ENERGIES,
+)
+from tests.validation_tests.templates import (
+    make_atom_scf_converged_test,
+    make_atom_koopmans_ie_test,
+    make_molecule_scf_converged_test,
+    make_molecule_total_energy_negative_test,
+    make_molecule_homo_ie_positive_test,
+    make_molecule_koopmans_ie_test,
 )
 
 
@@ -87,7 +95,7 @@ def uhf_atom_result(request):
         e_nuclear=e_nuclear,
         n_alpha=entry["n_alpha"],
         n_beta=entry["n_beta"],
-        max_iterations=200,
+        max_iterations=entry["max_iterations"],
     ).run()
     return entry, hf
 
@@ -112,7 +120,7 @@ def uhf_molecule_result(request):
         e_nuclear=e_nuclear,
         n_alpha=entry["n_alpha"],
         n_beta=entry["n_beta"],
-        max_iterations=200,
+        max_iterations=entry["max_iterations"],
     ).run()
     return entry, hf
 
@@ -121,17 +129,17 @@ def uhf_molecule_result(request):
 # Tests — open-shell atoms
 # ---------------------------------------------------------------------------
 
+# UHF-specific helper functions
+_uhf_homo_idx = lambda entry: entry["n_alpha"] - 1
+_uhf_epsilon = lambda hf: hf.matrices["epsilon_alpha"]
+
 
 def test_uhf_atom_scf_converged(uhf_atom_result) -> None:
     """UHF SCF converges for every open-shell atom.
 
     :param uhf_atom_result: Pytest fixture providing ``(entry, hf)``.
     """
-    entry, hf = uhf_atom_result
-    assert hf.converged, (
-        f"UHF SCF did not converge for atom {entry['symbol']} "
-        f"(Z={entry['n_electrons']})."
-    )
+    return make_atom_scf_converged_test("UHF")(uhf_atom_result)
 
 
 def test_uhf_atom_koopmans_ie_vs_reference(uhf_atom_result) -> None:
@@ -142,14 +150,7 @@ def test_uhf_atom_koopmans_ie_vs_reference(uhf_atom_result) -> None:
 
     :param uhf_atom_result: Pytest fixture providing ``(entry, hf)``.
     """
-    entry, hf = uhf_atom_result
-    homo_idx = entry["n_alpha"] - 1
-    homo_ev = -hf.matrices["epsilon_alpha"][homo_idx] * HARTREE_TO_EV
-    assert homo_ev == pytest.approx(entry["hf_ie_eV"], abs=ABS_TOL_EV), (
-        f"Atom {entry['symbol']}: UHF Koopmans IE {homo_ev:.3f} eV, "
-        f"reference {entry['hf_ie_eV']:.3f} eV "
-        f"(diff {abs(homo_ev - entry['hf_ie_eV']):.3f} eV, tolerance {ABS_TOL_EV} eV)."
-    )
+    return make_atom_koopmans_ie_test("UHF", _uhf_homo_idx, _uhf_epsilon)(uhf_atom_result)
 
 
 # ---------------------------------------------------------------------------
@@ -162,10 +163,7 @@ def test_uhf_molecule_scf_converged(uhf_molecule_result) -> None:
 
     :param uhf_molecule_result: Pytest fixture providing ``(entry, hf)``.
     """
-    entry, hf = uhf_molecule_result
-    assert hf.converged, (
-        f"UHF SCF did not converge for {entry['formula']}."
-    )
+    return make_molecule_scf_converged_test("UHF")(uhf_molecule_result)
 
 
 def test_uhf_molecule_total_energy_negative(uhf_molecule_result) -> None:
@@ -173,10 +171,7 @@ def test_uhf_molecule_total_energy_negative(uhf_molecule_result) -> None:
 
     :param uhf_molecule_result: Pytest fixture providing ``(entry, hf)``.
     """
-    entry, hf = uhf_molecule_result
-    assert hf.e_total < 0.0, (
-        f"{entry['formula']}: total energy {hf.e_total:.6f} Ha should be negative."
-    )
+    return make_molecule_total_energy_negative_test("UHF")(uhf_molecule_result)
 
 
 def test_uhf_molecule_alpha_homo_ie_positive(uhf_molecule_result) -> None:
@@ -184,12 +179,7 @@ def test_uhf_molecule_alpha_homo_ie_positive(uhf_molecule_result) -> None:
 
     :param uhf_molecule_result: Pytest fixture providing ``(entry, hf)``.
     """
-    entry, hf = uhf_molecule_result
-    homo_idx = entry["n_alpha"] - 1
-    homo_ev = -hf.matrices["epsilon_alpha"][homo_idx] * HARTREE_TO_EV
-    assert homo_ev > 0.0, (
-        f"{entry['formula']}: UHF Koopmans IE {homo_ev:.3f} eV should be positive."
-    )
+    return make_molecule_homo_ie_positive_test("UHF", _uhf_homo_idx, _uhf_epsilon)(uhf_molecule_result)
 
 
 def test_uhf_molecule_koopmans_ie_vs_reference(uhf_molecule_result) -> None:
@@ -200,11 +190,4 @@ def test_uhf_molecule_koopmans_ie_vs_reference(uhf_molecule_result) -> None:
 
     :param uhf_molecule_result: Pytest fixture providing ``(entry, hf)``.
     """
-    entry, hf = uhf_molecule_result
-    homo_idx = entry["n_alpha"] - 1
-    homo_ev = -hf.matrices["epsilon_alpha"][homo_idx] * HARTREE_TO_EV
-    assert homo_ev == pytest.approx(entry["hf_ie_eV"], abs=ABS_TOL_EV), (
-        f"{entry['formula']}: UHF Koopmans IE {homo_ev:.3f} eV, "
-        f"reference {entry['hf_ie_eV']:.3f} eV "
-        f"(diff {abs(homo_ev - entry['hf_ie_eV']):.3f} eV, tolerance {ABS_TOL_EV} eV)."
-    )
+    return make_molecule_koopmans_ie_test("UHF", _uhf_homo_idx, _uhf_epsilon)(uhf_molecule_result)

@@ -22,8 +22,8 @@ from q_block.systems.molecule import Molecule
 # ══════════════════════════════════════════════════════════════════════════════
 # Different basis sets for different atoms (mixed basis).
 
-basis_3_21G = Pople(filepath="data/basis_set/gto_gaussian_format/3-21G.gbs")
-basis_6_31G = Pople(filepath="data/basis_set/gto_gaussian_format/6-31G.gbs")
+basis_3_21G = Pople(filepath="data/basis_set/pople/3-21G.gbs")
+basis_6_31G = Pople(filepath="data/basis_set/pople/6-31G.gbs")
 
 print("Loaded basis sets: 3-21G and 6-31G\n")
 

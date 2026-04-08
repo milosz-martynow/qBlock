@@ -33,7 +33,7 @@ from q_block.methods.wavefunction.hartree_fock import (
 # 1. LOAD BASIS SET
 # ══════════════════════════════════════════════════════════════════════════════
 
-basis_3_21G = Pople(filepath="data/basis_set/gto_gaussian_format/3-21G.gbs")
+basis_3_21G = Pople(filepath="data/basis_set/pople/3-21G.gbs")
 print("Loaded basis set: 3-21G\n")
 
 

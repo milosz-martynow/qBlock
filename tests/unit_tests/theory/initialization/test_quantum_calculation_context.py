@@ -30,7 +30,6 @@ from q_block.theory.initialization import (
     UHF,
 )
 from tests.unit_tests.constants import (
-    BASIS_3_21G,
     BASIS_6_31G,
     CHARGE_VALUES,
     charge_ids,

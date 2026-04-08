@@ -31,7 +31,7 @@ from q_block.io.coordinates import CartesianCoordinates
 # Pople-style basis sets are stored in Gaussian format (.gbs files).
 # The 6-31G basis is a split-valence double-zeta basis set.
 
-basis = Pople(filepath="data/basis_set/gto_gaussian_format/6-31G.gbs")
+basis = Pople(filepath="data/basis_set/pople/6-31G.gbs")
 print("Loaded 6-31G basis set\n")
 
 
@@ -70,7 +70,7 @@ print()
 #     g(r) = N * (x-Rx)^lx * (y-Ry)^ly * (z-Rz)^lz * exp(-α|r-R|²)
 #
 # For s-orbitals (l=0): lx=ly=lz=0, so only the exponential part matters.
-# The primitive_gaussian() method evaluates a single primitive at a point.
+# The evaluate_primitive_gaussian() method evaluates a single primitive at a point.
 
 cgto = hydrogen.contracted_gaussian_type_orbitals[0]  # First shell (1s core)
 
@@ -82,9 +82,9 @@ point_far = CartesianCoordinates(2.0, 0.0, 0.0)  # 2.0 Å away
 print("=== Primitive Gaussian evaluation (1s shell, primitive 0) ===")
 # Arguments: (r, primitive_index, lx, ly, lz)
 # For s-orbital: lx=ly=lz=0
-print(f"  At origin:    {cgto.primitive_gaussian(origin, 0, 0, 0, 0):.6f}")
-print(f"  At (0.5,0,0): {cgto.primitive_gaussian(point_x, 0, 0, 0, 0):.6f}")
-print(f"  At (2.0,0,0): {cgto.primitive_gaussian(point_far, 0, 0, 0, 0):.6f}")
+print(f"  At origin:    {cgto.evaluate_primitive_gaussian(origin, 0, 0, 0, 0):.6f}")
+print(f"  At (0.5,0,0): {cgto.evaluate_primitive_gaussian(point_x, 0, 0, 0, 0):.6f}")
+print(f"  At (2.0,0,0): {cgto.evaluate_primitive_gaussian(point_far, 0, 0, 0, 0):.6f}")
 print()
 # Note: Gaussian decays exponentially with distance from the center!
 
@@ -95,13 +95,13 @@ print()
 # A contracted basis function is a linear combination of primitives:
 #     φ(r) = Σ_p d_p * g_p(r)
 #
-# The basis_function() method computes this sum over all primitives.
+# The evaluate_basis_function() method computes this sum over all primitives.
 
 print("=== Contracted basis function evaluation (1s) ===")
 # Arguments: (r, lx, ly, lz)
-print(f"  At origin:    {cgto.basis_function(origin, 0, 0, 0):.6f}")
-print(f"  At (0.5,0,0): {cgto.basis_function(point_x, 0, 0, 0):.6f}")
-print(f"  At (2.0,0,0): {cgto.basis_function(point_far, 0, 0, 0):.6f}")
+print(f"  At origin:    {cgto.evaluate_basis_function(origin, 0, 0, 0):.6f}")
+print(f"  At (0.5,0,0): {cgto.evaluate_basis_function(point_x, 0, 0, 0):.6f}")
+print(f"  At (2.0,0,0): {cgto.evaluate_basis_function(point_far, 0, 0, 0):.6f}")
 print()
 
 
@@ -179,19 +179,19 @@ coefficients_1s = [1.0] + [0.0] * (water.n_basis - 1)
 
 # Evaluate near the oxygen atom
 r_test = CartesianCoordinates(0.0, 0.0, 0.1173)  # Oxygen position
-mo_value = water.molecular_orbital(r_test, coefficients_1s, angular_components)
+mo_value = water.evaluate_molecular_orbital(r_test, coefficients_1s, angular_components)
 print(f"  MO (pure O-1s) at oxygen position: {mo_value:.6f}")
 
 # Example 2: Equal mix of first two basis functions
 coefficients_mix = [0.5, 0.5] + [0.0] * (water.n_basis - 2)
-mo_value_mix = water.molecular_orbital(r_test, coefficients_mix, angular_components)
+mo_value_mix = water.evaluate_molecular_orbital(r_test, coefficients_mix, angular_components)
 print(f"  MO (0.5*bf1 + 0.5*bf2) at oxygen: {mo_value_mix:.6f}")
 
 # Evaluate along z-axis to see orbital shape decay
 print("\n  MO (pure O-1s) along z-axis:")
 for z in [0.0, 0.5, 1.0, 1.5, 2.0]:
     r = CartesianCoordinates(0.0, 0.0, z)
-    val = water.molecular_orbital(r, coefficients_1s, angular_components)
+    val = water.evaluate_molecular_orbital(r, coefficients_1s, angular_components)
     print(f"    z={z:.1f}: {val:.6f}")
 
 print("\nDone!")

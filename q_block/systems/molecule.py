@@ -238,7 +238,7 @@ class Molecule(AtomicSystem):
 
         self.contracted_gaussian_type_orbitals = all_cgtos
 
-    def molecular_orbital(
+    def evaluate_molecular_orbital(
         self,
         r: CartesianCoordinates,
         coefficients: List[float],
@@ -297,7 +297,7 @@ class Molecule(AtomicSystem):
             for _ in range(cgto.n_functions):
                 lx, ly, lz = angular_components[mu]
                 coeff = coefficients[mu]
-                value += coeff * cgto.basis_function(r, lx, ly, lz)
+                value += coeff * cgto.evaluate_basis_function(r, lx, ly, lz)
                 mu += 1
 
         return value
@@ -423,7 +423,7 @@ class Molecule(AtomicSystem):
         :rtype: pandas.DataFrame
         """
 
-        rows: list[dict[str, Any]] = []
+        rows: List[Dict[str, Any]] = []
         max_len: int = 0
 
         # First pass: collect raw lists and track the maximum basis length
@@ -478,12 +478,12 @@ class Molecule(AtomicSystem):
                 ("quantum_numbers", "m", ""),
                 ("quantum_numbers", "s", ""),
             ]
-            basis_cols: list[tuple[str, str, str]] = []
+            basis_cols: List[Tuple[str, str, str]] = []
             columns = pd.MultiIndex.from_tuples(geom_cols + qn_cols + basis_cols)
             return pd.DataFrame(index=index, columns=columns)
 
         # Second pass: flatten lists into c0..cM and e0..eM columns
-        flattened_rows: list[dict[str | tuple[str, str, str], Any]] = []
+        flattened_rows: List[Dict[Union[str, Tuple[str, str, str]], Any]] = []
         for row in rows:
             exponents = list(row["exponents"])
             contractions = list(row["contractions"])
@@ -500,7 +500,7 @@ class Molecule(AtomicSystem):
                 exponents += [None] * (max_len - length)
                 contractions += [None] * (max_len - length)
 
-            flat: dict[str | tuple[str, str, str], Any] = {
+            flat: Dict[Union[str, Tuple[str, str, str]], Any] = {
                 "atom_id": row["atom_id"],
                 "symbol": row["symbol"],
                 "n": row["n"],

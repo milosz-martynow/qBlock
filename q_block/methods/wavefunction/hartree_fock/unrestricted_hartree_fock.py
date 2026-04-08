@@ -16,8 +16,6 @@ UnrestrictedHartreeFock
 
 from typing import List, Tuple
 
-import numpy as np
-
 from q_block.methods.wavefunction.hartree_fock.hartree_fock import (
     HartreeFock,
     SpinPair,

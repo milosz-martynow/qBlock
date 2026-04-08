@@ -53,7 +53,7 @@ RestrictedOpenShellHartreeFock
     Concrete ROHF implementation.
 """
 
-from typing import List, Tuple
+from typing import List, Optional, Tuple, Union
 
 import numpy as np
 
@@ -216,7 +216,7 @@ class RestrictedOpenShellHartreeFock(HartreeFock):
     def _compute_electronic_energy(
         self,
         density: SpinPair,
-        fock: SpinPair | tuple | None = None,
+        fock: Optional[Union[SpinPair, tuple]] = None,
     ) -> float:
         r"""ROHF electronic energy using physical Fock matrices.
 
@@ -237,7 +237,7 @@ class RestrictedOpenShellHartreeFock(HartreeFock):
         :type density: SpinPair
         :param fock: Not used.  The energy is computed from the
             physical Fock matrices cached by :meth:`_build_fock`.
-        :type fock: SpinPair | tuple | None
+        :type fock: Optional[Union[SpinPair, tuple]]
         :returns: Electronic energy (Hartree).
         :rtype: float
         """

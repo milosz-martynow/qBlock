@@ -15,10 +15,10 @@ from q_block.io.coordinates import CartesianCoordinates
 # Path Constants
 # ======================================================================
 
-BASIS_ROOT: Path = Path("./data/basis_set/gto_gaussian_format")
+BASIS_ROOT: Path = Path("./data/basis_set/pople")
 """Root directory for Gaussian-format (GTO) basis set files."""
 
-STO_ROOT: Path = Path("./data/basis_set/sto_gaussian_format")
+STO_ROOT: Path = Path("./data/basis_set/pople")
 """Root directory for Slater-type (STO) basis set files."""
 
 GOLDEN_ROOT: Path = Path("./tests/unit_tests/verification_data/gto_population")

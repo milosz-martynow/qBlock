@@ -25,6 +25,7 @@ from q_block.constants.atoms_data import (
 )
 from q_block.io.basis_set import Pople
 from q_block.io.input_data import InputData
+from q_block.models.electron import Shell, SpinOrbital
 from q_block.systems.atomic_system import AtomicSystem
 from q_block.systems.molecule import Molecule
 from tests.unit_tests.constants import (
@@ -52,7 +53,6 @@ def _serialize_atom_for_test(atom: Atom, basis_name: str) -> Dict[str, Any]:
     :returns: Dictionary with atom data for comparison.
     :rtype: Dict[str, Any]
     """
-    from q_block.models.electron import Shell, SpinOrbital
 
     orbitals: Dict[str, Dict[str, list]] = {}
 

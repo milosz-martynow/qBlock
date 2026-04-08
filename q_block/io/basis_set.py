@@ -7,8 +7,12 @@ implementations for different basis set families.
 
 Currently supported basis set types:
 
-* :class:`Pople` – Pople-style split-valence Gaussian basis sets
-  (e.g. 3-21G, 6-31G, 6-311G, 6-311++G**).
+* :class:`Pople` – Pople-style Gaussian basis sets, including:
+  
+  - STO-nG minimal basis sets (STO-3G, STO-6G) – n Gaussians approximating
+    Slater-type orbitals
+  - Split-valence basis sets (3-21G, 6-31G, 6-311G, 6-311++G**) – different
+    numbers of Gaussians for core and valence regions
 
 Future basis set families (Dunning, Ahlrichs, etc.) should inherit from
 :class:`BasisSet` and implement :meth:`BasisSet.parse`.
@@ -169,19 +173,27 @@ class BasisSet:
 # ======================================================================
 
 class Pople(BasisSet):
-    """Pople-style split-valence Gaussian basis set.
+    """Pople-style Gaussian basis sets.
 
     This class parses Gaussian-format ``.gbs`` files for Pople basis
-    sets (e.g. 3-21G, 6-31G, 6-311G, 6-311++G**) and stores the
-    result as an element-keyed dictionary with region classification
-    (core / valence-inner / valence-outer).
+    sets and stores the result as an element-keyed dictionary with region
+    classification (core / valence-inner / valence-outer).
+    
+    Supported basis sets include:
+    
+    * **STO-nG** (minimal basis): n Gaussian primitives approximate each
+      Slater-type orbital (e.g., STO-3G, STO-6G)
+    * **Split-valence** (3-21G, 6-31G, 6-311G, etc.): Different numbers of
+      Gaussian primitives for core vs. valence orbitals
+    * **Polarization and diffuse** (6-311++G**, etc.): Extended split-valence
+      with additional polarization and diffuse functions
 
     :param filepath: Path to the Gaussian-format ``.gbs`` file.
     :type filepath: str
 
     Example
     -------
-    >>> basis = Pople("data/basis_set/gto_gaussian_format/3-21G.gbs")
+    >>> basis = Pople("data/basis_set/pople/3-21G.gbs")
     >>> hydrogen_regions = basis["H"]
     """
 

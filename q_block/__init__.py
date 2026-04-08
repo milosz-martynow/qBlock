@@ -1,6 +1,7 @@
 """q_block package public API."""
 
-from .models.atom import Atom, Orbital, Shell, SpinOrbital, SubShell
+from .models.atom import Atom
+from .models.electron import Orbital, Shell, SpinOrbital, SubShell
 from .constants.atoms_data import ATOMS_SYMBOLS_SYMBOL_TO_Z, ATOMS_SYMBOLS_Z_TO_SYMBOL
 from .systems.atomic_system import AtomicSystem
 from .io.basis_set import BasisSet, Pople

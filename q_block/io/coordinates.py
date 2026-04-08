@@ -4,6 +4,8 @@ Coordinates module for atom representations.
 Defines abstract and concrete classes for spatial coordinates.
 """
 
+from typing import List, Tuple
+
 from q_block.constants.atoms_data import ANGSTROM_TO_BOHR
 
 
@@ -16,12 +18,12 @@ class Coordinates:
     which are used internally by as_tuple().
     """
 
-    def as_tuple(self) -> tuple[float, float, float]:
+    def as_tuple(self) -> Tuple[float, float, float]:
         """
         Return coordinates as a tuple (coordinate_1, coordinate_2, coordinate_3).
 
-        :return: Tuple of three coordinates in the order defined by the coordinate system.
-        :rtype: tuple[float, float, float]
+        :returns: Tuple of three coordinates in the order defined by the coordinate system.
+        :rtype: Tuple[float, float, float]
         """
         return (
             self._coordinate_1(),
@@ -33,7 +35,7 @@ class Coordinates:
         """
         Return the first coordinate (system-dependent).
 
-        :return: The first coordinate value.
+        :returns: The first coordinate value.
         :rtype: float
         """
         raise NotImplementedError("Subclasses must implement _coordinate_1.")
@@ -42,7 +44,7 @@ class Coordinates:
         """
         Return the second coordinate (system-dependent).
 
-        :return: The second coordinate value.
+        :returns: The second coordinate value.
         :rtype: float
         """
         raise NotImplementedError("Subclasses must implement _coordinate_2.")
@@ -51,7 +53,7 @@ class Coordinates:
         """
         Return the third coordinate (system-dependent).
 
-        :return: The third coordinate value.
+        :returns: The third coordinate value.
         :rtype: float
         """
         raise NotImplementedError("Subclasses must implement _coordinate_3.")
@@ -118,7 +120,7 @@ class CartesianCoordinates(Coordinates):
         """
         Return the x coordinate.
 
-        :return: The x coordinate value.
+        :returns: The x coordinate value.
         :rtype: float
         """
         return self.x
@@ -127,7 +129,7 @@ class CartesianCoordinates(Coordinates):
         """
         Return the y coordinate.
 
-        :return: The y coordinate value.
+        :returns: The y coordinate value.
         :rtype: float
         """
         return self.y
@@ -136,7 +138,7 @@ class CartesianCoordinates(Coordinates):
         """
         Return the z coordinate.
 
-        :return: The z coordinate value.
+        :returns: The z coordinate value.
         :rtype: float
         """
         return self.z
@@ -145,7 +147,7 @@ class CartesianCoordinates(Coordinates):
         """
         Return a string representation of the CartesianCoordinates object.
 
-        :return: String representation in the form 'CartesianCoordinates(x=..., y=..., z=...)'.
+        :returns: String representation in the form 'CartesianCoordinates(x=..., y=..., z=...)'.
         :rtype: str
         """
         return f"CartesianCoordinates(x={self.x:.3f}, y={self.y:.3f}, z={self.z:.3f})"
@@ -162,6 +164,10 @@ class CartesianCoordinates(Coordinates):
             z=self.z * ANGSTROM_TO_BOHR,
         )
 
-    def to_list(self) -> list[float]:
-        """Return coordinates as a plain list [x, y, z]."""
+    def to_list(self) -> List[float]:
+        """Return coordinates as a plain list [x, y, z].
+
+        :returns: List of coordinate values [x, y, z].
+        :rtype: List[float]
+        """
         return [self.x, self.y, self.z]

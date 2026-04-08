@@ -1,5 +1,5 @@
 [FORMAT]
-max-line-length=79
+max-line-length=84
 
 [MESSAGES CONTROL]
 disable=wildcard-import

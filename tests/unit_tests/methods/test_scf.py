@@ -21,6 +21,9 @@ from q_block.methods.calculation_error_metric import CalculationErrorMetric
 from q_block.methods.diis import DIIS
 from q_block.methods.scf import SCF
 from q_block.theory.basis_functions import ContractedGaussianTypeOrbital
+from q_block.theory.initialization.nuclear_repulsion_energy import (
+    NuclearRepulsionEnergy,
+)
 from tests.unit_tests.utils import extract_nuclei, h2_molecule
 
 
@@ -202,9 +205,6 @@ def h2_scf(h2_molecule: Molecule) -> _StubRHF:
     :returns: Uninitialised _StubRHF instance ready for .run().
     :rtype: _StubRHF
     """
-    from q_block.theory.initialization.nuclear_repulsion_energy import (
-        NuclearRepulsionEnergy,
-    )
 
     # Extract nuclear coordinates as (Z, (x, y, z)) pairs.
     nuclei = extract_nuclei(h2_molecule)

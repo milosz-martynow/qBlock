@@ -4,7 +4,7 @@ Tests cover:
 - ContractedGaussianTypeOrbital class initialization, validation, and methods
 - Atom.make_contracted_gaussian_type_orbital
 - Molecule.make_contracted_gaussian_type_orbital
-- Molecule.molecular_orbital
+- Molecule.evaluate_molecular_orbital
 
 All tests use pytest with parametrize, no test classes.
 """
@@ -18,7 +18,7 @@ from q_block.io.basis_set import Pople
 from q_block.io.coordinates import CartesianCoordinates
 from q_block.io.input_data import InputData
 from q_block.theory.utils import normalization_constant
-from tests.unit_tests.constants import BASIS_6_31G, BASIS_STO_3G, ORIGIN
+from tests.unit_tests.constants import BASIS_6_31G, ORIGIN
 
 
 # ======================================================================
@@ -240,7 +240,7 @@ def test_primitive_gaussian_at_center(
     simple_cgto: ContractedGaussianTypeOrbital,
 ) -> None:
     """Verify primitive Gaussian at center equals normalization constant."""
-    value: float = simple_cgto.primitive_gaussian(ORIGIN, 0, 0, 0, 0)
+    value: float = simple_cgto.evaluate_primitive_gaussian(ORIGIN, 0, 0, 0, 0)
     expected: float = normalization_constant(1.0, 0, 0, 0)
     assert abs(value - expected) < 1e-10
 
@@ -249,11 +249,11 @@ def test_primitive_gaussian_decays(
     simple_cgto: ContractedGaussianTypeOrbital,
 ) -> None:
     """Verify primitive Gaussian decays away from center."""
-    val_0: float = simple_cgto.primitive_gaussian(ORIGIN, 0, 0, 0, 0)
-    val_1: float = simple_cgto.primitive_gaussian(
+    val_0: float = simple_cgto.evaluate_primitive_gaussian(ORIGIN, 0, 0, 0, 0)
+    val_1: float = simple_cgto.evaluate_primitive_gaussian(
         CartesianCoordinates(1.0, 0.0, 0.0), 0, 0, 0, 0
     )
-    val_2: float = simple_cgto.primitive_gaussian(
+    val_2: float = simple_cgto.evaluate_primitive_gaussian(
         CartesianCoordinates(2.0, 0.0, 0.0), 0, 0, 0, 0
     )
     assert val_0 > val_1 > val_2 > 0
@@ -264,9 +264,9 @@ def test_primitive_gaussian_index_error(
 ) -> None:
     """Verify primitive_gaussian raises IndexError for invalid index."""
     with pytest.raises(IndexError, match="out of range"):
-        simple_cgto.primitive_gaussian(ORIGIN, 5, 0, 0, 0)
+        simple_cgto.evaluate_primitive_gaussian(ORIGIN, 5, 0, 0, 0)
     with pytest.raises(IndexError, match="out of range"):
-        simple_cgto.primitive_gaussian(ORIGIN, -1, 0, 0, 0)
+        simple_cgto.evaluate_primitive_gaussian(ORIGIN, -1, 0, 0, 0)
 
 
 def test_primitive_gaussian_angular_mismatch(
@@ -274,7 +274,7 @@ def test_primitive_gaussian_angular_mismatch(
 ) -> None:
     """Verify primitive_gaussian raises ValueError when lx+ly+lz != l."""
     with pytest.raises(ValueError, match="must equal l"):
-        simple_cgto.primitive_gaussian(ORIGIN, 0, 1, 0, 0)
+        simple_cgto.evaluate_primitive_gaussian(ORIGIN, 0, 1, 0, 0)
 
 
 def test_primitive_gaussian_p_orbital() -> None:
@@ -286,19 +286,19 @@ def test_primitive_gaussian_p_orbital() -> None:
         contractions=[1.0],
     )
     # p_x at center: x^1 * ... = 0
-    assert cgto.primitive_gaussian(ORIGIN, 0, 1, 0, 0) == 0.0
+    assert cgto.evaluate_primitive_gaussian(ORIGIN, 0, 1, 0, 0) == 0.0
 
     # p_x off-center: should be non-zero
     off_center: CartesianCoordinates = CartesianCoordinates(0.5, 0.0, 0.0)
-    assert cgto.primitive_gaussian(off_center, 0, 1, 0, 0) != 0.0
+    assert cgto.evaluate_primitive_gaussian(off_center, 0, 1, 0, 0) != 0.0
 
 
 def test_basis_function_s_orbital(
     simple_cgto: ContractedGaussianTypeOrbital,
 ) -> None:
     """Verify basis_function for single-primitive s-orbital."""
-    bf_value: float = simple_cgto.basis_function(ORIGIN, 0, 0, 0)
-    prim_value: float = simple_cgto.primitive_gaussian(ORIGIN, 0, 0, 0, 0)
+    bf_value: float = simple_cgto.evaluate_basis_function(ORIGIN, 0, 0, 0)
+    prim_value: float = simple_cgto.evaluate_primitive_gaussian(ORIGIN, 0, 0, 0, 0)
     # With contraction coefficient of 1.0, they should be equal
     assert abs(bf_value - 1.0 * prim_value) < 1e-10
 
@@ -308,7 +308,7 @@ def test_basis_function_angular_mismatch(
 ) -> None:
     """Verify basis_function raises ValueError when lx+ly+lz != l."""
     with pytest.raises(ValueError, match="must equal l"):
-        simple_cgto.basis_function(ORIGIN, 1, 0, 0)
+        simple_cgto.evaluate_basis_function(ORIGIN, 1, 0, 0)
 
 
 def test_basis_function_contracted() -> None:
@@ -319,10 +319,10 @@ def test_basis_function_contracted() -> None:
         exponents=[1.0, 0.5],
         contractions=[0.6, 0.4],
     )
-    bf_value: float = cgto.basis_function(ORIGIN, 0, 0, 0)
+    bf_value: float = cgto.evaluate_basis_function(ORIGIN, 0, 0, 0)
 
-    prim0: float = cgto.primitive_gaussian(ORIGIN, 0, 0, 0, 0)
-    prim1: float = cgto.primitive_gaussian(ORIGIN, 1, 0, 0, 0)
+    prim0: float = cgto.evaluate_primitive_gaussian(ORIGIN, 0, 0, 0, 0)
+    prim1: float = cgto.evaluate_primitive_gaussian(ORIGIN, 1, 0, 0, 0)
     expected: float = 0.6 * prim0 + 0.4 * prim1
     assert abs(bf_value - expected) < 1e-10
 
@@ -498,7 +498,7 @@ def test_molecular_orbital_raises_if_cgtos_not_built(
     coeffs: List[float] = [1.0] * water_molecule.n_basis
     angular: List[Tuple[int, int, int]] = [(0, 0, 0)] * water_molecule.n_basis
     with pytest.raises(ValueError, match="CGTOs not built"):
-        water_molecule.molecular_orbital(r, coeffs, angular)
+        water_molecule.evaluate_molecular_orbital(r, coeffs, angular)
 
 
 def test_molecular_orbital_raises_on_coefficients_mismatch(
@@ -512,7 +512,7 @@ def test_molecular_orbital_raises_on_coefficients_mismatch(
     )
     coeffs: List[float] = [1.0]  # Too short
     with pytest.raises(ValueError, match="coefficients length"):
-        water_molecule.molecular_orbital(r, coeffs, angular)
+        water_molecule.evaluate_molecular_orbital(r, coeffs, angular)
 
 
 def test_molecular_orbital_raises_on_angular_mismatch(
@@ -524,7 +524,7 @@ def test_molecular_orbital_raises_on_angular_mismatch(
     coeffs: List[float] = [1.0] * water_molecule.n_basis
     angular: List[Tuple[int, int, int]] = [(0, 0, 0)]  # Too short
     with pytest.raises(ValueError, match="angular_components length"):
-        water_molecule.molecular_orbital(r, coeffs, angular)
+        water_molecule.evaluate_molecular_orbital(r, coeffs, angular)
 
 
 def test_molecular_orbital_unit_vector_first_basis(
@@ -538,13 +538,13 @@ def test_molecular_orbital_unit_vector_first_basis(
     )
     coeffs: List[float] = [1.0] + [0.0] * (water_molecule.n_basis - 1)
 
-    mo_value: float = water_molecule.molecular_orbital(r, coeffs, angular)
+    mo_value: float = water_molecule.evaluate_molecular_orbital(r, coeffs, angular)
 
     first_cgto: ContractedGaussianTypeOrbital = (
         water_molecule.contracted_gaussian_type_orbitals[0]
     )
     first_angular: Tuple[int, int, int] = angular[0]
-    expected: float = first_cgto.basis_function(r, *first_angular)
+    expected: float = first_cgto.evaluate_basis_function(r, *first_angular)
     assert abs(mo_value - expected) < 1e-10
 
 
@@ -559,7 +559,7 @@ def test_molecular_orbital_zero_coefficients_gives_zero(
     )
     coeffs: List[float] = [0.0] * water_molecule.n_basis
 
-    mo_value: float = water_molecule.molecular_orbital(r, coeffs, angular)
+    mo_value: float = water_molecule.evaluate_molecular_orbital(r, coeffs, angular)
     assert mo_value == 0.0
 
 
@@ -575,11 +575,11 @@ def test_molecular_orbital_linearity(water_molecule: Molecule) -> None:
     coeffs_a: List[float] = [1.0] + [0.0] * (water_molecule.n_basis - 1)
     coeffs_b: List[float] = [0.0, 1.0] + [0.0] * (water_molecule.n_basis - 2)
 
-    mo_a: float = water_molecule.molecular_orbital(r, coeffs_a, angular)
-    mo_b: float = water_molecule.molecular_orbital(r, coeffs_b, angular)
+    mo_a: float = water_molecule.evaluate_molecular_orbital(r, coeffs_a, angular)
+    mo_b: float = water_molecule.evaluate_molecular_orbital(r, coeffs_b, angular)
 
     # Sum should equal evaluation with summed coefficients
     coeffs_sum: List[float] = [1.0, 1.0] + [0.0] * (water_molecule.n_basis - 2)
-    mo_sum: float = water_molecule.molecular_orbital(r, coeffs_sum, angular)
+    mo_sum: float = water_molecule.evaluate_molecular_orbital(r, coeffs_sum, angular)
 
     assert abs(mo_sum - (mo_a + mo_b)) < 1e-10

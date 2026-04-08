@@ -31,8 +31,6 @@ Overlap
 import math
 from typing import List, Tuple
 
-import numpy as np
-
 from q_block.theory.basis_functions import ContractedGaussianTypeOrbital
 from q_block.theory.integrals.two_gaussian_integral import TwoGaussianIntegral
 from q_block.theory.utils import normalization_constant

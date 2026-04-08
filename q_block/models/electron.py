@@ -50,7 +50,7 @@ class SpinOrbital:
     :type occupied: bool
 
     :param data: Optional storage for user-defined numerical metadata.
-    :type data: Any | None
+    :type data: Optional[Any]
 
     :returns: None
     :rtype: None

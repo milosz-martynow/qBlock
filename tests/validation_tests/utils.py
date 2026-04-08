@@ -1,7 +1,7 @@
 """Shared utilities for all Koopmans' theorem validation tests."""
 
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Union
 
 from q_block.io.basis_set import Pople
 from q_block.io.input_data import InputData
@@ -23,28 +23,27 @@ units, wrong orbital index) while remaining robust to basis-set effects.
 _BASIS_CACHE: Dict[str, Pople] = {}
 
 
-def _get_basis(filename: str) -> Pople:
-    """Return a cached :class:`Pople` basis set loaded from *filename*.
+def _get_basis(filepath: Union[Path, str]) -> Pople:
+    """Return a cached :class:`Pople` basis set loaded from *filepath*.
 
-    :param filename: Basis-set file name, e.g. ``"6-311++Gss.gbs"``.
+    :param filepath: Full path to basis-set file, e.g. ``Path("data/basis_set/pople/6-311++Gss.gbs")``.
     """
-    if filename not in _BASIS_CACHE:
-        _BASIS_CACHE[filename] = Pople(
-            filepath=str(Path("data/basis_set/gto_gaussian_format") / filename)
-        )
-    return _BASIS_CACHE[filename]
+    filepath_str = str(filepath)
+    if filepath_str not in _BASIS_CACHE:
+        _BASIS_CACHE[filepath_str] = Pople(filepath=filepath_str)
+    return _BASIS_CACHE[filepath_str]
 
 
 def _build_from_geometry(
     geometry: List[Dict],
     multiplicity: int,
-    basis_set_filename: str = "3-21G.gbs",
+    basis_set_filename: Union[Path, str] = Path("data/basis_set/pople/3-21G.gbs"),
 ) -> Tuple:
     """Build a Molecule from a geometry list and return SCF inputs.
 
     :param geometry: List of ``{"symbol", "x", "y", "z"}`` dicts (Å).
     :param multiplicity: Spin multiplicity 2S+1.
-    :param basis_set_filename: Basis-set file name (e.g. ``"6-311++Gss.gbs"``).
+    :param basis_set_filename: Full path to basis-set file (e.g. ``Path("data/basis_set/pople/6-311++Gss.gbs")``).
     :returns: ``(cgtos, nuclei, e_nuclear)`` ready for HF constructors.
     """
     basis = _get_basis(basis_set_filename)

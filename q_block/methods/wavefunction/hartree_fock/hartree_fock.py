@@ -29,7 +29,7 @@ HartreeFock
 """
 
 from abc import abstractmethod
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Union
 
 import numpy as np
 
@@ -110,7 +110,7 @@ class SpinPair(tuple):
     # ------ Factory helpers ---------------------------------------------
 
     @classmethod
-    def wrap(cls, obj: 'tuple | SpinPair') -> 'SpinPair':
+    def wrap(cls, obj: Union[tuple, 'SpinPair']) -> 'SpinPair':
         """Ensure *obj* is a :class:`SpinPair`.
 
         Returns *obj* unchanged if it already is one; otherwise wraps
@@ -118,7 +118,7 @@ class SpinPair(tuple):
         :class:`SpinPair`.
 
         :param obj: Tuple or SpinPair to wrap.
-        :type obj: tuple | SpinPair
+        :type obj: Union[tuple, SpinPair]
         :returns: SpinPair instance.
         :rtype: SpinPair
         """
@@ -302,7 +302,7 @@ class HartreeFock(SCF):
     def _compute_electronic_energy(
         self,
         density: SpinPair,
-        fock: SpinPair | tuple | None = None,
+        fock: Optional[Union[SpinPair, tuple]] = None,
     ) -> float:
         r"""Electronic energy from per-spin density and Fock matrices.
 
@@ -319,7 +319,7 @@ class HartreeFock(SCF):
         :param fock: Per-spin Fock matrices.  May be ``None``
             for subclasses that compute the energy from cached
             matrices (e.g. ROHF).
-        :type fock: SpinPair | tuple | None
+        :type fock: Optional[Union[SpinPair, tuple]]
         :returns: Electronic energy (Hartree).
         :rtype: float
         """
@@ -398,7 +398,7 @@ class HartreeFock(SCF):
         converged: bool,
         n_iterations: int,
         e_electronic: float,
-        fock: SpinPair | tuple,
+        fock: Union[SpinPair, tuple],
         density: SpinPair,
         C: tuple,
         epsilon: tuple,
@@ -418,7 +418,7 @@ class HartreeFock(SCF):
         :type e_electronic: float
         :param fock: Final Fock matrices (may be a plain tuple
             after DIIS extrapolation).
-        :type fock: SpinPair | tuple
+        :type fock: Union[SpinPair, tuple]
         :param density: Final per-spin density matrices.
         :type density: SpinPair
         :param C: Final MO coefficients.

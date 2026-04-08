@@ -6,7 +6,7 @@ NIST Atomic Spectra Database (ASD)
 https://physics.nist.gov/PhysRefData/ASD/
 """
 
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Dict, List, Optional, Tuple
 
 from q_block.constants.atoms_data import (
     ATOMS_SYMBOLS_Z_TO_SYMBOL,
@@ -14,7 +14,7 @@ from q_block.constants.atoms_data import (
 )
 from q_block.io.coordinates import CartesianCoordinates
 from q_block.io.basis_set import BasisSet
-from q_block.models.electron import Orbital, Shell, SpinOrbital, SubShell
+from q_block.models.electron import Shell, SubShell
 from q_block.theory.basis_functions import ContractedGaussianTypeOrbital
 
 

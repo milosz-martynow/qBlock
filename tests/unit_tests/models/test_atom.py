@@ -297,7 +297,7 @@ def _generate_open_shell_test_cases() -> List[Tuple[int, bool]]:
 @pytest.mark.parametrize(
     "atomic_number, expected_open_shell",
     _generate_open_shell_test_cases(),
-    ids=[ATOMS_SYMBOLS_Z_TO_SYMBOL[z] for z in range(1, 119)],
+    ids=[f"Z{z}_{ATOMS_SYMBOLS_Z_TO_SYMBOL[z]}" for z in range(1, 119)],
 )
 def test_atom_open_shell_pure_aufbau(
     atomic_number: int, expected_open_shell: bool
@@ -430,7 +430,7 @@ def test_all_atoms_open_shell_consistency() -> None:
 @pytest.mark.parametrize(
     "atomic_number",
     [2, 10, 18, 36, 54, 86, 118],
-    ids=["He", "Ne", "Ar", "Kr", "Xe", "Rn", "Og"],
+    ids=["Z2_He", "Z10_Ne", "Z18_Ar", "Z36_Kr", "Z54_Xe", "Z86_Rn", "Z118_Og"],
 )
 def test_noble_gases_are_closed_shell(atomic_number: int) -> None:
     """Verify noble gases are correctly classified as closed-shell.
@@ -448,7 +448,7 @@ def test_noble_gases_are_closed_shell(atomic_number: int) -> None:
 @pytest.mark.parametrize(
     "atomic_number",
     [3, 11, 19, 37, 55, 87],
-    ids=["Li", "Na", "K", "Rb", "Cs", "Fr"],
+    ids=["Z3_Li", "Z11_Na", "Z19_K", "Z37_Rb", "Z55_Cs", "Z87_Fr"],
 )
 def test_alkali_metals_are_open_shell(atomic_number: int) -> None:
     """Verify alkali metals are correctly classified as open-shell.
@@ -466,7 +466,7 @@ def test_alkali_metals_are_open_shell(atomic_number: int) -> None:
 @pytest.mark.parametrize(
     "atomic_number",
     [9, 17, 35, 53, 85, 117],
-    ids=["F", "Cl", "Br", "I", "At", "Ts"],
+    ids=["Z9_F", "Z17_Cl", "Z35_Br", "Z53_I", "Z85_At", "Z117_Ts"],
 )
 def test_halogens_are_open_shell(atomic_number: int) -> None:
     """Verify halogens are correctly classified as open-shell.
@@ -484,7 +484,7 @@ def test_halogens_are_open_shell(atomic_number: int) -> None:
 @pytest.mark.parametrize(
     "atomic_number",
     [4, 12, 20, 38, 56, 88],
-    ids=["Be", "Mg", "Ca", "Sr", "Ba", "Ra"],
+    ids=["Z4_Be", "Z12_Mg", "Z20_Ca", "Z38_Sr", "Z56_Ba", "Z88_Ra"],
 )
 def test_alkaline_earth_metals_are_closed_shell(atomic_number: int) -> None:
     """Verify alkaline earth metals are correctly classified as closed-shell.
@@ -530,7 +530,7 @@ def test_atom_n_electrons_with_charge(charge: int) -> None:
 @pytest.mark.parametrize(
     "atomic_number",
     [1, 6, 8, 26, 79],
-    ids=["H", "C", "O", "Fe", "Au"],
+    ids=["Z1_H", "Z6_C", "Z8_O", "Z26_Fe", "Z79_Au"],
 )
 @pytest.mark.parametrize("charge", CHARGE_VALUES, ids=charge_ids())
 def test_atom_n_electrons_various_elements(atomic_number: int, charge: int) -> None:

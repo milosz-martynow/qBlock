@@ -32,10 +32,18 @@ import pytest
 from q_block.methods.wavefunction.hartree_fock.restricted_hartree_fock import (
     RestrictedHartreeFock,
 )
-from tests.validation_tests.utils import ABS_TOL_EV, HARTREE_TO_EV, _build_from_geometry
+from tests.validation_tests.utils import _build_from_geometry
 from tests.validation_tests.validation_data import (
     ATOMS_HOMO_ENERGIES,
     MOLECULES_HOMO_ENERGIES,
+)
+from tests.validation_tests.templates import (
+    make_atom_scf_converged_test,
+    make_atom_koopmans_ie_test,
+    make_molecule_scf_converged_test,
+    make_molecule_total_energy_negative_test,
+    make_molecule_homo_ie_positive_test,
+    make_molecule_koopmans_ie_test,
 )
 
 
@@ -81,7 +89,7 @@ def rhf_atom_result(request):
         nuclei=nuclei,
         e_nuclear=e_nuclear,
         n_electrons=entry["n_electrons"],
-        max_iterations=200,
+        max_iterations=entry["max_iterations"],
     ).run()
     return entry, hf
 
@@ -105,7 +113,7 @@ def rhf_molecule_result(request):
         nuclei=nuclei,
         e_nuclear=e_nuclear,
         n_electrons=entry["n_electrons"],
-        max_iterations=200,
+        max_iterations=entry["max_iterations"],
     ).run()
     return entry, hf
 
@@ -113,6 +121,10 @@ def rhf_molecule_result(request):
 # ---------------------------------------------------------------------------
 # Tests — closed-shell atoms
 # ---------------------------------------------------------------------------
+
+# RHF-specific helper functions
+_rhf_homo_idx = lambda entry: entry["n_closed"] - 1
+_rhf_epsilon = lambda hf: hf.matrices["epsilon"]
 
 
 def test_rhf_atom_scf_converged(rhf_atom_result) -> None:
@@ -124,11 +136,7 @@ def test_rhf_atom_scf_converged(rhf_atom_result) -> None:
 
     :param rhf_atom_result: Pytest fixture providing ``(entry, hf)``.
     """
-    entry, hf = rhf_atom_result
-    assert hf.converged, (
-        f"RHF SCF did not converge for atom {entry['symbol']} "
-        f"(Z={entry['n_electrons']}, {entry['n_iterations']} iterations)."
-    )
+    return make_atom_scf_converged_test("RHF")(rhf_atom_result)
 
 
 def test_rhf_atom_koopmans_ie_vs_reference(rhf_atom_result) -> None:
@@ -139,14 +147,7 @@ def test_rhf_atom_koopmans_ie_vs_reference(rhf_atom_result) -> None:
 
     :param rhf_atom_result: Pytest fixture providing ``(entry, hf)``.
     """
-    entry, hf = rhf_atom_result
-    homo_idx = entry["n_closed"] - 1
-    homo_ev = -hf.matrices["epsilon"][homo_idx] * HARTREE_TO_EV
-    assert homo_ev == pytest.approx(entry["hf_ie_eV"], abs=ABS_TOL_EV), (
-        f"Atom {entry['symbol']}: computed Koopmans IE {homo_ev:.3f} eV, "
-        f"reference {entry['hf_ie_eV']:.3f} eV "
-        f"(diff {abs(homo_ev - entry['hf_ie_eV']):.3f} eV, tolerance {ABS_TOL_EV} eV)."
-    )
+    return make_atom_koopmans_ie_test("RHF", _rhf_homo_idx, _rhf_epsilon)(rhf_atom_result)
 
 
 # ---------------------------------------------------------------------------
@@ -159,10 +160,7 @@ def test_rhf_molecule_scf_converged(rhf_molecule_result) -> None:
 
     :param rhf_molecule_result: Pytest fixture providing ``(entry, hf)``.
     """
-    entry, hf = rhf_molecule_result
-    assert hf.converged, (
-        f"RHF SCF did not converge for {entry['formula']}."
-    )
+    return make_molecule_scf_converged_test("RHF")(rhf_molecule_result)
 
 
 def test_rhf_molecule_total_energy_negative(rhf_molecule_result) -> None:
@@ -173,10 +171,7 @@ def test_rhf_molecule_total_energy_negative(rhf_molecule_result) -> None:
 
     :param rhf_molecule_result: Pytest fixture providing ``(entry, hf)``.
     """
-    entry, hf = rhf_molecule_result
-    assert hf.e_total < 0.0, (
-        f"{entry['formula']}: total energy {hf.e_total:.6f} Ha should be negative."
-    )
+    return make_molecule_total_energy_negative_test("RHF")(rhf_molecule_result)
 
 
 def test_rhf_molecule_homo_ie_positive(rhf_molecule_result) -> None:
@@ -187,12 +182,7 @@ def test_rhf_molecule_homo_ie_positive(rhf_molecule_result) -> None:
 
     :param rhf_molecule_result: Pytest fixture providing ``(entry, hf)``.
     """
-    entry, hf = rhf_molecule_result
-    homo_idx = entry["n_closed"] - 1
-    homo_ev = -hf.matrices["epsilon"][homo_idx] * HARTREE_TO_EV
-    assert homo_ev > 0.0, (
-        f"{entry['formula']}: Koopmans IE {homo_ev:.3f} eV should be positive."
-    )
+    return make_molecule_homo_ie_positive_test("RHF", _rhf_homo_idx, _rhf_epsilon)(rhf_molecule_result)
 
 
 def test_rhf_molecule_koopmans_ie_vs_reference(rhf_molecule_result) -> None:
@@ -203,11 +193,4 @@ def test_rhf_molecule_koopmans_ie_vs_reference(rhf_molecule_result) -> None:
 
     :param rhf_molecule_result: Pytest fixture providing ``(entry, hf)``.
     """
-    entry, hf = rhf_molecule_result
-    homo_idx = entry["n_closed"] - 1
-    homo_ev = -hf.matrices["epsilon"][homo_idx] * HARTREE_TO_EV
-    assert homo_ev == pytest.approx(entry["hf_ie_eV"], abs=ABS_TOL_EV), (
-        f"{entry['formula']}: computed Koopmans IE {homo_ev:.3f} eV, "
-        f"reference {entry['hf_ie_eV']:.3f} eV "
-        f"(diff {abs(homo_ev - entry['hf_ie_eV']):.3f} eV, tolerance {ABS_TOL_EV} eV)."
-    )
+    return make_molecule_koopmans_ie_test("RHF", _rhf_homo_idx, _rhf_epsilon)(rhf_molecule_result)
