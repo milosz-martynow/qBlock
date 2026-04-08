@@ -22,7 +22,7 @@ from q_block.theory.initialization import RHF, UHF, ROHF
 from q_block.theory.initialization.nuclear_repulsion_energy import (
     NuclearRepulsionEnergy,
 )
-from q_block.methods.wavefunction.hartree_fock import (
+from q_block.solvers.wavefunction.hartree_fock import (
     RestrictedHartreeFock,
     UnrestrictedHartreeFock,
     RestrictedOpenShellHartreeFock,

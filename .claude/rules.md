@@ -18,7 +18,7 @@
 - Private members: single `_` prefix.
 
 ## Imports
-- Absolute imports in source (`from q_block.methods.diis import DIIS`).
+- Absolute imports in source (`from q_block.solvers.diis import DIIS`).
 - Imports should be defined on the top of the script.
 - Imports should not be defined inside class or function.
 - Relative imports only inside `__init__.py` re-exports.
@@ -47,6 +47,19 @@
 
 ## Architecture
 - Keep algorithmic optimizations pure Python (caching, DP tables, screening). No compiled extensions.
+
+## Diagrams
+- Always update all diagrams according to the changes in the code.
+- Each kind of diagrams should be stored in separated folder in architecture folder, unless different approach is requested to some diagram.
+### Block Definition Diagrams (BDD)
+- BDD should present containment of each q_block folder (e.g. q_block.systems)
+- Blocks in BDD should present the classes
+- Blocks in BDD should not show atributes/methods/etc of the classes
+- In BDD use generalization and composition (direct/indirect etc) relations with specified multiplicities. 
+- In BDD use "use" relations etc only inside folder or nested folder in main folder, unless different approach is requested.
+- Do not make title in BDD.
+- Do not trace blocks to the components from outside of the folder of BDD that is representing.
+- Each folder should be represented separetley - there should no be e.g. architecture/hartree_fock folder representation in BDD - there should be hartree_fock folder inside wavevefunction folder
 
 ## Don'ts
 - Don't add features or refactor beyond what's asked.

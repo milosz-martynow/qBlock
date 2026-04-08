@@ -1,4 +1,4 @@
-"""Unit tests for q_block.methods.diis module.
+"""Unit tests for q_block.solvers.diis module.
 
 Tests cover:
 - DIIS construction and validation
@@ -21,7 +21,7 @@ All tests use pytest with parametrize, no test classes.
 import numpy as np
 import pytest
 
-from q_block.methods.diis import DIIS
+from q_block.solvers.diis import DIIS
 
 
 # ======================================================================

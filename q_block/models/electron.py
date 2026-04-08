@@ -214,5 +214,47 @@ class Shell:
         self.n = n  # principal quantum number
         self.subshells: List[SubShell] = [SubShell(n=n, l=l) for l in range(n)]
 
+    def reset_occupancy(self) -> None:
+        """Reset all spin-orbitals in this shell to unoccupied.
+
+        Iterates over every subshell, orbital, and spin-orbital and
+        sets ``occupied = False``.
+        """
+        for sub in self.subshells:
+            for orb in sub.orbitals:
+                orb.spin_up.occupied = False
+                orb.spin_down.occupied = False
+
+    def find_subshell(self, l: int) -> Optional[SubShell]:
+        """Return the subshell with angular momentum ``l``, or ``None``.
+
+        :param l: Angular momentum quantum number to search for.
+        :type l: int
+        :returns: Matching subshell or ``None``.
+        :rtype: Optional[SubShell]
+        """
+        for ss in self.subshells:
+            if ss.l == l:
+                return ss
+        return None
+
+    def count_unpaired(self) -> int:
+        """Count unpaired electrons across all subshells in this shell.
+
+        An unpaired electron is one where exactly one spin channel of
+        an orbital is occupied.
+
+        :returns: Number of unpaired electrons.
+        :rtype: int
+        """
+        count = 0
+        for sub in self.subshells:
+            for orb in sub.orbitals:
+                up = orb.spin_up.occupied
+                down = orb.spin_down.occupied
+                if up != down:
+                    count += 1
+        return count
+
     def __repr__(self) -> str:
         return f"Shell(n={self.n})"

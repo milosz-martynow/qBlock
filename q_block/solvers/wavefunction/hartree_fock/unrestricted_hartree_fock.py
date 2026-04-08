@@ -4,7 +4,7 @@ This module implements the Unrestricted Hartree-Fock method, which uses
 independent spatial orbitals for alpha and beta electrons, allowing
 treatment of arbitrary spin multiplicities.
 
-All SCF hooks are inherited from :class:`~q_block.methods.wavefunction
+All SCF hooks are inherited from :class:`~q_block.solvers.wavefunction
 .hartree_fock.hartree_fock.HartreeFock`; only matrix storage
 is specialised to expose per-spin quantities.
 
@@ -16,9 +16,9 @@ UnrestrictedHartreeFock
 
 from typing import List, Tuple
 
-from q_block.methods.wavefunction.hartree_fock.hartree_fock import (
+from q_block.solvers.spin_pair import SpinPair
+from q_block.solvers.wavefunction.hartree_fock.hartree_fock import (
     HartreeFock,
-    SpinPair,
 )
 from q_block.theory.basis_functions import ContractedGaussianTypeOrbital
 

@@ -1,10 +1,10 @@
 """
-Methods module for electronic structure calculations.
+Solvers module for electronic structure calculations.
 
 Tree structure of implemented and planned methods:
 ==================================================
 
-q_block/methods/
+q_block/solvers/
 ├── __init__.py
 ├── base.py                          # ElectronicStructureMethod base class
 ├── scf.py                           # SCF loop, convergence logic
@@ -105,17 +105,17 @@ Module organization summary:
 
 Path                                     | Contains             | Description
 ---------------------------------------- | -------------------- | ---------------------------------------------------
-methods/                                 | Root + algorithms    | Base class and shared algorithms (SCF, DIIS, etc.)
-methods/wavefunction/                    | Ψ-based methods      | Methods solving for the wavefunction directly
-methods/wavefunction/hartree_fock/       | HF methods           | Single-determinant mean-field approximation
-methods/wavefunction/mcscf/              | MCSCF methods        | Multi-configurational self-consistent field
-methods/wavefunction/perturbation/       | PT methods           | Møller-Plesset perturbation theory (MP2, MP3, ...)
-methods/wavefunction/ci/                 | CI methods           | Configuration interaction (CIS, CISD, Full CI, ...)
-methods/wavefunction/coupled_cluster/    | CC methods           | Coupled cluster (CCSD, CCSD(T), ...)
-methods/electronic_density/              | ρ(r)-based methods   | Methods based on electron density functional
-methods/electronic_density/kohn_sham/    | KS-DFT               | Kohn-Sham DFT with auxiliary orbital framework
-methods/electronic_density/orbital_free/ | OF-DFT               | Orbital-free DFT without Kohn-Sham orbitals
-methods/electronic_density/functionals/  | XC functionals       | Exchange-correlation functionals (LDA, GGA, ...)
+solvers/                                 | Root + algorithms    | Base class and shared algorithms (SCF, DIIS, etc.)
+solvers/wavefunction/                    | Ψ-based methods      | Methods solving for the wavefunction directly
+solvers/wavefunction/hartree_fock/       | HF methods           | Single-determinant mean-field approximation
+solvers/wavefunction/mcscf/              | MCSCF methods        | Multi-configurational self-consistent field
+solvers/wavefunction/perturbation/       | PT methods           | Møller-Plesset perturbation theory (MP2, MP3, ...)
+solvers/wavefunction/ci/                 | CI methods           | Configuration interaction (CIS, CISD, Full CI, ...)
+solvers/wavefunction/coupled_cluster/    | CC methods           | Coupled cluster (CCSD, CCSD(T), ...)
+solvers/electronic_density/              | ρ(r)-based methods   | Methods based on electron density functional
+solvers/electronic_density/kohn_sham/    | KS-DFT               | Kohn-Sham DFT with auxiliary orbital framework
+solvers/electronic_density/orbital_free/ | OF-DFT               | Orbital-free DFT without Kohn-Sham orbitals
+solvers/electronic_density/functionals/  | XC functionals       | Exchange-correlation functionals (LDA, GGA, ...)
 """
 
 from .calculation_error_metric import CalculationErrorMetric

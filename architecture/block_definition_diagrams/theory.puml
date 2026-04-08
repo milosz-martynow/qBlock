@@ -1,5 +1,4 @@
 @startuml bdd_theory
-title BDD — theory
 
 package "theory" {
 
@@ -24,10 +23,6 @@ package "theory" {
   }
 }
 
-' --- External blocks ---
-class CartesianCoordinates <<io>>
-class Molecule <<systems>>
-
 ' ═══ Generalization ═══
 
 TwoGaussianIntegral -up-|> Integral
@@ -43,13 +38,7 @@ ROHFContext -up-|> HFContext
 
 ' ═══ Composition ═══
 
-ContractedGaussianTypeOrbital *-- "1" CartesianCoordinates
 TwoGaussianIntegral *-- "1..*" ContractedGaussianTypeOrbital
-
-' ═══ Use ═══
-
-QuantumCalculationContext ..> Molecule : «use»
-NuclearRepulsionEnergy ..> Molecule : «use»
-HFContext ..> ContractedGaussianTypeOrbital : «use»
+HFContext *-- "0..*" ContractedGaussianTypeOrbital
 
 @enduml

@@ -14,7 +14,7 @@ from q_block.constants.atoms_data import (
 )
 from q_block.io.coordinates import CartesianCoordinates
 from q_block.io.basis_set import BasisSet
-from q_block.models.electron import Shell, SubShell
+from q_block.models.electron import Shell
 from q_block.theory.basis_functions import ContractedGaussianTypeOrbital
 
 
@@ -114,13 +114,13 @@ class Atom:
         self.fill_occupancy()
 
     @property
-    def _all_subshells(self) -> List[SubShell]:
+    def _all_subshells(self) -> list:
         """Return a flattened list of subshells in shell order (n ascending).
 
         :returns: List of all subshells belonging to this atom, ordered by
             increasing principal quantum number ``n`` and the insertion
             order within each :class:`Shell`.
-        :rtype: List[SubShell]
+        :rtype: list
         """
         return [ss for shell in self.shells.values() for ss in shell.subshells]
 
@@ -142,7 +142,7 @@ class Atom:
         return self.atomic_number + self.charge
 
     @staticmethod
-    def _aufbau_key(sub: SubShell) -> Tuple[int, int]:
+    def _aufbau_key(sub: object) -> Tuple[int, int]:
         """Compute the Aufbau sorting key for a subshell.
 
         The key implements the standard Aufbau ordering by increasing
@@ -160,13 +160,11 @@ class Atom:
     def _reset(self) -> None:
         """Reset all spin-orbitals to the unoccupied state.
 
-        This method mutates all contained :class:`SpinOrbital` objects by
-        setting their ``occupied`` attribute to ``False``.
+        This method delegates to :meth:`Shell.reset_occupancy` for each
+        shell owned by this atom.
         """
-        for sub in self._all_subshells:
-            for orb in sub.orbitals:
-                orb.spin_up.occupied = False
-                orb.spin_down.occupied = False
+        for shell in self.shells.values():
+            shell.reset_occupancy()
 
     def _apply_exception(self, instructions: List[Dict[str, int]]) -> None:
         """Apply an empirical configuration specified by ``instructions``.
@@ -184,12 +182,11 @@ class Atom:
             l = entry["l"]
             count = entry["electron_count"]
 
-            # locate subshell
-            subshell: Optional[SubShell] = None
-            for ss in self._all_subshells:
-                if ss.n == n and ss.l == l:
-                    subshell = ss
-                    break
+            # locate subshell via Shell
+            shell = self.shells.get(n)
+            if shell is None:
+                raise ValueError(f"Missing shell n={n}")
+            subshell = shell.find_subshell(l)
             if subshell is None:
                 raise ValueError(f"Missing subshell n={n}, l={l}")
 
@@ -294,15 +291,9 @@ class Atom:
         # Count unpaired electrons (orbitals with only one spin occupied).
         # If any unpaired electrons exist, the atom is open-shell.
         # ==================================================================
-        n_unpaired = 0
-        for subshell in self._all_subshells:
-            for orb in subshell.orbitals:
-                up_occupied = orb.spin_up.occupied
-                down_occupied = orb.spin_down.occupied
-                if up_occupied and not down_occupied:
-                    n_unpaired = n_unpaired + 1
-                elif down_occupied and not up_occupied:
-                    n_unpaired = n_unpaired + 1
+        n_unpaired = sum(
+            shell.count_unpaired() for shell in self.shells.values()
+        )
         
         self.open_shell = (n_unpaired > 0)
 

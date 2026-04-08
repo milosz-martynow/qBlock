@@ -34,7 +34,7 @@ Concrete subclasses override a small set of abstract hooks:
   instance.
 
 Auxiliary algorithms (DIIS, diagonalisation, error measurement) live in
-their own modules under ``q_block.methods``.
+their own modules under ``q_block.solvers``.
 
 Classes
 -------
@@ -49,9 +49,9 @@ from typing import Dict, List, Optional, Tuple, Union
 import numpy as np
 from scipy.linalg import fractional_matrix_power
 
-from q_block.methods.calculation_error_metric import CalculationErrorMetric
-from q_block.methods.diagonalisation import diagonalise_fock
-from q_block.methods.diis import DIIS
+from q_block.solvers.calculation_error_metric import CalculationErrorMetric
+from q_block.solvers.diagonalisation import diagonalise_fock
+from q_block.solvers.diis import DIIS
 from q_block.theory.basis_functions import ContractedGaussianTypeOrbital
 from q_block.theory.integrals.kinetic_energy import KineticEnergy
 from q_block.theory.integrals.nuclear_attraction import NuclearAttraction

@@ -1,4 +1,4 @@
-"""Unit tests for q_block.methods.wavefunction.hartree_fock.hartree_fock module.
+"""Unit tests for q_block.solvers.wavefunction.hartree_fock.hartree_fock module.
 
 Tests cover:
 - SpinPair construction (shared and independent modes)
@@ -18,15 +18,15 @@ All tests use pytest with parametrize, no test classes.
 import numpy as np
 import pytest
 
-from q_block.methods.diagonalisation import diagonalise_fock
-from q_block.methods.wavefunction.hartree_fock.hartree_fock import (
+from q_block.solvers.diagonalisation import diagonalise_fock
+from q_block.solvers.spin_pair import SpinPair
+from q_block.solvers.wavefunction.hartree_fock.hartree_fock import (
     HartreeFock,
-    SpinPair,
 )
-from q_block.methods.wavefunction.hartree_fock.restricted_hartree_fock import (
+from q_block.solvers.wavefunction.hartree_fock.restricted_hartree_fock import (
     RestrictedHartreeFock,
 )
-from q_block.methods.wavefunction.hartree_fock.unrestricted_hartree_fock import (
+from q_block.solvers.wavefunction.hartree_fock.unrestricted_hartree_fock import (
     UnrestrictedHartreeFock,
 )
 from tests.unit_tests.utils import h2_molecule, h2_rhf, h2_uhf

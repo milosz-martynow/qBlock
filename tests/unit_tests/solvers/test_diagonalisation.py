@@ -1,4 +1,4 @@
-"""Unit tests for q_block.methods.diagonalisation module.
+"""Unit tests for q_block.solvers.diagonalisation module.
 
 Tests cover:
 - diagonalise_single: eigenvalue problem with identity and non-identity X
@@ -20,7 +20,7 @@ import numpy as np
 import pytest
 from scipy.linalg import eigh, fractional_matrix_power
 
-from q_block.methods.diagonalisation import diagonalise_fock, diagonalise_single
+from q_block.solvers.diagonalisation import diagonalise_fock, diagonalise_single
 from tests.unit_tests.utils import make_overlap, make_symmetric
 
 

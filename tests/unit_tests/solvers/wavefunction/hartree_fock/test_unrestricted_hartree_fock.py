@@ -1,4 +1,4 @@
-"""Unit tests for q_block.methods.wavefunction.hartree_fock.unrestricted_hartree_fock module.
+"""Unit tests for q_block.solvers.wavefunction.hartree_fock.unrestricted_hartree_fock module.
 
 Tests cover:
 - UHF construction and electron-count validation
@@ -20,7 +20,7 @@ import numpy as np
 import pytest
 
 from q_block import Molecule
-from q_block.methods.wavefunction.hartree_fock.unrestricted_hartree_fock import (
+from q_block.solvers.wavefunction.hartree_fock.unrestricted_hartree_fock import (
     UnrestrictedHartreeFock,
 )
 from q_block.theory.initialization.nuclear_repulsion_energy import (

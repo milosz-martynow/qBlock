@@ -57,9 +57,9 @@ from typing import List, Optional, Tuple, Union
 
 import numpy as np
 
-from q_block.methods.wavefunction.hartree_fock.hartree_fock import (
+from q_block.solvers.spin_pair import SpinPair
+from q_block.solvers.wavefunction.hartree_fock.hartree_fock import (
     HartreeFock,
-    SpinPair,
 )
 from q_block.theory.basis_functions import ContractedGaussianTypeOrbital
 

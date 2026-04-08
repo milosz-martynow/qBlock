@@ -1,4 +1,4 @@
-"""Unit tests for q_block.methods.wavefunction.hartree_fock.restricted_hartree_fock module.
+"""Unit tests for q_block.solvers.wavefunction.hartree_fock.restricted_hartree_fock module.
 
 Tests cover:
 - RHF construction and even-electron validation
@@ -19,7 +19,7 @@ import numpy as np
 import pytest
 
 from q_block import Molecule
-from q_block.methods.wavefunction.hartree_fock.restricted_hartree_fock import (
+from q_block.solvers.wavefunction.hartree_fock.restricted_hartree_fock import (
     RestrictedHartreeFock,
 )
 from q_block.theory.initialization.nuclear_repulsion_energy import (

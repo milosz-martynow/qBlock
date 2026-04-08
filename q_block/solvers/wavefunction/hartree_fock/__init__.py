@@ -12,17 +12,11 @@ Classes:
     RestrictedOpenShellHartreeFock: Restricted open-shell HF (shared spatial MOs).
 """
 
-from q_block.methods.wavefunction.hartree_fock.hartree_fock import (
-    HartreeFock,
-    SpinPair,
-)
-from q_block.methods.wavefunction.hartree_fock.restricted_hartree_fock import (
-    RestrictedHartreeFock,
-)
-from q_block.methods.wavefunction.hartree_fock.unrestricted_hartree_fock import (
-    UnrestrictedHartreeFock,
-)
-from q_block.methods.wavefunction.hartree_fock.restricted_open_shell_hartree_fock import (
+from ...spin_pair import SpinPair
+from .hartree_fock import HartreeFock
+from .restricted_hartree_fock import RestrictedHartreeFock
+from .unrestricted_hartree_fock import UnrestrictedHartreeFock
+from .restricted_open_shell_hartree_fock import (
     RestrictedOpenShellHartreeFock,
 )
 

@@ -28,7 +28,7 @@ applied to the shared result:
 
 import pytest
 
-from q_block.methods.wavefunction.hartree_fock.restricted_open_shell_hartree_fock import (
+from q_block.solvers.wavefunction.hartree_fock.restricted_open_shell_hartree_fock import (
     RestrictedOpenShellHartreeFock,
 )
 from tests.validation_tests.utils import _build_from_geometry

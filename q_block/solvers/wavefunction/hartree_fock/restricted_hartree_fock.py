@@ -13,7 +13,7 @@ identical, reducing to the familiar closed-shell expression:
     F_{\mu\nu} = H_{\mu\nu} + J_{\mu\nu}(\mathbf{P})
         - \tfrac{1}{2}\,K_{\mu\nu}(\mathbf{P})
 
-All SCF hooks are inherited from :class:`~q_block.methods.wavefunction
+All SCF hooks are inherited from :class:`~q_block.solvers.wavefunction
 .hartree_fock.hartree_fock.HartreeFock`; only matrix storage
 is specialised.
 
@@ -25,9 +25,9 @@ RestrictedHartreeFock
 
 from typing import List, Tuple
 
-from q_block.methods.wavefunction.hartree_fock.hartree_fock import (
+from q_block.solvers.spin_pair import SpinPair
+from q_block.solvers.wavefunction.hartree_fock.hartree_fock import (
     HartreeFock,
-    SpinPair,
 )
 from q_block.theory.basis_functions import ContractedGaussianTypeOrbital
 

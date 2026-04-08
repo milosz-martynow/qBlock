@@ -1,5 +1,4 @@
 @startuml bdd_systems
-title BDD — systems
 
 package "systems" {
   class AtomicSystem
@@ -7,20 +6,9 @@ package "systems" {
   class Crystal
 }
 
-' --- External blocks ---
-class InputData <<io>>
-class Atom <<models>>
-class ContractedGaussianTypeOrbital <<theory>>
-
 ' ═══ Generalization ═══
 
 Molecule -up-|> AtomicSystem
 Crystal -up-|> AtomicSystem
-
-' ═══ Composition ═══
-
-AtomicSystem *-- "1" InputData
-Molecule *-- "1..*" Atom
-Molecule *-- "1..*" ContractedGaussianTypeOrbital
 
 @enduml
