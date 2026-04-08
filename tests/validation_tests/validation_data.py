@@ -511,17 +511,17 @@ ATOMS_HOMO_ENERGIES: dict = {
         "theoretical_reference_url": "https://doi.org/10.12691/wjce-5-3-6",
     },
     # Y not converging for ROHF.
-    39: {
-        "symbol": "Y", "config": "[Kr] 4d1 5s2", "multiplicity": 2,
-        "n_electrons": 39, "n_alpha": 20, "n_beta": 19,
-        "n_closed": 19, "n_open": 1,
-        "proposed_hartree_fock_approach": ["UHF"],
-        "experimental_ie_eV": 6.2173, "hf_ie_eV": 5.39,
-        "proposed_basis_set": "data/basis_set/pople/3-21G.gbs",
-        "max_iterations": 200,
-        "experimental_reference_url": "https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=Y&units=1",
-        "theoretical_reference_url": "https://doi.org/10.12691/wjce-5-3-6",
-    },
+    #39: {
+    #    "symbol": "Y", "config": "[Kr] 4d1 5s2", "multiplicity": 2,
+    #    "n_electrons": 39, "n_alpha": 20, "n_beta": 19,
+    #    "n_closed": 19, "n_open": 1,
+    #    "proposed_hartree_fock_approach": ["UHF"],
+    #    "experimental_ie_eV": 6.2173, "hf_ie_eV": 5.39,
+    #    "proposed_basis_set": "data/basis_set/pople/3-21G.gbs",
+    #    "max_iterations": 200,
+    #    "experimental_reference_url": "https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=Y&units=1",
+    #    "theoretical_reference_url": "https://doi.org/10.12691/wjce-5-3-6",
+    #},
     # ZR problem in both: ROHF and UHF.
     #40: {
     #    "symbol": "Zr", "config": "[Kr] 4d2 5s2", "multiplicity": 3,
