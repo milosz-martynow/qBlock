@@ -26,7 +26,7 @@ from q_block import Atom, Molecule
 from q_block.io.basis_set import Pople
 from q_block.io.coordinates import CartesianCoordinates
 from q_block.io.input_data import InputData
-from q_block.utils.math_utils import get_cartesian_components
+from q_block.utilities.mathematics import get_cartesian_components
 
 logging.basicConfig(
     level=logging.INFO,

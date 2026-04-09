@@ -1,6 +1,6 @@
 """Shared mathematical utilities used across the package."""
 
-from .math_utils import (
+from .mathematics import (
     boys_function,
     double_factorial,
     get_cartesian_components,

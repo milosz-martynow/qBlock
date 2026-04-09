@@ -17,7 +17,7 @@ from q_block import Atom, ContractedGaussianTypeOrbital, Molecule
 from q_block.io.basis_set import Pople
 from q_block.io.coordinates import CartesianCoordinates
 from q_block.io.input_data import InputData
-from q_block.utils.math_utils import normalization_constant
+from q_block.utilities.mathematics import normalization_constant
 from tests.unit_tests.constants import BASIS_6_31G, ORIGIN
 
 

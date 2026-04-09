@@ -23,7 +23,7 @@ from q_block.solvers.wavefunction.hartree_fock.unrestricted_hartree_fock import 
 from q_block.models.initialization.nuclear_repulsion_energy import (
     NuclearRepulsionEnergy,
 )
-from q_block.utils.math_utils import get_cartesian_components
+from q_block.utilities.mathematics import get_cartesian_components
 from tests.unit_tests.constants import BASIS_STO_3G
 
 

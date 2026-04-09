@@ -33,7 +33,7 @@ import numpy as np
 
 from q_block.models.basis_functions import ContractedGaussianTypeOrbital
 from q_block.models.integrals.integral import Integral
-from q_block.utils.math_utils import get_cartesian_components
+from q_block.utilities.mathematics import get_cartesian_components
 
 
 class TwoGaussianIntegral(Integral):

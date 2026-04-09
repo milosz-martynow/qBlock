@@ -32,7 +32,7 @@ from typing import List, Tuple
 
 from q_block.models.basis_functions import ContractedGaussianTypeOrbital
 from q_block.models.integrals.two_gaussian_integral import TwoGaussianIntegral
-from q_block.utils.math_utils import normalization_constant
+from q_block.utilities.mathematics import normalization_constant
 
 
 class KineticEnergy(TwoGaussianIntegral):
