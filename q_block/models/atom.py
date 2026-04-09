@@ -8,14 +8,14 @@ https://physics.nist.gov/PhysRefData/ASD/
 
 from typing import Dict, List, Optional, Tuple
 
-from q_block.constants.atoms_data import (
+from q_block.constants.natural.atoms_data import (
     ATOMS_SYMBOLS_Z_TO_SYMBOL,
     EMPIRICAL_EXCEPTIONS,
 )
 from q_block.io.coordinates import CartesianCoordinates
 from q_block.io.basis_set import BasisSet
 from q_block.models.electron import Shell
-from q_block.theory.basis_functions import ContractedGaussianTypeOrbital
+from q_block.models.basis_functions import ContractedGaussianTypeOrbital
 
 
 class Atom:
@@ -305,7 +305,7 @@ class Atom:
 
         Walks through the hierarchical basis-set structure
         (``core → valence_inner → valence_outer``) and creates one
-        :class:`~q_block.theory.basis_functions.ContractedGaussianTypeOrbital`
+        :class:`~q_block.models.basis_functions.ContractedGaussianTypeOrbital`
         per contracted shell.  The results are stored in
         :attr:`contracted_gaussian_type_orbitals`.
 

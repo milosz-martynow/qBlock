@@ -1,0 +1,21 @@
+"""Natural physical constants and atomic data."""
+
+from .atoms_data import (
+    ANGULAR_MOMENTUM_MAP,
+    ANGSTROM_TO_BOHR,
+    ATOMS_SYMBOLS_SYMBOL_TO_Z,
+    ATOMS_SYMBOLS_Z_TO_SYMBOL,
+    CLOSED_SHELL_ATOMS,
+    EMPIRICAL_EXCEPTIONS,
+    OPEN_SHELL_ATOMS,
+)
+
+__all__ = [
+    "ANGULAR_MOMENTUM_MAP",
+    "ANGSTROM_TO_BOHR",
+    "ATOMS_SYMBOLS_SYMBOL_TO_Z",
+    "ATOMS_SYMBOLS_Z_TO_SYMBOL",
+    "CLOSED_SHELL_ATOMS",
+    "EMPIRICAL_EXCEPTIONS",
+    "OPEN_SHELL_ATOMS",
+]

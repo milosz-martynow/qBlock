@@ -20,8 +20,8 @@ from q_block import Molecule
 from q_block.solvers.calculation_error_metric import CalculationErrorMetric
 from q_block.solvers.diis import DIIS
 from q_block.solvers.scf import SCF
-from q_block.theory.basis_functions import ContractedGaussianTypeOrbital
-from q_block.theory.initialization.nuclear_repulsion_energy import (
+from q_block.models.basis_functions import ContractedGaussianTypeOrbital
+from q_block.models.initialization.nuclear_repulsion_energy import (
     NuclearRepulsionEnergy,
 )
 from tests.unit_tests.utils import extract_nuclei, h2_molecule

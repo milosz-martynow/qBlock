@@ -17,7 +17,7 @@ from pathlib import Path
 from typing import Any, Dict, List
 
 from q_block.models.atom import Atom
-from q_block.constants.atoms_data import ATOMS_SYMBOLS_SYMBOL_TO_Z
+from q_block.constants.natural.atoms_data import ATOMS_SYMBOLS_SYMBOL_TO_Z
 from q_block.io.basis_set import Pople
 from tests.unit_tests.models.test_atom import _serialize_atom_for_test
 
@@ -25,7 +25,7 @@ from tests.unit_tests.models.test_atom import _serialize_atom_for_test
 # Configuration
 # ---------------------------------------------------------------------------
 
-BASIS_ROOT: Path = Path("./data/basis_set/gto_gaussian_format")
+BASIS_ROOT: Path = Path("./q_block/constants/numerical/basis_set/gto_gaussian_format")
 
 GOLDEN_ROOT: Path = Path("./tests/unit_tests/verification_data/gto_population")
 

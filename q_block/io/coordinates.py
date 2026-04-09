@@ -6,7 +6,7 @@ Defines abstract and concrete classes for spatial coordinates.
 
 from typing import List, Tuple
 
-from q_block.constants.atoms_data import ANGSTROM_TO_BOHR
+from q_block.constants.natural.atoms_data import ANGSTROM_TO_BOHR
 
 
 class Coordinates:

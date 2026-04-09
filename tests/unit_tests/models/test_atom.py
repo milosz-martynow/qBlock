@@ -18,7 +18,7 @@ import pandas as pd
 import pytest
 
 from q_block import Atom, Molecule
-from q_block.constants.atoms_data import (
+from q_block.constants.natural.atoms_data import (
     ATOMS_SYMBOLS_SYMBOL_TO_Z,
     ATOMS_SYMBOLS_Z_TO_SYMBOL,
     CLOSED_SHELL_ATOMS,

@@ -11,8 +11,16 @@ Steps:
     3. Inspect molecule properties
 """
 
+import logging
+
 from q_block.io.input_data import InputData
-from q_block.systems.molecule import Molecule
+from q_block.models.molecule import Molecule
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(name)s %(levelname)s: %(message)s",
+)
+logger = logging.getLogger(__name__)
 
 # ══════════════════════════════════════════════════════════════════════════════
 # 1. DEFINE ATOMS USING InputData
@@ -24,16 +32,16 @@ from q_block.systems.molecule import Molecule
 water_input = InputData()
 water_input.from_script(
     atom_data=[
-        ["O",  0.000000,  0.000000,  0.000000],   # Oxygen at origin
-        ["H",  0.758602,  0.000000,  0.504284],   # Hydrogen 1
-        ["H", -0.758602,  0.000000,  0.504284],   # Hydrogen 2
+        ["O", 0.000000, 0.000000, 0.000000],  # Oxygen at origin
+        ["H", 0.758602, 0.000000, 0.504284],  # Hydrogen 1
+        ["H", -0.758602, 0.000000, 0.504284],  # Hydrogen 2
     ],
     atom_prefix="W",  # Prefix for atom IDs (W1, W2, W3)
 )
 
-print("=== InputData atoms DataFrame ===")
-print(water_input.atoms)
-print()
+logger.info("=== InputData atoms DataFrame ===")
+logger.info(f"\n{water_input.atoms}")
+logger.info("")
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -44,24 +52,24 @@ print()
 
 water = Molecule(input_data=water_input)
 
-print("=== Molecule object ===")
-print(water)
-print()
+logger.info("=== Molecule object ===")
+logger.info(water)
+logger.info("")
 
 
 # ══════════════════════════════════════════════════════════════════════════════
 # 3. INSPECT MOLECULE PROPERTIES
 # ══════════════════════════════════════════════════════════════════════════════
 
-print("=== Molecule properties ===")
-print(f"  Number of atoms:     {len(water.atoms)}")
-print(f"  Total atomic number: {water.total_atomic_number}")
-print(f"  Total electrons:     {water.n_electrons}")
-print(f"  Charge:              {water.charge}")
-print(f"  Multiplicity:        {water.multiplicity}")
-print()
+logger.info("=== Molecule properties ===")
+logger.info(f"  Number of atoms:     {len(water.atoms)}")
+logger.info(f"  Total atomic number: {water.total_atomic_number}")
+logger.info(f"  Total electrons:     {water.n_electrons}")
+logger.info(f"  Charge:              {water.charge}")
+logger.info(f"  Multiplicity:        {water.multiplicity}")
+logger.info("")
 
 # Access individual atoms
-print("=== Individual atoms ===")
+logger.info("=== Individual atoms ===")
 for i, atom in enumerate(water.atoms):
-    print(f"  Atom {i}: {atom}")
+    logger.info(f"  Atom {i}: {atom}")

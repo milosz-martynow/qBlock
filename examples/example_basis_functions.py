@@ -20,10 +20,19 @@ Mathematical foundation:
         ψ_i(r) = Σ_μ C_μi * φ_μ(r)
 """
 
+import logging
+
 from q_block import Atom, Molecule
 from q_block.io.basis_set import Pople
-from q_block.io.input_data import InputData
 from q_block.io.coordinates import CartesianCoordinates
+from q_block.io.input_data import InputData
+from q_block.utils.math_utils import get_cartesian_components
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(name)s %(levelname)s: %(message)s",
+)
+logger = logging.getLogger(__name__)
 
 # ══════════════════════════════════════════════════════════════════════════════
 # 1. LOAD BASIS SET
@@ -31,8 +40,8 @@ from q_block.io.coordinates import CartesianCoordinates
 # Pople-style basis sets are stored in Gaussian format (.gbs files).
 # The 6-31G basis is a split-valence double-zeta basis set.
 
-basis = Pople(filepath="data/basis_set/pople/6-31G.gbs")
-print("Loaded 6-31G basis set\n")
+basis = Pople(filepath="q_block/constants/numerical/basis_set/pople/6-31G.gbs")
+logger.info("Loaded 6-31G basis set\n")
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -43,24 +52,26 @@ print("Loaded 6-31G basis set\n")
 # are built from the basis set data.
 
 hydrogen = Atom(
-    atomic_number=1,                                  # Hydrogen (Z=1)
-    basis_set=basis,                                  # Attach 6-31G basis
+    atomic_number=1,  # Hydrogen (Z=1)
+    basis_set=basis,  # Attach 6-31G basis
     coordinates=CartesianCoordinates(0.0, 0.0, 0.0),  # Place at origin
 )
 
 # Build the CGTO basis functions for this atom
 hydrogen.make_contracted_gaussian_type_orbital()
 
-print("=== Hydrogen atom CGTOs ===")
+logger.info("=== Hydrogen atom CGTOs ===")
 for i, cgto in enumerate(hydrogen.contracted_gaussian_type_orbitals):
     # l = angular momentum (0=s, 1=p, 2=d, ...)
     # n_primitives = number of primitive Gaussians in the contraction
     # n_functions = number of Cartesian basis functions (2l+1 for spherical)
-    print(f"  Shell {i}: l={cgto.l}, K={cgto.n_primitives}, "
-          f"contributes {cgto.n_functions} basis function(s)")
-    print(f"           exponents: {cgto.exponents}")
-    print(f"           coefficients: {cgto.contractions}")
-print()
+    logger.info(
+        f"  Shell {i}: l={cgto.l}, K={cgto.n_primitives}, "
+        f"contributes {cgto.n_functions} basis function(s)"
+    )
+    logger.info(f"           exponents: {cgto.exponents}")
+    logger.info(f"           coefficients: {cgto.contractions}")
+logger.info("")
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -75,17 +86,20 @@ print()
 cgto = hydrogen.contracted_gaussian_type_orbitals[0]  # First shell (1s core)
 
 # Test points at different distances from the nucleus
-origin = CartesianCoordinates(0.0, 0.0, 0.0)      # At the nucleus
-point_x = CartesianCoordinates(0.5, 0.0, 0.0)    # 0.5 Å away
+origin = CartesianCoordinates(0.0, 0.0, 0.0)  # At the nucleus
+point_x = CartesianCoordinates(0.5, 0.0, 0.0)  # 0.5 Å away
 point_far = CartesianCoordinates(2.0, 0.0, 0.0)  # 2.0 Å away
 
-print("=== Primitive Gaussian evaluation (1s shell, primitive 0) ===")
+logger.info("=== Primitive Gaussian evaluation" " (1s shell, primitive 0) ===")
 # Arguments: (r, primitive_index, lx, ly, lz)
 # For s-orbital: lx=ly=lz=0
-print(f"  At origin:    {cgto.evaluate_primitive_gaussian(origin, 0, 0, 0, 0):.6f}")
-print(f"  At (0.5,0,0): {cgto.evaluate_primitive_gaussian(point_x, 0, 0, 0, 0):.6f}")
-print(f"  At (2.0,0,0): {cgto.evaluate_primitive_gaussian(point_far, 0, 0, 0, 0):.6f}")
-print()
+val_origin = cgto.evaluate_primitive_gaussian(origin, 0, 0, 0, 0)
+val_x = cgto.evaluate_primitive_gaussian(point_x, 0, 0, 0, 0)
+val_far = cgto.evaluate_primitive_gaussian(point_far, 0, 0, 0, 0)
+logger.info(f"  At origin:    {val_origin:.6f}")
+logger.info(f"  At (0.5,0,0): {val_x:.6f}")
+logger.info(f"  At (2.0,0,0): {val_far:.6f}")
+logger.info("")
 # Note: Gaussian decays exponentially with distance from the center!
 
 
@@ -97,12 +111,15 @@ print()
 #
 # The evaluate_basis_function() method computes this sum over all primitives.
 
-print("=== Contracted basis function evaluation (1s) ===")
+logger.info("=== Contracted basis function evaluation (1s) ===")
 # Arguments: (r, lx, ly, lz)
-print(f"  At origin:    {cgto.evaluate_basis_function(origin, 0, 0, 0):.6f}")
-print(f"  At (0.5,0,0): {cgto.evaluate_basis_function(point_x, 0, 0, 0):.6f}")
-print(f"  At (2.0,0,0): {cgto.evaluate_basis_function(point_far, 0, 0, 0):.6f}")
-print()
+bf_origin = cgto.evaluate_basis_function(origin, 0, 0, 0)
+bf_x = cgto.evaluate_basis_function(point_x, 0, 0, 0)
+bf_far = cgto.evaluate_basis_function(point_far, 0, 0, 0)
+logger.info(f"  At origin:    {bf_origin:.6f}")
+logger.info(f"  At (0.5,0,0): {bf_x:.6f}")
+logger.info(f"  At (2.0,0,0): {bf_far:.6f}")
+logger.info("")
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -112,30 +129,36 @@ print()
 # Each atom entry is: [symbol, x, y, z, basis_set]
 
 inp = InputData()
-inp.from_script(atom_data=[
-    # Oxygen at the origin (approximately)
-    ["O", 0.0000,  0.0000,  0.1173, basis],
-    # Two hydrogens below oxygen
-    ["H", 0.0000,  0.7572, -0.4692, basis],
-    ["H", 0.0000, -0.7572, -0.4692, basis],
-])
+inp.from_script(
+    atom_data=[
+        # Oxygen at the origin (approximately)
+        ["O", 0.0000, 0.0000, 0.1173, basis],
+        # Two hydrogens below oxygen
+        ["H", 0.0000, 0.7572, -0.4692, basis],
+        ["H", 0.0000, -0.7572, -0.4692, basis],
+    ]
+)
 
 water = Molecule(input_data=inp)
 
 # Build CGTOs for all atoms in the molecule
 water.make_contracted_gaussian_type_orbital()
 
-print("=== Water molecule CGTOs ===")
-print(f"  Total shells: {len(water.contracted_gaussian_type_orbitals)}")
-print(f"  Total basis functions (n_basis): {water.n_basis}")
+logger.info("=== Water molecule CGTOs ===")
+logger.info(f"  Total shells: {len(water.contracted_gaussian_type_orbitals)}")
+logger.info(f"  Total basis functions (n_basis): {water.n_basis}")
 
 # Show each shell with its properties
 for i, cgto in enumerate(water.contracted_gaussian_type_orbitals):
     # Shell label: s, p, d, f, g, h, i, k, l, m, ...
     shell_label = "spdfghiklm"[cgto.l] if cgto.l < 10 else f"l{cgto.l}"
-    print(f"  Shell {i:2d}: atom {cgto.atom_index}, {shell_label}-type, "
-          f"K={cgto.n_primitives}, n_functions={cgto.n_functions}")
-print()
+    logger.info(
+        f"  Shell {i:2d}: atom {cgto.atom_index}, "
+        f"{shell_label}-type, "
+        f"K={cgto.n_primitives}, "
+        f"n_functions={cgto.n_functions}"
+    )
+logger.info("")
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -149,17 +172,16 @@ print()
 #   l=1 (p): (1,0,0), (0,1,0), (0,0,1)            -> 3 functions
 #   l=2 (d): (2,0,0), (1,1,0), (1,0,1), ...       -> 6 functions
 
-from q_block.theory.utils import get_cartesian_components
-
 # Build the full list of angular components for all basis functions
 angular_components = []
 for cgto in water.contracted_gaussian_type_orbitals:
     angular_components.extend(get_cartesian_components(cgto.l))
 
-print("=== Angular components for basis functions ===")
-print(f"  Total: {len(angular_components)} (should match n_basis={water.n_basis})")
-print(f"  First 10: {angular_components[:10]}")
-print()
+logger.info("=== Angular components for basis functions ===")
+n_comp = len(angular_components)
+logger.info(f"  Total: {n_comp} " f"(should match n_basis={water.n_basis})")
+logger.info(f"  First 10: {angular_components[:10]}")
+logger.info("")
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -171,27 +193,31 @@ print()
 # In real HF calculations, coefficients come from diagonalizing the Fock matrix.
 # Here we use simple test coefficients.
 
-print("=== Molecular orbital evaluation ===")
+logger.info("=== Molecular orbital evaluation ===")
 
 # Example 1: MO that is just the first basis function (O 1s)
 # This is a unit vector selecting only the first basis function
 coefficients_1s = [1.0] + [0.0] * (water.n_basis - 1)
 
 # Evaluate near the oxygen atom
-r_test = CartesianCoordinates(0.0, 0.0, 0.1173)  # Oxygen position
-mo_value = water.evaluate_molecular_orbital(r_test, coefficients_1s, angular_components)
-print(f"  MO (pure O-1s) at oxygen position: {mo_value:.6f}")
+r_test = CartesianCoordinates(0.0, 0.0, 0.1173)
+mo_value = water.evaluate_molecular_orbital(
+    r_test, coefficients_1s, angular_components
+)
+logger.info(f"  MO (pure O-1s) at oxygen position: " f"{mo_value:.6f}")
 
 # Example 2: Equal mix of first two basis functions
 coefficients_mix = [0.5, 0.5] + [0.0] * (water.n_basis - 2)
-mo_value_mix = water.evaluate_molecular_orbital(r_test, coefficients_mix, angular_components)
-print(f"  MO (0.5*bf1 + 0.5*bf2) at oxygen: {mo_value_mix:.6f}")
+mo_value_mix = water.evaluate_molecular_orbital(
+    r_test, coefficients_mix, angular_components
+)
+logger.info(f"  MO (0.5*bf1 + 0.5*bf2) at oxygen: " f"{mo_value_mix:.6f}")
 
 # Evaluate along z-axis to see orbital shape decay
-print("\n  MO (pure O-1s) along z-axis:")
+logger.info("\n  MO (pure O-1s) along z-axis:")
 for z in [0.0, 0.5, 1.0, 1.5, 2.0]:
     r = CartesianCoordinates(0.0, 0.0, z)
     val = water.evaluate_molecular_orbital(r, coefficients_1s, angular_components)
-    print(f"    z={z:.1f}: {val:.6f}")
+    logger.info(f"    z={z:.1f}: {val:.6f}")
 
-print("\nDone!")
+logger.info("\nDone!")

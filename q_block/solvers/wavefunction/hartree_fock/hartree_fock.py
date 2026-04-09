@@ -25,6 +25,7 @@ HartreeFock
     HF methods.
 """
 
+import logging
 from abc import abstractmethod
 from typing import List, Optional, Tuple, Union
 
@@ -32,7 +33,9 @@ import numpy as np
 
 from q_block.solvers.scf import SCF
 from q_block.solvers.spin_pair import SpinPair
-from q_block.theory.basis_functions import ContractedGaussianTypeOrbital
+from q_block.models.basis_functions import ContractedGaussianTypeOrbital
+
+logger = logging.getLogger(__name__)
 
 
 class HartreeFock(SCF):
@@ -331,6 +334,13 @@ class HartreeFock(SCF):
         self.n_iterations = n_iterations
         self.e_electronic = e_electronic
         self.e_total = e_electronic + self.e_nuclear
+        logger.info(
+            f"{type(self).__name__} results: "
+            f"converged={converged}, iterations={n_iterations}, "
+            f"E_electronic={e_electronic:.10f}, "
+            f"E_nuclear={self.e_nuclear:.10f}, "
+            f"E_total={self.e_total:.10f}"
+        )
         self._store_matrices(
             SpinPair.wrap(fock),
             SpinPair.wrap(density),

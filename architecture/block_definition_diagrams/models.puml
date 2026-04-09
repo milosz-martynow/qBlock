@@ -1,18 +1,79 @@
 @startuml bdd_models
 
 package "models" {
+
+  ' ═══ Data structures ═══
+
   class SpinOrbital
   class Orbital
   class SubShell
   class Shell
   class Atom
+
+  ' ═══ Composite systems ═══
+
+  class AtomicSystem
+  class Molecule
+  class Crystal
+
+  ' ═══ Basis functions ═══
+
+  class ContractedGaussianTypeOrbital <<CGTO>>
+
+  ' ═══ Integrals ═══
+
+  package "integrals" {
+    abstract class Integral
+    abstract class TwoGaussianIntegral
+    class Overlap
+    class KineticEnergy
+    class NuclearAttraction
+    class TwoElectronRepulsion
+  }
+
+  ' ═══ Initialization ═══
+
+  package "initialization" {
+    class QuantumCalculationContext
+    class "HartreeFock\n(Context)" as HFContext
+    class "RHF\n(Context)" as RHFContext
+    class "UHF\n(Context)" as UHFContext
+    class "ROHF\n(Context)" as ROHFContext
+    class NuclearRepulsionEnergy
+  }
 }
 
-' ═══ Composition ═══
+' ═══ Data structure composition ═══
 
 Orbital *-- "2" SpinOrbital
 SubShell *-- "1..*" Orbital
 Shell *-- "1..*" SubShell
 Atom *-- "1..*" Shell
+
+' ═══ System generalization ═══
+
+Molecule -up-|> AtomicSystem
+Crystal -up-|> AtomicSystem
+
+' ═══ Integral generalization ═══
+
+TwoGaussianIntegral -up-|> Integral
+Overlap -up-|> TwoGaussianIntegral
+KineticEnergy -up-|> TwoGaussianIntegral
+NuclearAttraction -up-|> TwoGaussianIntegral
+TwoElectronRepulsion -up-|> TwoGaussianIntegral
+
+' ═══ Context generalization ═══
+
+HFContext -up-|> QuantumCalculationContext
+RHFContext -up-|> HFContext
+UHFContext -up-|> HFContext
+ROHFContext -up-|> HFContext
+
+' ═══ Composition ═══
+
+TwoGaussianIntegral *-- "1..*" ContractedGaussianTypeOrbital
+HFContext *-- "0..*" ContractedGaussianTypeOrbital
+Molecule *-- "1..*" Atom
 
 @enduml

@@ -1,20 +1,92 @@
-"""q_block package public API."""
+r"""q_block — a modular quantum-chemistry framework.
 
+Package structure
+=================
+
+q_block/
+├── constants/          Domain-specific constants and reference data.
+│   ├── natural/        Physical constants and atomic data derived from
+│   │                   nature (element symbols, angular momentum maps,
+│   │                   unit conversion factors, empirical electron
+│   │                   configuration exceptions).
+│   └── numerical/      Numerical data sets used in calculations
+│                       (basis set parameter files such as Pople .gbs).
+│
+├── io/                 Input / output layer.
+│                       Parsers and serialisers for user-facing data
+│                       formats: basis-set files (``BasisSet``, ``Pople``),
+│                       Cartesian coordinates (``Coordinates``,
+│                       ``CartesianCoordinates``), and composite input
+│                       containers (``InputData``).
+│
+├── models/             Physical models, systems, and theory.
+│   │                   Everything that mathematically describes the
+│   │                   physical world lives here — data structures for
+│   │                   particles and orbitals, composite systems, basis
+│   │                   function representations, and integral engines.
+│   │
+│   │  Data structures
+│   ├── atom.py             Atom (shells → subshells → orbitals → spin-orbitals)
+│   ├── electron.py         SpinOrbital, Orbital, SubShell, Shell
+│   │
+│   │  Composite systems
+│   ├── atomic_system.py    AtomicSystem (base container)
+│   ├── molecule.py         Molecule
+│   ├── crystal.py          Crystal
+│   │
+│   │  Basis functions
+│   ├── basis_functions.py  ContractedGaussianTypeOrbital, CGTOBasis
+│   │
+│   │  Integrals
+│   ├── integrals/          Overlap, KineticEnergy, NuclearAttraction,
+│   │                       TwoElectronRepulsion
+│   │
+│   │  Initialization
+│   └── initialization/     QuantumCalculationContext, HartreeFock,
+│                           RHF, UHF, ROHF, NuclearRepulsionEnergy
+│
+├── solvers/            Numerical algorithms and iterative methods.
+│                       SCF loop machinery, DIIS convergence accelerator,
+│                       eigensolvers, and concrete Hartree-Fock solvers
+│                       (RestrictedHartreeFock, UnrestrictedHartreeFock,
+│                       RestrictedOpenShellHartreeFock).
+│
+└── utils/              Shared mathematical utilities.
+                        Pure-math helpers used across models and solvers:
+                        Boys function, double factorial, normalisation
+                        constants, Hermite expansion coefficients, and
+                        Cartesian component generation.
+"""
+
+import logging
+
+logging.getLogger(__name__).addHandler(logging.NullHandler())
+
+# -- Data structures --------------------------------------------------------
 from .models.atom import Atom
 from .models.electron import Orbital, Shell, SpinOrbital, SubShell
-from .constants.atoms_data import ATOMS_SYMBOLS_SYMBOL_TO_Z, ATOMS_SYMBOLS_Z_TO_SYMBOL
-from .systems.atomic_system import AtomicSystem
+
+# -- Constants --------------------------------------------------------------
+from .constants.natural.atoms_data import (
+    ANGSTROM_TO_BOHR,
+    ATOMS_SYMBOLS_SYMBOL_TO_Z,
+    ATOMS_SYMBOLS_Z_TO_SYMBOL,
+)
+
+# -- I/O --------------------------------------------------------------------
 from .io.basis_set import BasisSet, Pople
 from .io.input_data import InputData
 from .io.coordinates import Coordinates, CartesianCoordinates
-from .systems.molecule import Molecule
-from .systems.crystal import Crystal
 
-# Theory module - quantum calculation context for quantum-chemistry calculations
-from .theory.initialization import QuantumCalculationContext, HartreeFock, RHF, UHF, ROHF
-from .theory.basis_functions import ContractedGaussianTypeOrbital
-from .theory.integrals import KineticEnergy, NuclearAttraction, Overlap, TwoElectronRepulsion
-from .constants.atoms_data import ANGSTROM_TO_BOHR
+# -- Composite systems ------------------------------------------------------
+from .models.atomic_system import AtomicSystem
+from .models.molecule import Molecule
+from .models.crystal import Crystal
+
+# -- Theory: initialization & basis functions --------------------------------
+from .models.initialization import QuantumCalculationContext, HartreeFock, RHF, UHF, ROHF
+from .models.basis_functions import ContractedGaussianTypeOrbital
+from .models.integrals import KineticEnergy, NuclearAttraction, Overlap, TwoElectronRepulsion
 
 __all__ = [
     "Atom",

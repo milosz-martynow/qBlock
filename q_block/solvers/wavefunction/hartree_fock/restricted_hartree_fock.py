@@ -29,7 +29,7 @@ from q_block.solvers.spin_pair import SpinPair
 from q_block.solvers.wavefunction.hartree_fock.hartree_fock import (
     HartreeFock,
 )
-from q_block.theory.basis_functions import ContractedGaussianTypeOrbital
+from q_block.models.basis_functions import ContractedGaussianTypeOrbital
 
 
 class RestrictedHartreeFock(HartreeFock):

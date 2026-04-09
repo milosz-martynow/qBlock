@@ -44,9 +44,12 @@ DIIS
     Stores Fock/error history and performs DIIS extrapolation.
 """
 
+import logging
 from typing import List, Tuple, Union
 
 import numpy as np
+
+logger = logging.getLogger(__name__)
 
 
 class DIIS:
@@ -135,7 +138,16 @@ class DIIS:
         try:
             coeffs = np.linalg.solve(B, rhs)
         except np.linalg.LinAlgError:
+            logger.warning(
+                f"DIIS linear system singular (subspace={n}); "
+                f"returning unextrapolated Fock matrix."
+            )
             return fock
+
+        logger.debug(
+            f"DIIS extrapolation: subspace={n}, "
+            f"coeffs={np.array2string(coeffs[:n], precision=4)}"
+        )
 
         # Extrapolate Fock matrix
         fock_new_flat = sum(

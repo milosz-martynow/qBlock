@@ -35,6 +35,7 @@
 - Sphinx/reST style: `:param name:`, `:type name:`, `:returns:`, `:rtype:`, `:raises:`.
 - Use `r"""` raw strings for math blocks (`.. math::`).
 - Class docstrings: Sphinx params for `__init__`, NumPy-style `Attributes` section for class attrs.
+- Update q_block.__init__.py file project structure in header docstring with every scrip added in q_block.
 
 ## Tests
 - No test classes. 
@@ -60,6 +61,17 @@
 - Do not make title in BDD.
 - Do not trace blocks to the components from outside of the folder of BDD that is representing.
 - Each folder should be represented separetley - there should no be e.g. architecture/hartree_fock folder representation in BDD - there should be hartree_fock folder inside wavevefunction folder
+
+## Logging
+- In logging use f strings to handle numbers.
+- Use logging instead of printing.
+
+## Examples
+- All rules of this file should be also applied to the examples from example folder.
+- each example script name should start with "example".
+
+## files management
+- Remove/copy/move etc, should be done via git operations to keep full git repo history.
 
 ## Don'ts
 - Don't add features or refactor beyond what's asked.

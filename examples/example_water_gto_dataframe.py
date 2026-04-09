@@ -11,21 +11,29 @@ The to_dataframe() method creates a MultiIndex DataFrame containing
 all occupied spin-orbitals with their quantum numbers and GTO data.
 """
 
+import logging
+
 import pandas as pd
 
-from q_block.io.input_data import InputData
 from q_block.io.basis_set import Pople
-from q_block.systems.molecule import Molecule
+from q_block.io.input_data import InputData
+from q_block.models.molecule import Molecule
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(name)s %(levelname)s: %(message)s",
+)
+logger = logging.getLogger(__name__)
 
 # ══════════════════════════════════════════════════════════════════════════════
 # 1. LOAD BASIS SETS
 # ══════════════════════════════════════════════════════════════════════════════
 # Different basis sets for different atoms (mixed basis).
 
-basis_3_21G = Pople(filepath="data/basis_set/pople/3-21G.gbs")
-basis_6_31G = Pople(filepath="data/basis_set/pople/6-31G.gbs")
+basis_3_21G = Pople(filepath="q_block/constants/numerical/basis_set/pople/3-21G.gbs")
+basis_6_31G = Pople(filepath="q_block/constants/numerical/basis_set/pople/6-31G.gbs")
 
-print("Loaded basis sets: 3-21G and 6-31G\n")
+logger.info("Loaded basis sets: 3-21G and 6-31G\n")
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -35,15 +43,17 @@ print("Loaded basis sets: 3-21G and 6-31G\n")
 # Coordinates in Ångströms.
 
 water_input = InputData()
-water_input.from_script(atom_data=[
-    ["O",  0.0000,  0.0000,  0.1173, basis_6_31G],  # Oxygen with 6-31G
-    ["H",  0.0000,  0.7572, -0.4692, basis_3_21G],  # H1 with 3-21G
-    ["H",  0.0000, -0.7572, -0.4692, basis_3_21G],  # H2 with 3-21G
-])
+water_input.from_script(
+    atom_data=[
+        ["O", 0.0000, 0.0000, 0.1173, basis_6_31G],  # Oxygen with 6-31G
+        ["H", 0.0000, 0.7572, -0.4692, basis_3_21G],  # H1 with 3-21G
+        ["H", 0.0000, -0.7572, -0.4692, basis_3_21G],  # H2 with 3-21G
+    ]
+)
 
-print("=== Atom input data ===")
-print(water_input.atoms[["symbol", "x", "y", "z"]])
-print()
+logger.info("=== Atom input data ===")
+logger.info(f"\n{water_input.atoms[['symbol', 'x', 'y', 'z']]}")
+logger.info("")
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -54,12 +64,12 @@ print()
 
 water = Molecule(input_data=water_input)
 
-print("=== Molecule summary ===")
-print(f"  Atoms:           {len(water.atoms)}")
-print(f"  Total electrons: {water.n_electrons}")
-print(f"  Charge:          {water.charge}")
-print(f"  Multiplicity:    {water.multiplicity}")
-print()
+logger.info("=== Molecule summary ===")
+logger.info(f"  Atoms:           {len(water.atoms)}")
+logger.info(f"  Total electrons: {water.n_electrons}")
+logger.info(f"  Charge:          {water.charge}")
+logger.info(f"  Multiplicity:    {water.multiplicity}")
+logger.info("")
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -78,9 +88,9 @@ pd.set_option("display.max_columns", None)
 pd.set_option("display.width", 200)
 pd.set_option("display.max_colwidth", 50)
 
-print("=== Spin-orbital DataFrame ===")
-print(spinorb_df)
-print()
+logger.info("=== Spin-orbital DataFrame ===")
+logger.info(f"\n{spinorb_df}")
+logger.info("")
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -88,11 +98,10 @@ print()
 # ══════════════════════════════════════════════════════════════════════════════
 # The MultiIndex allows easy querying of specific orbitals.
 
-print("=== DataFrame shape ===")
-print(f"  Rows: {len(spinorb_df)}")
-print(f"  Columns: {list(spinorb_df.columns.get_level_values(0).unique())}")
-print()
+logger.info("=== DataFrame shape ===")
+logger.info(f"  Rows: {len(spinorb_df)}")
+logger.info(f"  Columns: {list(spinorb_df.columns.get_level_values(0).unique())}")
+logger.info("")
 
-print("=== Index levels ===")
-print(f"  Levels: {spinorb_df.index.names}")
-
+logger.info("=== Index levels ===")
+logger.info(f"  Levels: {spinorb_df.index.names}")

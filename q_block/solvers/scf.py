@@ -43,20 +43,23 @@ SCF
     storing converged results.
 """
 
+import logging
 from abc import ABC, abstractmethod
 from typing import Dict, List, Optional, Tuple, Union
 
 import numpy as np
 from scipy.linalg import fractional_matrix_power
 
+logger = logging.getLogger(__name__)
+
 from q_block.solvers.calculation_error_metric import CalculationErrorMetric
 from q_block.solvers.diagonalisation import diagonalise_fock
 from q_block.solvers.diis import DIIS
-from q_block.theory.basis_functions import ContractedGaussianTypeOrbital
-from q_block.theory.integrals.kinetic_energy import KineticEnergy
-from q_block.theory.integrals.nuclear_attraction import NuclearAttraction
-from q_block.theory.integrals.overlap import Overlap
-from q_block.theory.integrals.two_electron_repulsion import TwoElectronRepulsion
+from q_block.models.basis_functions import ContractedGaussianTypeOrbital
+from q_block.models.integrals.kinetic_energy import KineticEnergy
+from q_block.models.integrals.nuclear_attraction import NuclearAttraction
+from q_block.models.integrals.overlap import Overlap
+from q_block.models.integrals.two_electron_repulsion import TwoElectronRepulsion
 
 
 # ======================================================================
@@ -93,7 +96,7 @@ class SCF(ABC):
     :type nuclei: List[Tuple[int, Tuple[float, float, float]]]
     :param e_nuclear: Nuclear repulsion energy in Hartree, typically
         obtained from
-        :class:`~q_block.theory.initialization.nuclear_repulsion_energy.NuclearRepulsionEnergy`.
+        :class:`~q_block.models.initialization.nuclear_repulsion_energy.NuclearRepulsionEnergy`.
     :type e_nuclear: float
     :param max_iterations: Maximum number of SCF cycles.
     :type max_iterations: int
@@ -183,6 +186,7 @@ class SCF(ABC):
         self.diis_start: int = diis_start
 
         # ── Compute one- and two-electron integrals ──────────────────
+        logger.info("Computing one-electron integrals...")
         overlap = Overlap(cgtos=self.cgtos)
         self.n_basis: int = overlap.n_basis
         self.S: np.ndarray = overlap.matrix
@@ -194,12 +198,18 @@ class SCF(ABC):
         self.V: np.ndarray = nuclear.matrix
 
         self.H: np.ndarray = self.T + self.V
+        logger.info(f"One-electron integrals computed (n_basis={self.n_basis}).")
 
+        logger.info("Computing two-electron repulsion integrals...")
         eri_obj = TwoElectronRepulsion(cgtos=self.cgtos)
         self.eri: np.ndarray = eri_obj.tensor
+        logger.info("Two-electron integrals computed.")
 
         # ── Nuclear repulsion energy (precomputed by caller) ─────────
         self.e_nuclear: float = e_nuclear
+
+        # ── Log atomic system data ────────────────────────────────
+        self._log_system_data()
 
         # ── Orthogonalisation matrix  X = S^{-1/2} ──────────────────
         self.X: np.ndarray = np.real(
@@ -223,6 +233,39 @@ class SCF(ABC):
         self.extra: Dict[str, object] = {}
 
     # ==================================================================
+    # Logging helpers
+    # ==================================================================
+
+    def _log_system_data(self) -> None:
+        """Log geometry, basis set, and nuclear data once at init."""
+        shell_labels = "spdfghiklm"
+        logger.info(
+            f"Molecular system: {len(self.nuclei)} nuclei, "
+            f"n_basis={self.n_basis}, "
+            f"E_nuclear={self.e_nuclear:.10f} Hartree"
+        )
+        for i, (Z, (x, y, z)) in enumerate(self.nuclei):
+            logger.info(
+                f"  Nucleus {i}: Z={Z}, "
+                f"pos=({x:.6f}, {y:.6f}, {z:.6f}) Bohr"
+            )
+        for i, cgto in enumerate(self.cgtos):
+            label = (
+                shell_labels[cgto.l] if cgto.l < len(shell_labels)
+                else f"l{cgto.l}"
+            )
+            logger.info(
+                f"  CGTO {i}: atom={cgto.atom_index}, "
+                f"{label}-type (l={cgto.l}), "
+                f"K={cgto.n_primitives}, "
+                f"n_func={cgto.n_functions}"
+            )
+            logger.debug(
+                f"    exponents={cgto.exponents}, "
+                f"contractions={cgto.contractions}"
+            )
+
+    # ==================================================================
     # Public interface
     # ==================================================================
 
@@ -237,6 +280,12 @@ class SCF(ABC):
         :rtype: SCF
         """
         # ── 1. Initial guess: F₀ = H, diagonalise, build P ──────────
+        logger.info(
+            f"Starting SCF: max_iter={self.max_iterations}, "
+            f"threshold={self.convergence_threshold:.2e}, "
+            f"error_metric={self.calculation_error_metric.metric}, "
+            f"E_nuclear={self.e_nuclear:.10f}"
+        )
         C, epsilon = diagonalise_fock(self.H, self.X)
         density = self._initial_density(C)
 
@@ -263,12 +312,25 @@ class SCF(ABC):
                 commutator_error
             )
 
+            logger.info(
+                f"SCF iter {iteration + 1:3d}: "
+                f"E_elec={e_electronic:18.10f}  "
+                f"dE={electronic_energy_change:+12.4e}  "
+                f"error={computation_error:12.4e}  "
+                f"DIIS={'on' if iteration >= self.diis_start else 'off'}"
+            )
+
             if (
                 abs(electronic_energy_change) < self.convergence_threshold
                 and computation_error < self.convergence_threshold
             ):
                 C, epsilon = diagonalise_fock(fock, self.X)
                 density = self._build_density(C)
+                e_total = e_electronic + self.e_nuclear
+                logger.info(
+                    f"SCF converged in {iteration + 1} iterations.  "
+                    f"E_total={e_total:.10f} Hartree"
+                )
                 self._collect_results(
                     converged=True,
                     n_iterations=iteration + 1,
@@ -286,6 +348,11 @@ class SCF(ABC):
             e_electronic_old = e_electronic
 
         # ── 3. Did not converge ──────────────────────────────────────
+        e_total = e_electronic + self.e_nuclear
+        logger.warning(
+            f"SCF did NOT converge after {self.max_iterations} "
+            f"iterations.  E_total={e_total:.10f} Hartree"
+        )
         self._collect_results(
             converged=False,
             n_iterations=self.max_iterations,
