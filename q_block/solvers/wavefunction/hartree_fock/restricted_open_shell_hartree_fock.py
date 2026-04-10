@@ -144,8 +144,8 @@ class RestrictedOpenShellHartreeFock(HartreeFock):
         self.n_open: int = n_open
 
         # ── Internal caches (set by _build_fock, used by energy) ─────
-        self._F_alpha: np.ndarray | None = None
-        self._F_beta: np.ndarray | None = None
+        self._F_alpha: Optional[np.ndarray] = None
+        self._F_beta: Optional[np.ndarray] = None
 
     # ------------------------------------------------------------------
     # SCF hooks (overrides)

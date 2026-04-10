@@ -15,8 +15,8 @@ import logging
 
 import pandas as pd
 
-from q_block.io.basis_set import Pople
-from q_block.io.input_data import InputData
+from q_block.environment.io.basis_set import Pople
+from q_block.environment.io.input_data import InputData
 from q_block.models.molecule import Molecule
 
 logging.basicConfig(
@@ -30,8 +30,8 @@ logger = logging.getLogger(__name__)
 # ══════════════════════════════════════════════════════════════════════════════
 # Different basis sets for different atoms (mixed basis).
 
-basis_3_21G = Pople(filepath="q_block/constants/numerical/basis_set/pople/3-21G.gbs")
-basis_6_31G = Pople(filepath="q_block/constants/numerical/basis_set/pople/6-31G.gbs")
+basis_3_21G = Pople(filepath="q_block/environment/constants/numerical/basis_set/pople/3-21G.gbs")
+basis_6_31G = Pople(filepath="q_block/environment/constants/numerical/basis_set/pople/6-31G.gbs")
 
 logger.info("Loaded basis sets: 3-21G and 6-31G\n")
 

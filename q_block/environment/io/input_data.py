@@ -20,8 +20,8 @@ from typing import Any, List, Union, Optional
 
 import pandas as pd
 
-from q_block.constants.natural.atoms_data import ATOMS_SYMBOLS_SYMBOL_TO_Z
-from q_block.io.coordinates import CartesianCoordinates
+from q_block.environment.constants.natural.atoms_data import ATOMS_SYMBOLS_SYMBOL_TO_Z
+from q_block.environment.io.coordinates import CartesianCoordinates
 from q_block.models.atom import Atom
 
 

@@ -12,7 +12,7 @@ from typing import List, Sequence, Tuple
 
 import pytest
 
-from q_block.io.coordinates import CartesianCoordinates, Coordinates
+from q_block.environment.io.coordinates import CartesianCoordinates, Coordinates
 
 
 # ======================================================================

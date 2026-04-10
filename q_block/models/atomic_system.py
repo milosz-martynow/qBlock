@@ -10,7 +10,7 @@ atom metadata and attached :class:`q_block.atom.Atom` instances.
 
 from typing import Optional
 
-from q_block.io.input_data import InputData
+from q_block.environment.io.input_data import InputData
 
 
 class AtomicSystem:

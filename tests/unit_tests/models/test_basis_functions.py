@@ -14,11 +14,11 @@ from typing import List, Tuple
 import pytest
 
 from q_block import Atom, ContractedGaussianTypeOrbital, Molecule
-from q_block.io.basis_set import Pople
-from q_block.io.coordinates import CartesianCoordinates
-from q_block.io.input_data import InputData
+from q_block.environment.io.basis_set import Pople
+from q_block.environment.io.coordinates import CartesianCoordinates
+from q_block.environment.io.input_data import InputData
 from q_block.utilities.mathematics import normalization_constant
-from tests.unit_tests.constants import BASIS_6_31G, ORIGIN
+from tests.unit_tests.environment.constants import BASIS_6_31G, ORIGIN
 
 
 # ======================================================================

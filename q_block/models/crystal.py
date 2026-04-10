@@ -7,7 +7,7 @@ for crystalline systems that extends :class:`q_block.models.atomic_system.Atomic
 from typing import Optional
 
 from q_block.models.atomic_system import AtomicSystem
-from q_block.io.input_data import InputData
+from q_block.environment.io.input_data import InputData
 
 
 class Crystal(AtomicSystem):

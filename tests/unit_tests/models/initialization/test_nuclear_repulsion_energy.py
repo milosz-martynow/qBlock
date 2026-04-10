@@ -17,7 +17,7 @@ import pytest
 
 from q_block.models.molecule import Molecule
 from q_block.models.initialization import NuclearRepulsionEnergy
-from tests.unit_tests.utils import (
+from tests.unit_tests.utilities import (
     h2_molecule,
     water_molecule,
 )

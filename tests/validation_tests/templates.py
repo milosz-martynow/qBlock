@@ -8,6 +8,8 @@ by pytest with the appropriate fixtures.
 """
 
 import pytest
+from typing import Any, Callable, Dict, Tuple
+
 from tests.validation_tests.utils import ABS_TOL_EV, HARTREE_TO_EV
 
 
@@ -16,14 +18,16 @@ from tests.validation_tests.utils import ABS_TOL_EV, HARTREE_TO_EV
 # ---------------------------------------------------------------------------
 
 
-def make_atom_scf_converged_test(method_name: str):
+def make_atom_scf_converged_test(method_name: str) -> Callable[[Tuple[Dict[str, Any], Any]], None]:
     """Create a test function that checks SCF convergence for atoms.
 
     :param method_name: Name of the method (e.g., "RHF", "ROHF", "UHF").
-    :return: Test function that accepts a fixture returning ``(entry, hf)``.
+    :type method_name: str
+    :returns: Test function that accepts a fixture returning ``(entry, hf)``.
+    :rtype: Callable[[Tuple[Dict[str, Any], Any]], None]
     """
 
-    def test_func(result) -> None:
+    def test_func(result: Tuple[Dict[str, Any], Any]) -> None:
         entry, hf = result
         assert hf.converged, (
             f"{method_name} SCF did not converge for atom {entry['symbol']} "
@@ -38,16 +42,24 @@ def make_atom_scf_converged_test(method_name: str):
     return test_func
 
 
-def make_atom_koopmans_ie_test(method_name: str, homo_idx_func, epsilon_func):
+def make_atom_koopmans_ie_test(
+    method_name: str,
+    homo_idx_func: Callable[[Dict[str, Any]], int],
+    epsilon_func: Callable[[Any], Any],
+) -> Callable[[Tuple[Dict[str, Any], Any]], None]:
     """Create a test function that checks Koopmans IE vs reference for atoms.
 
     :param method_name: Name of the method (e.g., "RHF", "ROHF", "UHF").
+    :type method_name: str
     :param homo_idx_func: Function that takes ``entry`` and returns HOMO index.
+    :type homo_idx_func: Callable[[Dict[str, Any]], int]
     :param epsilon_func: Function that takes ``hf`` and returns eigenvalue array.
-    :return: Test function that accepts a fixture returning ``(entry, hf)``.
+    :type epsilon_func: Callable[[Any], Any]
+    :returns: Test function that accepts a fixture returning ``(entry, hf)``.
+    :rtype: Callable[[Tuple[Dict[str, Any], Any]], None]
     """
 
-    def test_func(result) -> None:
+    def test_func(result: Tuple[Dict[str, Any], Any]) -> None:
         entry, hf = result
         homo_idx = homo_idx_func(entry)
         homo_ev = -epsilon_func(hf)[homo_idx] * HARTREE_TO_EV
@@ -68,14 +80,16 @@ def make_atom_koopmans_ie_test(method_name: str, homo_idx_func, epsilon_func):
 # ---------------------------------------------------------------------------
 
 
-def make_molecule_scf_converged_test(method_name: str):
+def make_molecule_scf_converged_test(method_name: str) -> Callable[[Tuple[Dict[str, Any], Any]], None]:
     """Create a test function that checks SCF convergence for molecules.
 
     :param method_name: Name of the method (e.g., "RHF", "ROHF", "UHF").
-    :return: Test function that accepts a fixture returning ``(entry, hf)``.
+    :type method_name: str
+    :returns: Test function that accepts a fixture returning ``(entry, hf)``.
+    :rtype: Callable[[Tuple[Dict[str, Any], Any]], None]
     """
 
-    def test_func(result) -> None:
+    def test_func(result: Tuple[Dict[str, Any], Any]) -> None:
         entry, hf = result
         assert hf.converged, (
             f"{method_name} SCF did not converge for {entry['formula']}."
@@ -89,14 +103,16 @@ def make_molecule_scf_converged_test(method_name: str):
     return test_func
 
 
-def make_molecule_total_energy_negative_test(method_name: str):
+def make_molecule_total_energy_negative_test(method_name: str) -> Callable[[Tuple[Dict[str, Any], Any]], None]:
     """Create a test function that checks total energy is negative for molecules.
 
     :param method_name: Name of the method (e.g., "RHF", "ROHF", "UHF").
-    :return: Test function that accepts a fixture returning ``(entry, hf)``.
+    :type method_name: str
+    :returns: Test function that accepts a fixture returning ``(entry, hf)``.
+    :rtype: Callable[[Tuple[Dict[str, Any], Any]], None]
     """
 
-    def test_func(result) -> None:
+    def test_func(result: Tuple[Dict[str, Any], Any]) -> None:
         entry, hf = result
         assert hf.e_total < 0.0, (
             f"{entry['formula']}: total energy {hf.e_total:.6f} Ha should be negative."
@@ -110,16 +126,24 @@ def make_molecule_total_energy_negative_test(method_name: str):
     return test_func
 
 
-def make_molecule_homo_ie_positive_test(method_name: str, homo_idx_func, epsilon_func):
+def make_molecule_homo_ie_positive_test(
+    method_name: str,
+    homo_idx_func: Callable[[Dict[str, Any]], int],
+    epsilon_func: Callable[[Any], Any],
+) -> Callable[[Tuple[Dict[str, Any], Any]], None]:
     """Create a test function that checks Koopmans IE is positive for molecules.
 
     :param method_name: Name of the method (e.g., "RHF", "ROHF", "UHF").
+    :type method_name: str
     :param homo_idx_func: Function that takes ``entry`` and returns HOMO index.
+    :type homo_idx_func: Callable[[Dict[str, Any]], int]
     :param epsilon_func: Function that takes ``hf`` and returns eigenvalue array.
-    :return: Test function that accepts a fixture returning ``(entry, hf)``.
+    :type epsilon_func: Callable[[Any], Any]
+    :returns: Test function that accepts a fixture returning ``(entry, hf)``.
+    :rtype: Callable[[Tuple[Dict[str, Any], Any]], None]
     """
 
-    def test_func(result) -> None:
+    def test_func(result: Tuple[Dict[str, Any], Any]) -> None:
         entry, hf = result
         homo_idx = homo_idx_func(entry)
         homo_ev = -epsilon_func(hf)[homo_idx] * HARTREE_TO_EV
@@ -133,16 +157,24 @@ def make_molecule_homo_ie_positive_test(method_name: str, homo_idx_func, epsilon
     return test_func
 
 
-def make_molecule_koopmans_ie_test(method_name: str, homo_idx_func, epsilon_func):
+def make_molecule_koopmans_ie_test(
+    method_name: str,
+    homo_idx_func: Callable[[Dict[str, Any]], int],
+    epsilon_func: Callable[[Any], Any],
+) -> Callable[[Tuple[Dict[str, Any], Any]], None]:
     """Create a test function that checks Koopmans IE vs reference for molecules.
 
     :param method_name: Name of the method (e.g., "RHF", "ROHF", "UHF").
+    :type method_name: str
     :param homo_idx_func: Function that takes ``entry`` and returns HOMO index.
+    :type homo_idx_func: Callable[[Dict[str, Any]], int]
     :param epsilon_func: Function that takes ``hf`` and returns eigenvalue array.
-    :return: Test function that accepts a fixture returning ``(entry, hf)``.
+    :type epsilon_func: Callable[[Any], Any]
+    :returns: Test function that accepts a fixture returning ``(entry, hf)``.
+    :rtype: Callable[[Tuple[Dict[str, Any], Any]], None]
     """
 
-    def test_func(result) -> None:
+    def test_func(result: Tuple[Dict[str, Any], Any]) -> None:
         entry, hf = result
         homo_idx = homo_idx_func(entry)
         homo_ev = -epsilon_func(hf)[homo_idx] * HARTREE_TO_EV

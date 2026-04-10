@@ -8,12 +8,12 @@ https://physics.nist.gov/PhysRefData/ASD/
 
 from typing import Dict, List, Optional, Tuple
 
-from q_block.constants.natural.atoms_data import (
+from q_block.environment.constants.natural.atoms_data import (
     ATOMS_SYMBOLS_Z_TO_SYMBOL,
     EMPIRICAL_EXCEPTIONS,
 )
-from q_block.io.coordinates import CartesianCoordinates
-from q_block.io.basis_set import BasisSet
+from q_block.environment.io.coordinates import CartesianCoordinates
+from q_block.environment.io.basis_set import BasisSet
 from q_block.models.electron import Shell
 from q_block.models.basis_functions import ContractedGaussianTypeOrbital
 

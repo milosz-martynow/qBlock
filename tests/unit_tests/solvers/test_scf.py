@@ -24,7 +24,7 @@ from q_block.models.basis_functions import ContractedGaussianTypeOrbital
 from q_block.models.initialization.nuclear_repulsion_energy import (
     NuclearRepulsionEnergy,
 )
-from tests.unit_tests.utils import extract_nuclei, h2_molecule
+from tests.unit_tests.utilities import extract_nuclei, h2_molecule
 
 
 # ======================================================================

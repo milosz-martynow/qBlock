@@ -23,9 +23,9 @@ Mathematical foundation:
 import logging
 
 from q_block import Atom, Molecule
-from q_block.io.basis_set import Pople
-from q_block.io.coordinates import CartesianCoordinates
-from q_block.io.input_data import InputData
+from q_block.environment.io.basis_set import Pople
+from q_block.environment.io.coordinates import CartesianCoordinates
+from q_block.environment.io.input_data import InputData
 from q_block.utilities.mathematics import get_cartesian_components
 
 logging.basicConfig(
@@ -40,7 +40,7 @@ logger = logging.getLogger(__name__)
 # Pople-style basis sets are stored in Gaussian format (.gbs files).
 # The 6-31G basis is a split-valence double-zeta basis set.
 
-basis = Pople(filepath="q_block/constants/numerical/basis_set/pople/6-31G.gbs")
+basis = Pople(filepath="q_block/environment/constants/numerical/basis_set/pople/6-31G.gbs")
 logger.info("Loaded 6-31G basis set\n")
 
 

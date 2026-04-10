@@ -15,7 +15,7 @@
 - `README.md` — Setup instructions and project description.
 
 ## Other Directories
-- `q_block/constants/numerical/basis_set/pople/` — Gaussian basis set files like: `STO-3G`, `3-21G`.
+- `q_block/environment/constants/numerical/basis_set/pople/` — Gaussian basis set files like: `STO-3G`, `3-21G`.
 - `examples/` — runnable scripts demonstrating the API (molecule creation, integrals, SCF, GTO dataframe).
 - `architecture/` — PlantUML diagrams: `scf_activity_diagram.puml`, `use_case_diagram.puml`, block definition diagrams for each sub-package (`io`, `methods`, `models`, `systems`, `theory`).
 

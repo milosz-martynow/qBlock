@@ -18,16 +18,16 @@ import pandas as pd
 import pytest
 
 from q_block import Atom, Molecule
-from q_block.constants.natural.atoms_data import (
+from q_block.environment.constants.natural.atoms_data import (
     ATOMS_SYMBOLS_SYMBOL_TO_Z,
     ATOMS_SYMBOLS_Z_TO_SYMBOL,
     CLOSED_SHELL_ATOMS,
     OPEN_SHELL_ATOMS,
 )
-from q_block.io.basis_set import Pople
-from q_block.io.input_data import InputData
+from q_block.environment.io.basis_set import Pople
+from q_block.environment.io.input_data import InputData
 from q_block.models.electron import Shell, SpinOrbital
-from tests.unit_tests.constants import (
+from tests.unit_tests.environment.constants import (
     BASIS_FILES,
     BASIS_ROOT,
     CHARGE_VALUES,

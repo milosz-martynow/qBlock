@@ -13,7 +13,7 @@ Steps:
 
 import logging
 
-from q_block.io.input_data import InputData
+from q_block.environment.io.input_data import InputData
 from q_block.models.molecule import Molecule
 
 logging.basicConfig(

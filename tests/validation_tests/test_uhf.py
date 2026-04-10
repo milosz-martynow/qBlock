@@ -34,6 +34,10 @@ applied to the shared result:
 
 import pytest
 
+import numpy as np
+
+from typing import Any, Callable, Dict, Tuple
+
 from q_block.solvers.wavefunction.hartree_fock.unrestricted_hartree_fock import (
     UnrestrictedHartreeFock,
 )
@@ -80,7 +84,7 @@ _uhf_mol_entries = [
     params=[entry for _, entry in _uhf_atom_entries],
     ids=[key for key, _ in _uhf_atom_entries],
 )
-def uhf_atom_result(request):
+def uhf_atom_result(request: pytest.FixtureRequest) -> Tuple[Dict[str, Any], UnrestrictedHartreeFock]:
     """Run UHF SCF for one open-shell atom (placed at origin) and return
     ``(entry, converged_hf)``."""
     entry = request.param
@@ -105,7 +109,7 @@ def uhf_atom_result(request):
     params=[entry for _, entry in _uhf_mol_entries],
     ids=[key for key, _ in _uhf_mol_entries],
 )
-def uhf_molecule_result(request):
+def uhf_molecule_result(request: pytest.FixtureRequest) -> Tuple[Dict[str, Any], UnrestrictedHartreeFock]:
     """Run UHF SCF for one open-shell molecule and return
     ``(entry, converged_hf)``."""
     entry = request.param
@@ -130,8 +134,8 @@ def uhf_molecule_result(request):
 # ---------------------------------------------------------------------------
 
 # UHF-specific helper functions
-_uhf_homo_idx = lambda entry: entry["n_alpha"] - 1
-_uhf_epsilon = lambda hf: hf.matrices["epsilon_alpha"]
+_uhf_homo_idx: Callable[[Dict[str, Any]], int] = lambda entry: entry["n_alpha"] - 1
+_uhf_epsilon: Callable[[UnrestrictedHartreeFock], np.ndarray] = lambda hf: hf.matrices["epsilon_alpha"]
 
 
 def test_uhf_atom_scf_converged(uhf_atom_result) -> None:

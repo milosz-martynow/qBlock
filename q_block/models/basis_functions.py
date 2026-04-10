@@ -40,7 +40,7 @@ CGTOBasis
 import math
 from typing import List, Optional
 
-from q_block.io.coordinates import CartesianCoordinates
+from q_block.environment.io.coordinates import CartesianCoordinates
 from q_block.utilities.mathematics import normalization_constant
 
 

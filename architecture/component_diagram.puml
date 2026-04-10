@@ -7,8 +7,11 @@
 
 package "qBlock" {
 
-  component [Constants] as constants #E8F4F8
-  component [IO] as io #E8F4F8
+  component [Environment] as environment #E8F4F8 {
+    [constants]
+    [io]
+    [configuration]
+  }
   component [Models] as models #E8F4F8
   component [Solvers] as solvers #E8F4F8
   component [Utilities] as utilities #E8F4F8
@@ -20,13 +23,10 @@ package "qBlock" {
 ' ═══════════════════════════════════════════════════════════
 
 ' Component dependencies
-constants <..> io
-constants <..> models
-constants <..> utilities
-io <..> models
-io <..> utilities
+environment <..> models
+environment <..> utilities
 models <..> utilities
-solvers ..> constants
+solvers ..> environment
 solvers ..> models
 solvers ..> utilities
 

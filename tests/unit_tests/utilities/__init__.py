@@ -10,7 +10,7 @@ import numpy as np
 import pytest
 
 from q_block import Molecule
-from q_block.io.input_data import InputData
+from q_block.environment.io.input_data import InputData
 from q_block.solvers.wavefunction.hartree_fock.restricted_hartree_fock import (
     RestrictedHartreeFock,
 )
@@ -24,7 +24,7 @@ from q_block.models.initialization.nuclear_repulsion_energy import (
     NuclearRepulsionEnergy,
 )
 from q_block.utilities.mathematics import get_cartesian_components
-from tests.unit_tests.constants import BASIS_STO_3G
+from tests.unit_tests.environment.constants import BASIS_STO_3G
 
 
 # ======================================================================

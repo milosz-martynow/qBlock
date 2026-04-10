@@ -13,8 +13,8 @@ from typing import List
 
 import pytest
 
-from q_block.io.basis_set import BasisSet
-from tests.unit_tests.constants import (
+from q_block.environment.io.basis_set import BasisSet
+from tests.unit_tests.environment.constants import (
     BASIS_3_21G,
     BASIS_6_31G,
     BASIS_6_311G,

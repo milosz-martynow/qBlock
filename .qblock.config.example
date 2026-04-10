@@ -1,0 +1,28 @@
+{
+  "paths": {
+    "basis_set_dir": "q_block/environment/constants/numerical/basis_set",
+    "geometry_dir": "geometries",
+    "output_dir": "output",
+    "log_dir": "logs"
+  },
+  "calculation": {
+    "max_scf_iterations": 100,
+    "scf_convergence_threshold": 1e-08,
+    "diis_start": 1,
+    "diis_max_vectors": 6,
+    "error_metric": "rms"
+  },
+  "output": {
+    "save_json": true,
+    "save_text": true,
+    "save_log": true,
+    "save_matrices": false,
+    "log_level": "INFO",
+    "json_indent": 2,
+    "output_prefix": "output"
+  },
+  "services": {
+    "api_endpoint": null,
+    "timeout_seconds": 30
+  }
+}

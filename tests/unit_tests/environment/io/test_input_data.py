@@ -16,8 +16,8 @@ import pandas as pd
 import pytest
 
 from q_block import AtomicSystem
-from q_block.io.input_data import InputData
-from tests.unit_tests.constants import GEOMETRIES_DIR
+from q_block.environment.io.input_data import InputData
+from tests.unit_tests.environment.constants import GEOMETRIES_DIR
 
 
 # ======================================================================

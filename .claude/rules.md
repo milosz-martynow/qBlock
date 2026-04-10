@@ -72,6 +72,7 @@
 
 ## files management
 - Remove/copy/move etc, should be done via git operations to keep full git repo history.
+- In code use pathlib to creat/scan/modify files and folders.
 
 ## Don'ts
 - Don't add features or refactor beyond what's asked.

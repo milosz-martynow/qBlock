@@ -26,7 +26,7 @@ from q_block.solvers.wavefunction.hartree_fock.unrestricted_hartree_fock import 
 from q_block.models.initialization.nuclear_repulsion_energy import (
     NuclearRepulsionEnergy,
 )
-from tests.unit_tests.utils import extract_nuclei, h2_molecule, h2_uhf, water_molecule, water_uhf
+from tests.unit_tests.utilities import extract_nuclei, h2_molecule, h2_uhf, water_molecule, water_uhf
 
 
 # ======================================================================

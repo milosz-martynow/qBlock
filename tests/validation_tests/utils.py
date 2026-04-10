@@ -3,8 +3,8 @@
 from pathlib import Path
 from typing import Dict, List, Tuple, Union
 
-from q_block.io.basis_set import Pople
-from q_block.io.input_data import InputData
+from q_block.environment.io.basis_set import Pople
+from q_block.environment.io.input_data import InputData
 from q_block.models.molecule import Molecule
 from q_block.models.initialization.nuclear_repulsion_energy import NuclearRepulsionEnergy
 
@@ -26,7 +26,7 @@ _BASIS_CACHE: Dict[str, Pople] = {}
 def _get_basis(filepath: Union[Path, str]) -> Pople:
     """Return a cached :class:`Pople` basis set loaded from *filepath*.
 
-    :param filepath: Full path to basis-set file, e.g. ``Path("q_block/constants/numerical/basis_set/pople/6-311++Gss.gbs")``.
+    :param filepath: Full path to basis-set file, e.g. ``Path("q_block/environment/constants/numerical/basis_set/pople/6-311++Gss.gbs")``.
     """
     filepath_str = str(filepath)
     if filepath_str not in _BASIS_CACHE:
@@ -37,13 +37,13 @@ def _get_basis(filepath: Union[Path, str]) -> Pople:
 def _build_from_geometry(
     geometry: List[Dict],
     multiplicity: int,
-    basis_set_filename: Union[Path, str] = Path("q_block/constants/numerical/basis_set/pople/3-21G.gbs"),
+    basis_set_filename: Union[Path, str] = Path("q_block/environment/constants/numerical/basis_set/pople/3-21G.gbs"),
 ) -> Tuple:
     """Build a Molecule from a geometry list and return SCF inputs.
 
     :param geometry: List of ``{"symbol", "x", "y", "z"}`` dicts (Å).
     :param multiplicity: Spin multiplicity 2S+1.
-    :param basis_set_filename: Full path to basis-set file (e.g. ``Path("q_block/constants/numerical/basis_set/pople/6-311++Gss.gbs")``).
+    :param basis_set_filename: Full path to basis-set file (e.g. ``Path("q_block/environment/constants/numerical/basis_set/pople/6-311++Gss.gbs")``).
     :returns: ``(cgtos, nuclei, e_nuclear)`` ready for HF constructors.
     """
     basis = _get_basis(basis_set_filename)

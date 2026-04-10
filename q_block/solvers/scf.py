@@ -231,6 +231,7 @@ class SCF(ABC):
         self.e_total: Optional[float] = None
         self.matrices: Dict[str, np.ndarray] = {}
         self.extra: Dict[str, object] = {}
+        self.iteration_history: List[Dict[str, float]] = []
 
     # ==================================================================
     # Logging helpers
@@ -291,6 +292,7 @@ class SCF(ABC):
 
         # ── 2. SCF iteration loop ────────────────────────────────────
         e_electronic_old = 0.0
+        self.iteration_history = []
 
         for iteration in range(self.max_iterations):
             # 2a. Build Fock matrix from current density
@@ -310,6 +312,17 @@ class SCF(ABC):
             electronic_energy_change = e_electronic - e_electronic_old
             computation_error = self.calculation_error_metric.compute(
                 commutator_error
+            )
+
+            # Store iteration data
+            self.iteration_history.append(
+                {
+                    "iteration": iteration + 1,
+                    "e_electronic": float(e_electronic),
+                    "energy_change": float(electronic_energy_change),
+                    "error": float(computation_error),
+                    "diis_active": iteration >= self.diis_start,
+                }
             )
 
             logger.info(

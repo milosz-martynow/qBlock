@@ -9,9 +9,9 @@ from typing import Optional, Dict, List, Any, Union, Tuple
 import pandas as pd
 
 from q_block.models.atomic_system import AtomicSystem
-from q_block.io.input_data import InputData
-from q_block.io.coordinates import CartesianCoordinates
-from q_block.io.basis_set import BasisSet
+from q_block.environment.io.input_data import InputData
+from q_block.environment.io.coordinates import CartesianCoordinates
+from q_block.environment.io.basis_set import BasisSet
 from q_block.models.electron import SubShell
 from q_block.models.atom import Atom
 from q_block.models.basis_functions import ContractedGaussianTypeOrbital

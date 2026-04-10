@@ -12,7 +12,7 @@ from typing import List
 
 import pytest
 
-from q_block.io.input_data import InputData
+from q_block.environment.io.input_data import InputData
 from q_block.models.atomic_system import AtomicSystem
 
 

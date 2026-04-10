@@ -29,7 +29,7 @@ from q_block.solvers.wavefunction.hartree_fock.restricted_hartree_fock import (
 from q_block.solvers.wavefunction.hartree_fock.unrestricted_hartree_fock import (
     UnrestrictedHartreeFock,
 )
-from tests.unit_tests.utils import h2_molecule, h2_rhf, h2_uhf
+from tests.unit_tests.utilities import h2_molecule, h2_rhf, h2_uhf
 
 
 # ======================================================================

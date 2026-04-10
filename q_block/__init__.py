@@ -4,20 +4,29 @@ Package structure
 =================
 
 q_block/
-├── constants/          Domain-specific constants and reference data.
-│   ├── natural/        Physical constants and atomic data derived from
-│   │                   nature (element symbols, angular momentum maps,
-│   │                   unit conversion factors, empirical electron
-│   │                   configuration exceptions).
-│   └── numerical/      Numerical data sets used in calculations
-│                       (basis set parameter files such as Pople .gbs).
-│
-├── io/                 Input / output layer.
-│                       Parsers and serialisers for user-facing data
-│                       formats: basis-set files (``BasisSet``, ``Pople``),
-│                       Cartesian coordinates (``Coordinates``,
-│                       ``CartesianCoordinates``), and composite input
-│                       containers (``InputData``).
+├── environment/        Foundational infrastructure and external data.
+│   │                   Consolidates all external data sources,
+│   │                   configuration, and I/O interfaces.
+│   │
+│   ├── constants/      Domain-specific constants and reference data.
+│   │   ├── natural/    Physical constants and atomic data derived from
+│   │   │               nature (element symbols, angular momentum maps,
+│   │   │               unit conversion factors, empirical electron
+│   │   │               configuration exceptions).
+│   │   └── numerical/  Numerical data sets used in calculations
+│   │                   (basis set parameter files such as Pople .gbs).
+│   │
+│   ├── io/             Input / output layer.
+│   │                   Parsers and serialisers for user-facing data
+│   │                   formats: basis-set files (``BasisSet``, ``Pople``),
+│   │                   Cartesian coordinates (``Coordinates``,
+│   │                   ``CartesianCoordinates``), composite input
+│   │                   containers (``InputData``), and output containers
+│   │                   (``OutputData``).
+│   │
+│   └── configuration.py  Runtime configuration management
+│                          (``Configuration``, ``PathConfiguration``,
+│                          ``CalculationDefaults``, ``OutputSettings``).
 │
 ├── models/             Physical models, systems, and theory.
 │   │                   Everything that mathematically describes the
@@ -51,7 +60,7 @@ q_block/
 │                       (RestrictedHartreeFock, UnrestrictedHartreeFock,
 │                       RestrictedOpenShellHartreeFock).
 │
-└── utils/              Shared mathematical utilities.
+└── utilities/          Shared mathematical utilities.
                         Pure-math helpers used across models and solvers:
                         Boys function, double factorial, normalisation
                         constants, Hermite expansion coefficients, and
@@ -67,16 +76,19 @@ from .models.atom import Atom
 from .models.electron import Orbital, Shell, SpinOrbital, SubShell
 
 # -- Constants --------------------------------------------------------------
-from .constants.natural.atoms_data import (
+from .environment.constants.natural.atoms_data import (
     ANGSTROM_TO_BOHR,
     ATOMS_SYMBOLS_SYMBOL_TO_Z,
     ATOMS_SYMBOLS_Z_TO_SYMBOL,
 )
 
 # -- I/O --------------------------------------------------------------------
-from .io.basis_set import BasisSet, Pople
-from .io.input_data import InputData
-from .io.coordinates import Coordinates, CartesianCoordinates
+from .environment.io.basis_set import BasisSet, Pople
+from .environment.io.input_data import InputData
+from .environment.io.coordinates import Coordinates, CartesianCoordinates
+
+# -- Configuration ----------------------------------------------------------
+from .environment.configuration import Configuration
 
 # -- Composite systems ------------------------------------------------------
 from .models.atomic_system import AtomicSystem

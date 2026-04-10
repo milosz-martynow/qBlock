@@ -45,7 +45,7 @@ Notes
 import re
 from typing import Any, Dict, List, Literal, Tuple, TypeAlias, Union
 
-from q_block.constants.natural.atoms_data import (
+from q_block.environment.constants.natural.atoms_data import (
     ANGULAR_MOMENTUM_MAP,
     ATOMS_SYMBOLS_Z_TO_SYMBOL,
 )
@@ -133,7 +133,7 @@ class BasisSet:
         :param key: Atomic symbol (e.g. ``"H"``, ``"O"``) **or**
             atomic number (e.g. ``1``, ``8``).  When an ``int`` is
             given, the symbol is resolved via
-            :data:`~q_block.constants.natural.atoms_data.ATOMS_SYMBOLS_Z_TO_SYMBOL`.
+            :data:`~q_block.environment.constants.natural.atoms_data.ATOMS_SYMBOLS_Z_TO_SYMBOL`.
         :type key: Union[str, int]
 
         :returns: Regions dictionary for the requested element.
@@ -193,7 +193,7 @@ class Pople(BasisSet):
 
     Example
     -------
-    >>> basis = Pople("q_block/constants/numerical/basis_set/pople/3-21G.gbs")
+    >>> basis = Pople("q_block/environment/constants/numerical/basis_set/pople/3-21G.gbs")
     >>> hydrogen_regions = basis["H"]
     """
 

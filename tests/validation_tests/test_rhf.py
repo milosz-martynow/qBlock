@@ -29,6 +29,10 @@ run against the shared result:
 
 import pytest
 
+import numpy as np
+
+from typing import Any, Callable, Dict, Tuple
+
 from q_block.solvers.wavefunction.hartree_fock.restricted_hartree_fock import (
     RestrictedHartreeFock,
 )
@@ -75,7 +79,7 @@ _rhf_mol_entries = [
     params=[entry for _, entry in _rhf_atom_entries],
     ids=[key for key, _ in _rhf_atom_entries],
 )
-def rhf_atom_result(request):
+def rhf_atom_result(request: pytest.FixtureRequest) -> Tuple[Dict[str, Any], RestrictedHartreeFock]:
     """Run RHF SCF for one closed-shell atom (placed at origin) and return
     ``(entry, converged_hf)``."""
     entry = request.param
@@ -99,7 +103,7 @@ def rhf_atom_result(request):
     params=[entry for _, entry in _rhf_mol_entries],
     ids=[key for key, _ in _rhf_mol_entries],
 )
-def rhf_molecule_result(request):
+def rhf_molecule_result(request: pytest.FixtureRequest) -> Tuple[Dict[str, Any], RestrictedHartreeFock]:
     """Run RHF SCF for one closed-shell molecule and return
     ``(entry, converged_hf)``."""
     entry = request.param
@@ -123,8 +127,8 @@ def rhf_molecule_result(request):
 # ---------------------------------------------------------------------------
 
 # RHF-specific helper functions
-_rhf_homo_idx = lambda entry: entry["n_closed"] - 1
-_rhf_epsilon = lambda hf: hf.matrices["epsilon"]
+_rhf_homo_idx: Callable[[Dict[str, Any]], int] = lambda entry: entry["n_closed"] - 1
+_rhf_epsilon: Callable[[RestrictedHartreeFock], np.ndarray] = lambda hf: hf.matrices["epsilon"]
 
 
 def test_rhf_atom_scf_converged(rhf_atom_result) -> None:
