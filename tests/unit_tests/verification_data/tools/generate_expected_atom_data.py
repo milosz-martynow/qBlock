@@ -24,11 +24,11 @@ from copy import deepcopy
 from pathlib import Path
 from typing import Dict, List, Tuple
 
-from q_block.models.atom import Atom
 from q_block.environment.constants.natural.atoms_data import (
     ATOMS_SYMBOLS_Z_TO_SYMBOL,
     EMPIRICAL_EXCEPTIONS,
 )
+from q_block.models.atom import Atom
 
 # Type aliases
 SpinKey = Tuple[int, int, int, float]  # (n, l, m, s)
@@ -58,9 +58,7 @@ def _extract_spin_map_from_atom(atom_instance: Atom) -> SpinMap:
     return mapping
 
 
-def _apply_empirical_to_map(
-    base_map: SpinMap, instructions: List[Dict]
-) -> SpinMap:
+def _apply_empirical_to_map(base_map: SpinMap, instructions: List[Dict]) -> SpinMap:
     """Apply empirical subshell occupancy instructions onto a base spin map.
 
     The function returns a new copy of ``base_map`` with occupancy for the
@@ -176,9 +174,7 @@ HEADER = """# AUTO-GENERATED FILE
 """
 
 PURE_FILE.write_text(HEADER + "EXPECTED_ATOM_PURE = {}\n\n", encoding="utf8")
-EMP_FILE.write_text(
-    HEADER + "EXPECTED_ATOM_EMPIRICAL = {}\n\n", encoding="utf8"
-)
+EMP_FILE.write_text(HEADER + "EXPECTED_ATOM_EMPIRICAL = {}\n\n", encoding="utf8")
 
 
 for Z in range(1, 119):

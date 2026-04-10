@@ -21,14 +21,19 @@ import numpy as np
 import pytest
 
 from q_block import Molecule
-from q_block.solvers.wavefunction.hartree_fock.restricted_open_shell_hartree_fock import (
-    RestrictedOpenShellHartreeFock,
-)
 from q_block.models.initialization.nuclear_repulsion_energy import (
     NuclearRepulsionEnergy,
 )
-from tests.unit_tests.utilities import extract_nuclei, h2_molecule, h2_rohf, water_molecule, water_rohf
-
+from q_block.solvers.wavefunction.hartree_fock.restricted_open_shell_hartree_fock import (
+    RestrictedOpenShellHartreeFock,
+)
+from tests.unit_tests.utilities import (
+    extract_nuclei,
+    h2_molecule,
+    h2_rohf,
+    water_molecule,
+    water_rohf,
+)
 
 # ======================================================================
 # Construction & Validation Tests
@@ -70,8 +75,11 @@ def test_negative_orbital_counts_raises(
     e_nuc = NuclearRepulsionEnergy(molecule=h2_molecule).energy
     with pytest.raises(ValueError, match="non-negative"):
         RestrictedOpenShellHartreeFock(
-            cgtos=cgtos, nuclei=nuclei, e_nuclear=e_nuc,
-            n_closed=n_closed, n_open=n_open,
+            cgtos=cgtos,
+            nuclei=nuclei,
+            e_nuclear=e_nuc,
+            n_closed=n_closed,
+            n_open=n_open,
         )
 
 
@@ -188,7 +196,9 @@ def test_h2_rohf_returns_self(h2_rohf: RestrictedOpenShellHartreeFock) -> None:
     assert result is h2_rohf
 
 
-def test_h2_rohf_iterations_positive(h2_rohf: RestrictedOpenShellHartreeFock) -> None:
+def test_h2_rohf_iterations_positive(
+    h2_rohf: RestrictedOpenShellHartreeFock,
+) -> None:
     """Number of iterations should be a positive integer.
 
     :param h2_rohf: Uninitialised ROHF for H2/STO-3G.
@@ -199,7 +209,9 @@ def test_h2_rohf_iterations_positive(h2_rohf: RestrictedOpenShellHartreeFock) ->
     assert h2_rohf.n_iterations > 0
 
 
-def test_h2_rohf_electronic_energy_negative(h2_rohf: RestrictedOpenShellHartreeFock) -> None:
+def test_h2_rohf_electronic_energy_negative(
+    h2_rohf: RestrictedOpenShellHartreeFock,
+) -> None:
     """Electronic energy should be negative for a bound system.
 
     :param h2_rohf: Uninitialised ROHF for H2/STO-3G.
@@ -227,15 +239,23 @@ def test_h2_rohf_matrices_keys(h2_rohf: RestrictedOpenShellHartreeFock) -> None:
     """
     h2_rohf.run()
     expected_keys = {
-        "S", "H", "F_eff", "P",
-        "F_alpha", "F_beta",
-        "P_alpha", "P_beta",
-        "C", "epsilon",
+        "S",
+        "H",
+        "F_eff",
+        "P",
+        "F_alpha",
+        "F_beta",
+        "P_alpha",
+        "P_beta",
+        "C",
+        "epsilon",
     }
     assert expected_keys == set(h2_rohf.matrices.keys())
 
 
-def test_h2_rohf_effective_fock_shape(h2_rohf: RestrictedOpenShellHartreeFock) -> None:
+def test_h2_rohf_effective_fock_shape(
+    h2_rohf: RestrictedOpenShellHartreeFock,
+) -> None:
     """Effective Fock matrix should be n_basis × n_basis.
 
     :param h2_rohf: Uninitialised ROHF for H2/STO-3G.
@@ -246,7 +266,9 @@ def test_h2_rohf_effective_fock_shape(h2_rohf: RestrictedOpenShellHartreeFock) -
     assert h2_rohf.matrices["F_eff"].shape == (n, n)
 
 
-def test_h2_rohf_physical_fock_shapes(h2_rohf: RestrictedOpenShellHartreeFock) -> None:
+def test_h2_rohf_physical_fock_shapes(
+    h2_rohf: RestrictedOpenShellHartreeFock,
+) -> None:
     """Physical per-spin Fock matrices should be n_basis × n_basis.
 
     :param h2_rohf: Uninitialised ROHF for H2/STO-3G.
@@ -258,7 +280,9 @@ def test_h2_rohf_physical_fock_shapes(h2_rohf: RestrictedOpenShellHartreeFock) -
     assert h2_rohf.matrices["F_beta"].shape == (n, n)
 
 
-def test_h2_rohf_physical_fock_symmetry(h2_rohf: RestrictedOpenShellHartreeFock) -> None:
+def test_h2_rohf_physical_fock_symmetry(
+    h2_rohf: RestrictedOpenShellHartreeFock,
+) -> None:
     """Physical per-spin Fock matrices should be symmetric.
 
     The physical Fock matrices F_alpha and F_beta are Hermitian
@@ -274,7 +298,9 @@ def test_h2_rohf_physical_fock_symmetry(h2_rohf: RestrictedOpenShellHartreeFock)
     np.testing.assert_allclose(F_b, F_b.T, atol=1e-10)
 
 
-def test_h2_rohf_total_density_trace(h2_rohf: RestrictedOpenShellHartreeFock) -> None:
+def test_h2_rohf_total_density_trace(
+    h2_rohf: RestrictedOpenShellHartreeFock,
+) -> None:
     """Tr(P S) should equal total electron count.
 
     For H2 with n_closed=1, n_open=0 the total is 2 electrons.
@@ -288,7 +314,9 @@ def test_h2_rohf_total_density_trace(h2_rohf: RestrictedOpenShellHartreeFock) ->
     np.testing.assert_allclose(np.trace(P @ S), 2.0, atol=1e-8)
 
 
-def test_h2_rohf_alpha_density_trace(h2_rohf: RestrictedOpenShellHartreeFock) -> None:
+def test_h2_rohf_alpha_density_trace(
+    h2_rohf: RestrictedOpenShellHartreeFock,
+) -> None:
     """Tr(P_alpha S) should equal n_alpha.
 
     :param h2_rohf: Uninitialised ROHF for H2/STO-3G.
@@ -298,11 +326,15 @@ def test_h2_rohf_alpha_density_trace(h2_rohf: RestrictedOpenShellHartreeFock) ->
     P_a = h2_rohf.matrices["P_alpha"]
     S = h2_rohf.matrices["S"]
     np.testing.assert_allclose(
-        np.trace(P_a @ S), float(h2_rohf.n_alpha), atol=1e-8,
+        np.trace(P_a @ S),
+        float(h2_rohf.n_alpha),
+        atol=1e-8,
     )
 
 
-def test_h2_rohf_beta_density_trace(h2_rohf: RestrictedOpenShellHartreeFock) -> None:
+def test_h2_rohf_beta_density_trace(
+    h2_rohf: RestrictedOpenShellHartreeFock,
+) -> None:
     """Tr(P_beta S) should equal n_beta.
 
     :param h2_rohf: Uninitialised ROHF for H2/STO-3G.
@@ -312,7 +344,9 @@ def test_h2_rohf_beta_density_trace(h2_rohf: RestrictedOpenShellHartreeFock) -> 
     P_b = h2_rohf.matrices["P_beta"]
     S = h2_rohf.matrices["S"]
     np.testing.assert_allclose(
-        np.trace(P_b @ S), float(h2_rohf.n_beta), atol=1e-8,
+        np.trace(P_b @ S),
+        float(h2_rohf.n_beta),
+        atol=1e-8,
     )
 
 
@@ -332,7 +366,9 @@ def test_h2_rohf_density_symmetry(h2_rohf: RestrictedOpenShellHartreeFock) -> No
     np.testing.assert_allclose(P_b, P_b.T, atol=1e-12)
 
 
-def test_h2_rohf_total_density_equals_sum(h2_rohf: RestrictedOpenShellHartreeFock) -> None:
+def test_h2_rohf_total_density_equals_sum(
+    h2_rohf: RestrictedOpenShellHartreeFock,
+) -> None:
     """Total density P should equal P_alpha + P_beta.
 
     The stored total density matrix must be the sum of the per-spin
@@ -348,7 +384,9 @@ def test_h2_rohf_total_density_equals_sum(h2_rohf: RestrictedOpenShellHartreeFoc
     np.testing.assert_allclose(P, P_a + P_b, atol=1e-12)
 
 
-def test_h2_rohf_orbital_energies_ascending(h2_rohf: RestrictedOpenShellHartreeFock) -> None:
+def test_h2_rohf_orbital_energies_ascending(
+    h2_rohf: RestrictedOpenShellHartreeFock,
+) -> None:
     """Orbital energies should be in ascending order.
 
     :param h2_rohf: Uninitialised ROHF for H2/STO-3G.
@@ -359,7 +397,9 @@ def test_h2_rohf_orbital_energies_ascending(h2_rohf: RestrictedOpenShellHartreeF
     assert np.all(np.diff(epsilon) >= -1e-14)
 
 
-def test_h2_rohf_coefficients_orthonormal(h2_rohf: RestrictedOpenShellHartreeFock) -> None:
+def test_h2_rohf_coefficients_orthonormal(
+    h2_rohf: RestrictedOpenShellHartreeFock,
+) -> None:
     r"""MO coefficients should satisfy C^T S C = I.
 
     ROHF uses a single set of spatial MOs that must be orthonormal
@@ -390,7 +430,9 @@ def test_water_rohf_converges(water_rohf: RestrictedOpenShellHartreeFock) -> Non
     assert water_rohf.converged is True
 
 
-def test_water_rohf_density_trace(water_rohf: RestrictedOpenShellHartreeFock) -> None:
+def test_water_rohf_density_trace(
+    water_rohf: RestrictedOpenShellHartreeFock,
+) -> None:
     """Tr(P S) for water ROHF should equal 10 electrons.
 
     :param water_rohf: Uninitialised ROHF for water/STO-3G.
@@ -402,7 +444,9 @@ def test_water_rohf_density_trace(water_rohf: RestrictedOpenShellHartreeFock) ->
     np.testing.assert_allclose(np.trace(P @ S), 10.0, atol=1e-8)
 
 
-def test_water_rohf_electronic_energy_negative(water_rohf: RestrictedOpenShellHartreeFock) -> None:
+def test_water_rohf_electronic_energy_negative(
+    water_rohf: RestrictedOpenShellHartreeFock,
+) -> None:
     """Electronic energy for water should be negative.
 
     :param water_rohf: Uninitialised ROHF for water/STO-3G.

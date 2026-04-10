@@ -23,7 +23,6 @@ from tests.unit_tests.environment.constants import (
     BASIS_STO_6G,
 )
 
-
 # ======================================================================
 # Fixtures: all pre-loaded basis sets grouped for parametrize
 # ======================================================================
@@ -201,9 +200,7 @@ def test_basis_set_regions_are_valid_keys(basis: BasisSet) -> None:
         "6-311++Gss_Z6_C",
     ],
 )
-def test_basis_set_has_core_region(
-    basis: BasisSet, symbol: str
-) -> None:
+def test_basis_set_has_core_region(basis: BasisSet, symbol: str) -> None:
     """Verify the basis set has a non-empty core region for the element.
 
     :param basis: Pre-loaded basis set instance.
@@ -243,7 +240,5 @@ def test_basis_set_parameters_structure(basis: BasisSet) -> None:
                     assert "coefficients" in params
                     assert isinstance(params["exponents"], list)
                     assert isinstance(params["coefficients"], list)
-                    assert len(params["exponents"]) == len(
-                        params["coefficients"]
-                    )
+                    assert len(params["exponents"]) == len(params["coefficients"])
                     assert len(params["exponents"]) > 0

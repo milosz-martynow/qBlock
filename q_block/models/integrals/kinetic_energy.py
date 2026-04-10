@@ -112,16 +112,33 @@ class KineticEnergy(TwoGaussianIntegral):
         :rtype: float
         """
         # Term 1: l1 * l2 * S(l1-1, l2-1)
-        term1 = l1 * l2 * TwoGaussianIntegral._overlap_1d(l1 - 1, l2 - 1, PA, PB, gamma)
+        term1 = (
+            l1 * l2 * TwoGaussianIntegral._overlap_1d(l1 - 1, l2 - 1, PA, PB, gamma)
+        )
 
         # Term 2: -2 * alpha * l2 * S(l1+1, l2-1)
-        term2 = -2.0 * alpha * l2 * TwoGaussianIntegral._overlap_1d(l1 + 1, l2 - 1, PA, PB, gamma)
+        term2 = (
+            -2.0
+            * alpha
+            * l2
+            * TwoGaussianIntegral._overlap_1d(l1 + 1, l2 - 1, PA, PB, gamma)
+        )
 
         # Term 3: -2 * beta * l1 * S(l1-1, l2+1)
-        term3 = -2.0 * beta * l1 * TwoGaussianIntegral._overlap_1d(l1 - 1, l2 + 1, PA, PB, gamma)
+        term3 = (
+            -2.0
+            * beta
+            * l1
+            * TwoGaussianIntegral._overlap_1d(l1 - 1, l2 + 1, PA, PB, gamma)
+        )
 
         # Term 4: 4 * alpha * beta * S(l1+1, l2+1)
-        term4 = 4.0 * alpha * beta * TwoGaussianIntegral._overlap_1d(l1 + 1, l2 + 1, PA, PB, gamma)
+        term4 = (
+            4.0
+            * alpha
+            * beta
+            * TwoGaussianIntegral._overlap_1d(l1 + 1, l2 + 1, PA, PB, gamma)
+        )
 
         return term1 + term2 + term3 + term4
 
@@ -298,6 +315,4 @@ class KineticEnergy(TwoGaussianIntegral):
         :returns: Kinetic energy integral value T_μν.
         :rtype: float
         """
-        return self.contracted_kinetic(
-            cgto1, lx1, ly1, lz1, cgto2, lx2, ly2, lz2
-        )
+        return self.contracted_kinetic(cgto1, lx1, ly1, lz1, cgto2, lx2, ly2, lz2)

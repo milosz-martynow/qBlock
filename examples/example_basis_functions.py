@@ -20,19 +20,14 @@ Mathematical foundation:
         ψ_i(r) = Σ_μ C_μi * φ_μ(r)
 """
 
-import logging
-
 from q_block import Atom, Molecule
 from q_block.environment.io.basis_set import Pople
 from q_block.environment.io.coordinates import CartesianCoordinates
 from q_block.environment.io.input_data import InputData
+from q_block.environment.logs import setup_logging
 from q_block.utilities.mathematics import get_cartesian_components
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(name)s %(levelname)s: %(message)s",
-)
-logger = logging.getLogger(__name__)
+logger = setup_logging(__name__)
 
 # ══════════════════════════════════════════════════════════════════════════════
 # 1. LOAD BASIS SET
@@ -40,7 +35,9 @@ logger = logging.getLogger(__name__)
 # Pople-style basis sets are stored in Gaussian format (.gbs files).
 # The 6-31G basis is a split-valence double-zeta basis set.
 
-basis = Pople(filepath="q_block/environment/constants/numerical/basis_set/pople/6-31G.gbs")
+basis = Pople(
+    filepath="q_block/environment/constants/numerical/basis_set/pople/6-31G.gbs"
+)
 logger.info("Loaded 6-31G basis set\n")
 
 

@@ -20,9 +20,7 @@ import pytest
 
 from q_block.solvers.diagonalisation import diagonalise_fock
 from q_block.solvers.spin_pair import SpinPair
-from q_block.solvers.wavefunction.hartree_fock.hartree_fock import (
-    HartreeFock,
-)
+from q_block.solvers.wavefunction.hartree_fock.hartree_fock import HartreeFock
 from q_block.solvers.wavefunction.hartree_fock.restricted_hartree_fock import (
     RestrictedHartreeFock,
 )
@@ -30,7 +28,6 @@ from q_block.solvers.wavefunction.hartree_fock.unrestricted_hartree_fock import 
     UnrestrictedHartreeFock,
 )
 from tests.unit_tests.utilities import h2_molecule, h2_rhf, h2_uhf
-
 
 # ======================================================================
 # SpinPair — Construction (shared mode)
@@ -538,7 +535,9 @@ def test_initial_density_shared_for_rhf(h2_rhf: RestrictedHartreeFock) -> None:
     assert density.shared is True
 
 
-def test_initial_density_independent_for_uhf(h2_uhf: UnrestrictedHartreeFock) -> None:
+def test_initial_density_independent_for_uhf(
+    h2_uhf: UnrestrictedHartreeFock,
+) -> None:
     """_initial_density for UHF should be independent.
 
     For UHF the initial density is built with different occupation
@@ -574,8 +573,13 @@ def test_collect_results_sets_converged(h2_rhf: RestrictedHartreeFock) -> None:
     sp_eps = SpinPair(alpha=dummy_eps)
 
     h2_rhf._collect_results(
-        converged=True, n_iterations=5, e_electronic=-1.0,
-        fock=sp, density=sp, C=sp, epsilon=sp_eps,
+        converged=True,
+        n_iterations=5,
+        e_electronic=-1.0,
+        fock=sp,
+        density=sp,
+        C=sp,
+        epsilon=sp_eps,
     )
     assert h2_rhf.converged is True
 
@@ -596,8 +600,13 @@ def test_collect_results_sets_e_total(h2_rhf: RestrictedHartreeFock) -> None:
     sp_eps = SpinPair(alpha=dummy_eps)
 
     h2_rhf._collect_results(
-        converged=True, n_iterations=5, e_electronic=-2.0,
-        fock=sp, density=sp, C=sp, epsilon=sp_eps,
+        converged=True,
+        n_iterations=5,
+        e_electronic=-2.0,
+        fock=sp,
+        density=sp,
+        C=sp,
+        epsilon=sp_eps,
     )
     expected = -2.0 + h2_rhf.e_nuclear
     np.testing.assert_allclose(h2_rhf.e_total, expected, atol=1e-14)
@@ -620,8 +629,12 @@ def test_collect_results_wraps_plain_tuples(h2_rhf: RestrictedHartreeFock) -> No
 
     # Should not raise when plain tuples are passed.
     h2_rhf._collect_results(
-        converged=True, n_iterations=3, e_electronic=-1.5,
-        fock=plain_tuple, density=plain_tuple,
-        C=plain_tuple, epsilon=plain_eps,
+        converged=True,
+        n_iterations=3,
+        e_electronic=-1.5,
+        fock=plain_tuple,
+        density=plain_tuple,
+        C=plain_tuple,
+        epsilon=plain_eps,
     )
     assert h2_rhf.converged is True

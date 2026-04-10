@@ -52,14 +52,14 @@ from scipy.linalg import fractional_matrix_power
 
 logger = logging.getLogger(__name__)
 
-from q_block.solvers.calculation_error_metric import CalculationErrorMetric
-from q_block.solvers.diagonalisation import diagonalise_fock
-from q_block.solvers.diis import DIIS
 from q_block.models.basis_functions import ContractedGaussianTypeOrbital
 from q_block.models.integrals.kinetic_energy import KineticEnergy
 from q_block.models.integrals.nuclear_attraction import NuclearAttraction
 from q_block.models.integrals.overlap import Overlap
 from q_block.models.integrals.two_electron_repulsion import TwoElectronRepulsion
+from q_block.solvers.calculation_error_metric import CalculationErrorMetric
+from q_block.solvers.diagonalisation import diagonalise_fock
+from q_block.solvers.diis import DIIS
 
 
 # ======================================================================
@@ -170,9 +170,7 @@ class SCF(ABC):
         calculation_error_metric: str = "rms",
     ) -> None:
         if max_iterations < 1:
-            raise ValueError(
-                f"max_iterations must be >= 1; got {max_iterations}."
-            )
+            raise ValueError(f"max_iterations must be >= 1; got {max_iterations}.")
         if convergence_threshold <= 0.0:
             raise ValueError(
                 f"convergence_threshold must be > 0; "
@@ -212,9 +210,7 @@ class SCF(ABC):
         self._log_system_data()
 
         # ── Orthogonalisation matrix  X = S^{-1/2} ──────────────────
-        self.X: np.ndarray = np.real(
-            fractional_matrix_power(self.S, -0.5)
-        )
+        self.X: np.ndarray = np.real(fractional_matrix_power(self.S, -0.5))
 
         # ── DIIS accelerator ─────────────────────────────────────────
         self.diis: DIIS = DIIS(max_vectors=diis_max_vectors)
@@ -247,13 +243,11 @@ class SCF(ABC):
         )
         for i, (Z, (x, y, z)) in enumerate(self.nuclei):
             logger.info(
-                f"  Nucleus {i}: Z={Z}, "
-                f"pos=({x:.6f}, {y:.6f}, {z:.6f}) Bohr"
+                f"  Nucleus {i}: Z={Z}, " f"pos=({x:.6f}, {y:.6f}, {z:.6f}) Bohr"
             )
         for i, cgto in enumerate(self.cgtos):
             label = (
-                shell_labels[cgto.l] if cgto.l < len(shell_labels)
-                else f"l{cgto.l}"
+                shell_labels[cgto.l] if cgto.l < len(shell_labels) else f"l{cgto.l}"
             )
             logger.info(
                 f"  CGTO {i}: atom={cgto.atom_index}, "
@@ -270,7 +264,7 @@ class SCF(ABC):
     # Public interface
     # ==================================================================
 
-    def run(self) -> 'SCF':
+    def run(self) -> "SCF":
         r"""Execute the full SCF procedure.
 
         Performs SCF initialisation, iteration, convergence checking,

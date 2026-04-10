@@ -11,8 +11,8 @@ numerical
 """
 
 from .natural.atoms_data import (
-    ANGULAR_MOMENTUM_MAP,
     ANGSTROM_TO_BOHR,
+    ANGULAR_MOMENTUM_MAP,
     ATOMS_SYMBOLS_SYMBOL_TO_Z,
     ATOMS_SYMBOLS_Z_TO_SYMBOL,
     CLOSED_SHELL_ATOMS,
@@ -27,4 +27,3 @@ __all__ = [
     "OPEN_SHELL_ATOMS",
     "ANGSTROM_TO_BOHR",
 ]
-

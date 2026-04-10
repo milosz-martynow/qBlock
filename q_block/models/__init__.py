@@ -15,22 +15,33 @@ This package contains:
 """
 
 from .atom import Atom
-from .electron import SpinOrbital, Orbital, SubShell, Shell
 
 # Composite systems (formerly q_block.models)
 from .atomic_system import AtomicSystem
-from .molecule import Molecule
-from .crystal import Crystal
 
 # Basis functions (formerly q_block.models.basis_functions)
 from .basis_functions import ContractedGaussianTypeOrbital
-
-# Integrals (formerly q_block.models.integrals)
-from .integrals import KineticEnergy, NuclearAttraction, Overlap, TwoElectronRepulsion
+from .crystal import Crystal
+from .electron import Orbital, Shell, SpinOrbital, SubShell
 
 # Initialization (formerly q_block.models.initialization)
-from .initialization import QuantumCalculationContext, HartreeFock, RHF, UHF, ROHF
-from .initialization import NuclearRepulsionEnergy
+from .initialization import (
+    RHF,
+    ROHF,
+    UHF,
+    HartreeFock,
+    NuclearRepulsionEnergy,
+    QuantumCalculationContext,
+)
+
+# Integrals (formerly q_block.models.integrals)
+from .integrals import (
+    KineticEnergy,
+    NuclearAttraction,
+    Overlap,
+    TwoElectronRepulsion,
+)
+from .molecule import Molecule
 
 __all__ = [
     "Atom",

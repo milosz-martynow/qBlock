@@ -20,7 +20,6 @@ import pytest
 
 from q_block.solvers.calculation_error_metric import CalculationErrorMetric
 
-
 # ======================================================================
 # Construction Tests
 # ======================================================================
@@ -125,9 +124,7 @@ def test_rms_static(error: np.ndarray, expected_rms: float) -> None:
     ],
     ids=["zeros", "ones", "3-4-vec"],
 )
-def test_compute_dispatches_to_rms(
-    error: np.ndarray, expected_rms: float
-) -> None:
+def test_compute_dispatches_to_rms(error: np.ndarray, expected_rms: float) -> None:
     """compute() with 'rms' metric should dispatch to rms().
 
     The compute() instance method selects the reduction strategy at

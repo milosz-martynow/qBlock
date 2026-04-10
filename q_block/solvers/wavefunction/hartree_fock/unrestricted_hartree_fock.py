@@ -16,11 +16,9 @@ UnrestrictedHartreeFock
 
 from typing import List, Tuple
 
-from q_block.solvers.spin_pair import SpinPair
-from q_block.solvers.wavefunction.hartree_fock.hartree_fock import (
-    HartreeFock,
-)
 from q_block.models.basis_functions import ContractedGaussianTypeOrbital
+from q_block.solvers.spin_pair import SpinPair
+from q_block.solvers.wavefunction.hartree_fock.hartree_fock import HartreeFock
 
 
 class UnrestrictedHartreeFock(HartreeFock):
@@ -77,8 +75,11 @@ class UnrestrictedHartreeFock(HartreeFock):
                 f"got n_alpha={n_alpha}, n_beta={n_beta}."
             )
         super().__init__(
-            cgtos, nuclei, e_nuclear,
-            n_alpha=n_alpha, n_beta=n_beta,
+            cgtos,
+            nuclei,
+            e_nuclear,
+            n_alpha=n_alpha,
+            n_beta=n_beta,
             max_iterations=max_iterations,
             convergence_threshold=convergence_threshold,
             diis_start=diis_start,

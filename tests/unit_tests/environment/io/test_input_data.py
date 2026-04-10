@@ -19,7 +19,6 @@ from q_block import AtomicSystem
 from q_block.environment.io.input_data import InputData
 from tests.unit_tests.environment.constants import GEOMETRIES_DIR
 
-
 # ======================================================================
 # InputData.from_xyz_file Tests
 # ======================================================================

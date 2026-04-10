@@ -20,14 +20,19 @@ import numpy as np
 import pytest
 
 from q_block import Molecule
-from q_block.solvers.wavefunction.hartree_fock.unrestricted_hartree_fock import (
-    UnrestrictedHartreeFock,
-)
 from q_block.models.initialization.nuclear_repulsion_energy import (
     NuclearRepulsionEnergy,
 )
-from tests.unit_tests.utilities import extract_nuclei, h2_molecule, h2_uhf, water_molecule, water_uhf
-
+from q_block.solvers.wavefunction.hartree_fock.unrestricted_hartree_fock import (
+    UnrestrictedHartreeFock,
+)
+from tests.unit_tests.utilities import (
+    extract_nuclei,
+    h2_molecule,
+    h2_uhf,
+    water_molecule,
+    water_uhf,
+)
 
 # ======================================================================
 # Construction & Validation Tests
@@ -69,8 +74,11 @@ def test_negative_electrons_raises(
     e_nuc = NuclearRepulsionEnergy(molecule=h2_molecule).energy
     with pytest.raises(ValueError, match="non-negative"):
         UnrestrictedHartreeFock(
-            cgtos=cgtos, nuclei=nuclei, e_nuclear=e_nuc,
-            n_alpha=n_alpha, n_beta=n_beta,
+            cgtos=cgtos,
+            nuclei=nuclei,
+            e_nuclear=e_nuc,
+            n_alpha=n_alpha,
+            n_beta=n_beta,
         )
 
 
@@ -198,11 +206,16 @@ def test_h2_uhf_matrices_keys(h2_uhf: UnrestrictedHartreeFock) -> None:
     """
     h2_uhf.run()
     expected_keys = {
-        "S", "H",
-        "F_alpha", "F_beta",
-        "P_alpha", "P_beta",
-        "C_alpha", "C_beta",
-        "epsilon_alpha", "epsilon_beta",
+        "S",
+        "H",
+        "F_alpha",
+        "F_beta",
+        "P_alpha",
+        "P_beta",
+        "C_alpha",
+        "C_beta",
+        "epsilon_alpha",
+        "epsilon_beta",
     }
     assert expected_keys == set(h2_uhf.matrices.keys())
 
@@ -343,7 +356,9 @@ def test_water_uhf_density_traces(water_uhf: UnrestrictedHartreeFock) -> None:
     np.testing.assert_allclose(np.trace(P_b @ S), 5.0, atol=1e-8)
 
 
-def test_water_uhf_electronic_energy_negative(water_uhf: UnrestrictedHartreeFock) -> None:
+def test_water_uhf_electronic_energy_negative(
+    water_uhf: UnrestrictedHartreeFock,
+) -> None:
     """Electronic energy for water should be negative.
 
     :param water_uhf: Uninitialised UHF for water/STO-3G.

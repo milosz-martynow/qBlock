@@ -227,6 +227,4 @@ class Overlap(TwoGaussianIntegral):
         :returns: Overlap integral value S_μν.
         :rtype: float
         """
-        return self.contracted_overlap(
-            cgto1, lx1, ly1, lz1, cgto2, lx2, ly2, lz2
-        )
+        return self.contracted_overlap(cgto1, lx1, ly1, lz1, cgto2, lx2, ly2, lz2)

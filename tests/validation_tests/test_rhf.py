@@ -27,29 +27,27 @@ run against the shared result:
    incorrect orbital indexing.
 """
 
-import pytest
+from typing import Any, Callable, Dict, Tuple
 
 import numpy as np
-
-from typing import Any, Callable, Dict, Tuple
+import pytest
 
 from q_block.solvers.wavefunction.hartree_fock.restricted_hartree_fock import (
     RestrictedHartreeFock,
+)
+from tests.validation_tests.templates import (
+    make_atom_koopmans_ie_test,
+    make_atom_scf_converged_test,
+    make_molecule_homo_ie_positive_test,
+    make_molecule_koopmans_ie_test,
+    make_molecule_scf_converged_test,
+    make_molecule_total_energy_negative_test,
 )
 from tests.validation_tests.utils import _build_from_geometry
 from tests.validation_tests.validation_data import (
     ATOMS_HOMO_ENERGIES,
     MOLECULES_HOMO_ENERGIES,
 )
-from tests.validation_tests.templates import (
-    make_atom_scf_converged_test,
-    make_atom_koopmans_ie_test,
-    make_molecule_scf_converged_test,
-    make_molecule_total_energy_negative_test,
-    make_molecule_homo_ie_positive_test,
-    make_molecule_koopmans_ie_test,
-)
-
 
 # ---------------------------------------------------------------------------
 # Test data selection
@@ -79,7 +77,9 @@ _rhf_mol_entries = [
     params=[entry for _, entry in _rhf_atom_entries],
     ids=[key for key, _ in _rhf_atom_entries],
 )
-def rhf_atom_result(request: pytest.FixtureRequest) -> Tuple[Dict[str, Any], RestrictedHartreeFock]:
+def rhf_atom_result(
+    request: pytest.FixtureRequest,
+) -> Tuple[Dict[str, Any], RestrictedHartreeFock]:
     """Run RHF SCF for one closed-shell atom (placed at origin) and return
     ``(entry, converged_hf)``."""
     entry = request.param
@@ -103,7 +103,9 @@ def rhf_atom_result(request: pytest.FixtureRequest) -> Tuple[Dict[str, Any], Res
     params=[entry for _, entry in _rhf_mol_entries],
     ids=[key for key, _ in _rhf_mol_entries],
 )
-def rhf_molecule_result(request: pytest.FixtureRequest) -> Tuple[Dict[str, Any], RestrictedHartreeFock]:
+def rhf_molecule_result(
+    request: pytest.FixtureRequest,
+) -> Tuple[Dict[str, Any], RestrictedHartreeFock]:
     """Run RHF SCF for one closed-shell molecule and return
     ``(entry, converged_hf)``."""
     entry = request.param
@@ -128,7 +130,9 @@ def rhf_molecule_result(request: pytest.FixtureRequest) -> Tuple[Dict[str, Any],
 
 # RHF-specific helper functions
 _rhf_homo_idx: Callable[[Dict[str, Any]], int] = lambda entry: entry["n_closed"] - 1
-_rhf_epsilon: Callable[[RestrictedHartreeFock], np.ndarray] = lambda hf: hf.matrices["epsilon"]
+_rhf_epsilon: Callable[[RestrictedHartreeFock], np.ndarray] = (
+    lambda hf: hf.matrices["epsilon"]
+)
 
 
 def test_rhf_atom_scf_converged(rhf_atom_result) -> None:
@@ -151,7 +155,9 @@ def test_rhf_atom_koopmans_ie_vs_reference(rhf_atom_result) -> None:
 
     :param rhf_atom_result: Pytest fixture providing ``(entry, hf)``.
     """
-    return make_atom_koopmans_ie_test("RHF", _rhf_homo_idx, _rhf_epsilon)(rhf_atom_result)
+    return make_atom_koopmans_ie_test("RHF", _rhf_homo_idx, _rhf_epsilon)(
+        rhf_atom_result
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -186,7 +192,9 @@ def test_rhf_molecule_homo_ie_positive(rhf_molecule_result) -> None:
 
     :param rhf_molecule_result: Pytest fixture providing ``(entry, hf)``.
     """
-    return make_molecule_homo_ie_positive_test("RHF", _rhf_homo_idx, _rhf_epsilon)(rhf_molecule_result)
+    return make_molecule_homo_ie_positive_test("RHF", _rhf_homo_idx, _rhf_epsilon)(
+        rhf_molecule_result
+    )
 
 
 def test_rhf_molecule_koopmans_ie_vs_reference(rhf_molecule_result) -> None:
@@ -197,4 +205,6 @@ def test_rhf_molecule_koopmans_ie_vs_reference(rhf_molecule_result) -> None:
 
     :param rhf_molecule_result: Pytest fixture providing ``(entry, hf)``.
     """
-    return make_molecule_koopmans_ie_test("RHF", _rhf_homo_idx, _rhf_epsilon)(rhf_molecule_result)
+    return make_molecule_koopmans_ie_test("RHF", _rhf_homo_idx, _rhf_epsilon)(
+        rhf_molecule_result
+    )

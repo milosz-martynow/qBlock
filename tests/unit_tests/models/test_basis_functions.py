@@ -20,7 +20,6 @@ from q_block.environment.io.input_data import InputData
 from q_block.utilities.mathematics import normalization_constant
 from tests.unit_tests.environment.constants import BASIS_6_31G, ORIGIN
 
-
 # ======================================================================
 # Fixtures
 # ======================================================================
@@ -70,10 +69,10 @@ def water_molecule() -> Molecule:
 @pytest.mark.parametrize(
     "l, expected_n_functions",
     [
-        (0, 1),   # s-orbital: 2*0 + 1 = 1
-        (1, 3),   # p-orbital: 2*1 + 1 = 3
-        (2, 5),   # d-orbital: 2*2 + 1 = 5
-        (3, 7),   # f-orbital: 2*3 + 1 = 7
+        (0, 1),  # s-orbital: 2*0 + 1 = 1
+        (1, 3),  # p-orbital: 2*1 + 1 = 3
+        (2, 5),  # d-orbital: 2*2 + 1 = 5
+        (3, 7),  # f-orbital: 2*3 + 1 = 7
     ],
     ids=["s_orbital", "p_orbital", "d_orbital", "f_orbital"],
 )
@@ -426,7 +425,8 @@ def test_molecule_make_cgto_n_basis_matches_sum(water_molecule: Molecule) -> Non
     """Verify n_basis equals sum of n_functions over all CGTOs."""
     water_molecule.make_contracted_gaussian_type_orbital()
     total_functions: int = sum(
-        cgto.n_functions for cgto in water_molecule.contracted_gaussian_type_orbitals
+        cgto.n_functions
+        for cgto in water_molecule.contracted_gaussian_type_orbitals
     )
     assert total_functions == water_molecule.n_basis
 
@@ -441,7 +441,9 @@ def test_molecule_make_cgto_atom_indices_correct(water_molecule: Molecule) -> No
     assert seen_indices == {0, 1, 2}
 
 
-def test_molecule_make_cgto_water_631g_shell_count(water_molecule: Molecule) -> None:
+def test_molecule_make_cgto_water_631g_shell_count(
+    water_molecule: Molecule,
+) -> None:
     """Verify water with 6-31G has expected number of shells."""
     water_molecule.make_contracted_gaussian_type_orbital()
     # O: 5 shells, H: 2 shells each
@@ -580,6 +582,8 @@ def test_molecular_orbital_linearity(water_molecule: Molecule) -> None:
 
     # Sum should equal evaluation with summed coefficients
     coeffs_sum: List[float] = [1.0, 1.0] + [0.0] * (water_molecule.n_basis - 2)
-    mo_sum: float = water_molecule.evaluate_molecular_orbital(r, coeffs_sum, angular)
+    mo_sum: float = water_molecule.evaluate_molecular_orbital(
+        r, coeffs_sum, angular
+    )
 
     assert abs(mo_sum - (mo_a + mo_b)) < 1e-10

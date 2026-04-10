@@ -12,10 +12,10 @@ from q_block.environment.constants.natural.atoms_data import (
     ATOMS_SYMBOLS_Z_TO_SYMBOL,
     EMPIRICAL_EXCEPTIONS,
 )
-from q_block.environment.io.coordinates import CartesianCoordinates
 from q_block.environment.io.basis_set import BasisSet
-from q_block.models.electron import Shell
+from q_block.environment.io.coordinates import CartesianCoordinates
 from q_block.models.basis_functions import ContractedGaussianTypeOrbital
+from q_block.models.electron import Shell
 
 
 class Atom:
@@ -25,7 +25,9 @@ class Atom:
         self,
         atomic_number: int,
         maximal_principal_quantum_number: int = 7,
-        empirical_exceptions: Optional[Dict[int, List[Dict[str, int]]]] = EMPIRICAL_EXCEPTIONS,
+        empirical_exceptions: Optional[
+            Dict[int, List[Dict[str, int]]]
+        ] = EMPIRICAL_EXCEPTIONS,
         basis_set: Optional[BasisSet] = None,
         coordinates: Optional[CartesianCoordinates] = None,
         charge: int = 0,
@@ -102,13 +104,15 @@ class Atom:
             n: Shell(n=n) for n in range(1, maximal_principal_quantum_number + 1)
         }
         self.basis_set: Optional[BasisSet] = basis_set
-        
+
         # Open-shell flag: True if atom has unpaired electrons, False if closed-shell
         # This is set automatically by fill_occupancy() based on electron configuration
         self.open_shell: Optional[bool] = None
 
         # CGTO basis functions — populated by make_contracted_gaussian_type_orbital()
-        self.contracted_gaussian_type_orbitals: Optional[List[ContractedGaussianTypeOrbital]] = None
+        self.contracted_gaussian_type_orbitals: Optional[
+            List[ContractedGaussianTypeOrbital]
+        ] = None
 
         # Build the ground-state electronic configuration immediately.
         self.fill_occupancy()
@@ -291,11 +295,9 @@ class Atom:
         # Count unpaired electrons (orbitals with only one spin occupied).
         # If any unpaired electrons exist, the atom is open-shell.
         # ==================================================================
-        n_unpaired = sum(
-            shell.count_unpaired() for shell in self.shells.values()
-        )
-        
-        self.open_shell = (n_unpaired > 0)
+        n_unpaired = sum(shell.count_unpaired() for shell in self.shells.values())
+
+        self.open_shell = n_unpaired > 0
 
     def make_contracted_gaussian_type_orbital(
         self,
@@ -387,9 +389,7 @@ class Atom:
             and self.coordinates.y is not None
             and self.coordinates.z is not None
         ):
-            coord_str = (
-                f" coords=({self.coordinates.x:.3f},{self.coordinates.y:.3f},{self.coordinates.z:.3f})"
-            )
+            coord_str = f" coords=({self.coordinates.x:.3f},{self.coordinates.y:.3f},{self.coordinates.z:.3f})"
         else:
             coord_str = ""
         return (

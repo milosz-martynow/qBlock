@@ -43,7 +43,6 @@ from typing import List, Optional
 from q_block.environment.io.coordinates import CartesianCoordinates
 from q_block.utilities.mathematics import normalization_constant
 
-
 # ======================================================================
 # Single contracted shell
 # ======================================================================
@@ -215,7 +214,7 @@ class ContractedGaussianTypeOrbital:
         # Normalisation constant for Cartesian Gaussian
         norm = normalization_constant(alpha, lx, ly, lz)
 
-        angular = (dx ** lx) * (dy ** ly) * (dz ** lz)
+        angular = (dx**lx) * (dy**ly) * (dz**lz)
         radial = math.exp(-alpha * r_sq)
 
         return norm * angular * radial

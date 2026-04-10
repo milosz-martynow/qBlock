@@ -3,23 +3,14 @@
 This module provides the foundational infrastructure for qBlock calculations:
 
 - **constants**: Natural and numerical constants (atomic data, basis sets)
-- **io**: Input/output interfaces (basis set readers, coordinate parsers, data containers)
-- **configuration**: Runtime configuration management (paths, settings)
-
-The environment module encapsulates all external data sources, system settings,
-and interfaces that define the calculation environment.
+- **io**: Input/output interfaces (basis set readers, coordinate parsers,
+  data containers)
+- **configuration**: Input configuration reader (plain-text config files)
+- **logs**: Centralised logging configuration
 """
 
-from q_block.environment.configuration import (
-    CalculationDefaults,
-    Configuration,
-    OutputSettings,
-    PathConfiguration,
-)
+from q_block.environment.configuration import Configuration
 
 __all__ = [
     "Configuration",
-    "PathConfiguration",
-    "CalculationDefaults",
-    "OutputSettings",
 ]

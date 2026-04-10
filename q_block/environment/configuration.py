@@ -1,382 +1,563 @@
-"""Configuration management for qBlock calculations.
+r"""Configuration reader for qBlock calculations.
 
-This module provides centralized configuration for:
-- File paths (input, output, basis sets, geometries)
-- Calculation defaults (convergence thresholds, max iterations)
-- Output settings (log levels, file formats)
+This module reads input configuration for qBlock from a plain-text
+configuration file.  The default file name is ``.qblock.config``;
+a documented template is shipped as ``.qblock.config.example``.
 
-Design Philosophy
------------------
-- **Environment-aware**: reads from environment variables and config files
-- **Type-safe**: all configuration values are typed and validated
-- **Layered defaults**: system defaults → config file → environment variables
-- **No global state**: configuration is passed explicitly, not imported globally
+Recognised Configuration Keys
+------------------------------
+
+basis_set
+    Global basis set name applied to every atom that does not specify
+    its own in the geometry block (e.g. ``STO-3G``, ``3-21G``,
+    ``6-31G``, ``6-311++G**``).  Default: ``STO-3G``.
+
+charge
+    Total system charge (integer).  Default: ``0``.
+
+multiplicity
+    Spin multiplicity :math:`2S+1` (integer).  Default: ``1``.
+
+geometry_file
+    Path to an XYZ geometry file.  Used when geometry is not defined
+    inline.  Mutually exclusive with the ``$geometry`` block.
+
+max_scf_iterations
+    Maximum number of SCF iterations (integer).  Default: ``100``.
+
+scf_convergence_threshold
+    Energy / density convergence threshold (float).
+    Default: ``1e-8``.
+
+diis_start
+    Iteration at which DIIS extrapolation begins, 0-indexed (integer).
+    Default: ``1``.
+
+diis_max_vectors
+    Maximum DIIS subspace size (integer).  Default: ``6``.
+
+error_metric
+    Convergence error metric.  Accepted: ``rms``, ``max``.
+    Default: ``rms``.
+
+output_dir
+    Directory for calculation output files.  Default: ``output``.
+
+log_level
+    Logging verbosity.  Accepted: ``DEBUG``, ``INFO``, ``WARNING``,
+    ``ERROR``.  Default: ``INFO``.
+
+save_json
+    Write JSON output (``true`` / ``false``).  Default: ``true``.
+
+save_text
+    Write plain-text summary output (``true`` / ``false``).
+    Default: ``true``.
+
+Geometry Block
+--------------
+
+Inline geometry is enclosed between ``$geometry`` and ``$end``
+markers.  Each line describes one atom::
+
+    AtomSymbol  X  Y  Z  [basis_set]  [charge]
+
+Per-atom *basis_set* overrides the global ``basis_set`` value.
+Per-atom *charge* is the formal atomic charge (defaults to ``0``
+when omitted).
+
+File Format Example
+-------------------
+
+::
+
+    # Global settings
+    basis_set = STO-3G
+    charge = 0
+    multiplicity = 1
+
+    # Calculation parameters
+    max_scf_iterations = 100
+    scf_convergence_threshold = 1e-8
+
+    # Inline geometry
+    $geometry
+    H  0.0  0.0  0.0
+    H  0.0  0.0  0.74
+    $end
 
 Usage
 -----
-1. **Default configuration** (recommended for most cases)::
 
-    from q_block.environment import Configuration
+1. **Load from file**::
 
-    config = Configuration()
-    # Uses default paths and settings
+    from q_block.environment.configuration import Configuration
 
-2. **Load from default .config file**::
+    config = Configuration.from_file("my_calculation.qblock.config")
+
+2. **Load from default location**::
 
     config = Configuration.from_file()
-    # Searches for .qblock.config, qblock.config.json, or .config
+    # Searches for .qblock.config in the current directory
 
-3. **Custom configuration from file**::
-
-    config = Configuration.from_file("my_config.json")
-
-4. **Override specific settings**::
+3. **Programmatic creation**::
 
     config = Configuration(
-        output_dir="custom_output",
-        max_scf_iterations=200,
+        basis_set="3-21G",
+        charge=0,
+        multiplicity=1,
+        geometry=[
+            ["H", 0.0, 0.0, 0.0],
+            ["H", 0.0, 0.0, 0.74],
+        ],
     )
-
-5. **From environment variables**::
-
-    # Set environment variables:
-    # QBLOCK_OUTPUT_DIR=results
-    # QBLOCK_MAX_SCF_ITERATIONS=150
-
-    config = Configuration.from_env()
 """
 
-import json
-import os
-from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Optional, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
+
+# Mapping of recognised keys to (type, default_value).
+_KEY_DEFAULTS: Dict[str, Tuple[type, Any]] = {
+    "basis_set": (str, "STO-3G"),
+    "charge": (int, 0),
+    "multiplicity": (int, 1),
+    "geometry_file": (str, None),
+    "max_scf_iterations": (int, 100),
+    "scf_convergence_threshold": (float, 1e-8),
+    "diis_start": (int, 1),
+    "diis_max_vectors": (int, 6),
+    "error_metric": (str, "rms"),
+    "output_dir": (str, "output"),
+    "log_level": (str, "INFO"),
+    "save_json": (bool, True),
+    "save_text": (bool, True),
+}
 
 
-@dataclass
-class PathConfiguration:
-    """File path configuration for inputs and outputs.
+def _cast_value(key: str, raw: str) -> Any:
+    """Cast a raw string value to the expected type for *key*.
 
-    :param basis_set_dir: Directory containing basis set files (.gbs).
-    :type basis_set_dir: Path
-    :param geometry_dir: Directory for molecular geometry files (.xyz).
-    :type geometry_dir: Path
-    :param output_dir: Directory for calculation outputs.
-    :type output_dir: Path
-    :param log_dir: Directory for log files.
-    :type log_dir: Path
+    :param key: Recognised configuration key.
+    :type key: str
+    :param raw: Raw string value from the configuration file.
+    :type raw: str
+    :returns: Value cast to the appropriate Python type.
+    :rtype: Any
+    :raises ValueError: If *key* is unknown or *raw* cannot be
+        converted.
     """
+    if key not in _KEY_DEFAULTS:
+        raise ValueError(f"Unknown configuration key: {key!r}")
 
-    basis_set_dir: Path = field(
-        default_factory=lambda: Path("q_block/environment/constants/numerical/basis_set")
+    target_type: type = _KEY_DEFAULTS[key][0]
+
+    if target_type is bool:
+        return raw.strip().lower() in ("true", "1", "yes")
+    if target_type is int:
+        return int(raw.strip())
+    if target_type is float:
+        return float(raw.strip())
+    return raw.strip()
+
+
+def _parse_geometry_line(
+    line: str,
+    global_basis_set: Optional[str],
+) -> List[Any]:
+    """Parse a single geometry line into an atom entry list.
+
+    Expected format::
+
+        AtomSymbol  X  Y  Z  [basis_set]  [charge]
+
+    :param line: Single geometry line.
+    :type line: str
+    :param global_basis_set: Fallback basis set name.
+    :type global_basis_set: Optional[str]
+    :returns: List ``[symbol, x, y, z]``, or
+        ``[symbol, x, y, z, basis_set_name]``, or
+        ``[symbol, x, y, z, basis_set_name, charge]``.
+    :rtype: List[Any]
+    :raises ValueError: If the line cannot be parsed.
+    """
+    parts: List[str] = line.split()
+    if len(parts) < 4:
+        raise ValueError(
+            f"Geometry line must have at least 4 fields "
+            f"(Symbol X Y Z); got: {line!r}"
+        )
+
+    symbol: str = parts[0]
+
+    try:
+        x: float = float(parts[1])
+        y: float = float(parts[2])
+        z: float = float(parts[3])
+    except ValueError as exc:
+        raise ValueError(
+            f"Coordinates must be numeric; got: {line!r}"
+        ) from exc
+
+    basis_set: Optional[str] = (
+        parts[4] if len(parts) > 4 else global_basis_set
     )
-    geometry_dir: Path = field(default_factory=lambda: Path("geometries"))
-    output_dir: Path = field(default_factory=lambda: Path("output"))
-    log_dir: Path = field(default_factory=lambda: Path("logs"))
 
-    def ensure_directories(self) -> None:
-        """Create output and log directories if they don't exist.
+    if len(parts) > 5:
+        try:
+            charge: int = int(parts[5])
+        except ValueError as exc:
+            raise ValueError(
+                f"Per-atom charge must be an integer; "
+                f"got: {parts[5]!r}"
+            ) from exc
+        return [symbol, x, y, z, basis_set, charge]
 
-        :returns: None
-        :rtype: None
-        """
-        self.output_dir.mkdir(parents=True, exist_ok=True)
-        self.log_dir.mkdir(parents=True, exist_ok=True)
+    if basis_set is not None:
+        return [symbol, x, y, z, basis_set]
 
-
-@dataclass
-class CalculationDefaults:
-    """Default parameters for quantum chemistry calculations.
-
-    :param max_scf_iterations: Maximum SCF iterations before stop.
-    :type max_scf_iterations: int
-    :param scf_convergence_threshold: Energy and error convergence threshold.
-    :type scf_convergence_threshold: float
-    :param diis_start: Iteration to begin DIIS extrapolation (0-indexed).
-    :type diis_start: int
-    :param diis_max_vectors: Maximum DIIS subspace size.
-    :type diis_max_vectors: int
-    :param error_metric: Error metric for convergence ("rms" or "max").
-    :type error_metric: str
-    """
-
-    max_scf_iterations: int = 100
-    scf_convergence_threshold: float = 1e-8
-    diis_start: int = 1
-    diis_max_vectors: int = 6
-    error_metric: str = "rms"
-
-
-@dataclass
-class OutputSettings:
-    """Output format and logging configuration.
-
-    :param save_json: Whether to save JSON output by default.
-    :type save_json: bool
-    :param save_text: Whether to save text summary by default.
-    :type save_text: bool
-    :param save_log: Whether to save complete log file.
-    :type save_log: bool
-    :param save_matrices: Whether to include matrices in JSON output.
-    :type save_matrices: bool
-    :param log_level: Logging level (DEBUG, INFO, WARNING, ERROR).
-    :type log_level: str
-    :param json_indent: Indentation spaces for JSON output.
-    :type json_indent: int
-    :param output_prefix: Prefix for all output filenames.
-    :type output_prefix: str
-    """
-
-    save_json: bool = True
-    save_text: bool = True
-    save_log: bool = True
-    save_matrices: bool = False
-    log_level: str = "INFO"
-    json_indent: int = 2
-    output_prefix: str = "output"
+    return [symbol, x, y, z]
 
 
 class Configuration:
-    """Main configuration container for qBlock calculations.
+    """Input configuration container for qBlock calculations.
 
-    Aggregates all configuration sections and provides methods for
-    loading from files and environment variables.
+    Stores all parameters needed to set up and run a qBlock
+    calculation.  Can be created programmatically or loaded from
+    a plain-text configuration file via :meth:`from_file`.
 
-    :param paths: Path configuration.
-    :type paths: Optional[PathConfiguration]
-    :param calculation: Calculation default parameters.
-    :type calculation: Optional[CalculationDefaults]
-    :param output: Output settings.
-    :type output: Optional[OutputSettings]
+    :param basis_set: Global basis set name.
+    :type basis_set: str
+    :param charge: Total system charge.
+    :type charge: int
+    :param multiplicity: Spin multiplicity (2S+1).
+    :type multiplicity: int
+    :param geometry_file: Path to an XYZ geometry file.
+    :type geometry_file: Optional[str]
+    :param geometry: Inline atom entries, each
+        ``[symbol, x, y, z]`` or
+        ``[symbol, x, y, z, basis_set, charge]``.
+    :type geometry: Optional[List[List[Any]]]
+    :param max_scf_iterations: Maximum SCF iterations.
+    :type max_scf_iterations: int
+    :param scf_convergence_threshold: Convergence threshold.
+    :type scf_convergence_threshold: float
+    :param diis_start: Iteration to start DIIS.
+    :type diis_start: int
+    :param diis_max_vectors: Maximum DIIS subspace size.
+    :type diis_max_vectors: int
+    :param error_metric: Convergence error metric
+        (``"rms"`` or ``"max"``).
+    :type error_metric: str
+    :param output_dir: Output directory path.
+    :type output_dir: str
+    :param log_level: Logging level string.
+    :type log_level: str
+    :param save_json: Write JSON output.
+    :type save_json: bool
+    :param save_text: Write text summary output.
+    :type save_text: bool
+
+    Attributes
+    ----------
+    basis_set : str
+    charge : int
+    multiplicity : int
+    geometry_file : Optional[str]
+    geometry : List[List[Any]]
+    max_scf_iterations : int
+    scf_convergence_threshold : float
+    diis_start : int
+    diis_max_vectors : int
+    error_metric : str
+    output_dir : str
+    log_level : str
+    save_json : bool
+    save_text : bool
     """
 
     def __init__(
         self,
-        paths: Optional[PathConfiguration] = None,
-        calculation: Optional[CalculationDefaults] = None,
-        output: Optional[OutputSettings] = None,
-        # Convenience parameters for path overrides
-        basis_set_dir: Optional[Union[str, Path]] = None,
-        geometry_dir: Optional[Union[str, Path]] = None,
-        output_dir: Optional[Union[str, Path]] = None,
-        log_dir: Optional[Union[str, Path]] = None,
-        # Convenience parameters for calculation overrides
-        max_scf_iterations: Optional[int] = None,
-        scf_convergence_threshold: Optional[float] = None,
+        basis_set: str = "STO-3G",
+        charge: int = 0,
+        multiplicity: int = 1,
+        geometry_file: Optional[str] = None,
+        geometry: Optional[List[List[Any]]] = None,
+        max_scf_iterations: int = 100,
+        scf_convergence_threshold: float = 1e-8,
+        diis_start: int = 1,
+        diis_max_vectors: int = 6,
+        error_metric: str = "rms",
+        output_dir: str = "output",
+        log_level: str = "INFO",
+        save_json: bool = True,
+        save_text: bool = True,
     ) -> None:
-        # Initialize with defaults or provided configurations
-        self.paths: PathConfiguration = paths or PathConfiguration()
-        self.calculation: CalculationDefaults = (
-            calculation or CalculationDefaults()
+        self.basis_set: str = basis_set
+        self.charge: int = charge
+        self.multiplicity: int = multiplicity
+        self.geometry_file: Optional[str] = geometry_file
+        self.geometry: List[List[Any]] = (
+            geometry if geometry is not None else []
         )
-        self.output: OutputSettings = output or OutputSettings()
+        self.max_scf_iterations: int = max_scf_iterations
+        self.scf_convergence_threshold: float = (
+            scf_convergence_threshold
+        )
+        self.diis_start: int = diis_start
+        self.diis_max_vectors: int = diis_max_vectors
+        self.error_metric: str = error_metric
+        self.output_dir: str = output_dir
+        self.log_level: str = log_level
+        self.save_json: bool = save_json
+        self.save_text: bool = save_text
 
-        # Apply convenience overrides
-        if basis_set_dir is not None:
-            self.paths.basis_set_dir = Path(basis_set_dir)
-        if geometry_dir is not None:
-            self.paths.geometry_dir = Path(geometry_dir)
-        if output_dir is not None:
-            self.paths.output_dir = Path(output_dir)
-        if log_dir is not None:
-            self.paths.log_dir = Path(log_dir)
-        if max_scf_iterations is not None:
-            self.calculation.max_scf_iterations = max_scf_iterations
-        if scf_convergence_threshold is not None:
-            self.calculation.scf_convergence_threshold = scf_convergence_threshold
+    # ── Parameter accessors (proper format) ──────────────────────
+
+    def get_basis_set(self) -> str:
+        """Return global basis set name.
+
+        :returns: Basis set name (e.g. ``"STO-3G"``).
+        :rtype: str
+        """
+        return self.basis_set
+
+    def get_charge(self) -> int:
+        """Return total system charge.
+
+        :returns: System charge.
+        :rtype: int
+        """
+        return self.charge
+
+    def get_multiplicity(self) -> int:
+        """Return spin multiplicity (2S+1).
+
+        :returns: Spin multiplicity.
+        :rtype: int
+        """
+        return self.multiplicity
+
+    def get_geometry_file(self) -> Optional[Path]:
+        """Return geometry file path as a :class:`Path`.
+
+        :returns: Geometry file path, or ``None`` when inline
+            geometry is used.
+        :rtype: Optional[Path]
+        """
+        if self.geometry_file is None:
+            return None
+        return Path(self.geometry_file)
+
+    def get_geometry(self) -> List[List[Any]]:
+        """Return inline geometry entries.
+
+        Each entry is ``[symbol, x, y, z]``,
+        ``[symbol, x, y, z, basis_set_name]``, or
+        ``[symbol, x, y, z, basis_set_name, charge]``.
+
+        :returns: List of atom entries.
+        :rtype: List[List[Any]]
+        """
+        return self.geometry
+
+    def get_max_scf_iterations(self) -> int:
+        """Return maximum SCF iteration count.
+
+        :returns: Maximum iterations.
+        :rtype: int
+        """
+        return self.max_scf_iterations
+
+    def get_scf_convergence_threshold(self) -> float:
+        """Return SCF convergence threshold.
+
+        :returns: Convergence threshold.
+        :rtype: float
+        """
+        return self.scf_convergence_threshold
+
+    def get_diis_start(self) -> int:
+        """Return DIIS start iteration (0-indexed).
+
+        :returns: DIIS start iteration.
+        :rtype: int
+        """
+        return self.diis_start
+
+    def get_diis_max_vectors(self) -> int:
+        """Return maximum DIIS subspace size.
+
+        :returns: Maximum DIIS vectors.
+        :rtype: int
+        """
+        return self.diis_max_vectors
+
+    def get_error_metric(self) -> str:
+        """Return convergence error metric name.
+
+        :returns: ``"rms"`` or ``"max"``.
+        :rtype: str
+        """
+        return self.error_metric
+
+    def get_output_dir(self) -> Path:
+        """Return output directory as a :class:`Path`.
+
+        :returns: Output directory path.
+        :rtype: Path
+        """
+        return Path(self.output_dir)
+
+    def get_log_level(self) -> str:
+        """Return logging level string.
+
+        :returns: Log level (``"DEBUG"``, ``"INFO"``,
+            ``"WARNING"``, ``"ERROR"``).
+        :rtype: str
+        """
+        return self.log_level
+
+    def get_save_json(self) -> bool:
+        """Return whether JSON output should be saved.
+
+        :returns: ``True`` to save JSON output.
+        :rtype: bool
+        """
+        return self.save_json
+
+    def get_save_text(self) -> bool:
+        """Return whether text summary output should be saved.
+
+        :returns: ``True`` to save text output.
+        :rtype: bool
+        """
+        return self.save_text
 
     @classmethod
-    def from_file(cls, filepath: Optional[Union[str, Path]] = None) -> "Configuration":
-        """Load configuration from a JSON file.
+    def from_file(
+        cls,
+        filepath: Optional[Union[str, Path]] = None,
+    ) -> "Configuration":
+        """Load configuration from a plain-text file.
 
-        If no filepath is provided, attempts to load from default locations:
-        1. .qblock.config in current directory
-        2. qblock.config.json in current directory
-        3. .config in current directory (fallback)
+        If *filepath* is ``None``, searches for ``.qblock.config``
+        in the current directory.  When no file is found a default
+        :class:`Configuration` is returned.
 
-        File format::
-
-            {
-              "paths": {
-                "basis_set_dir": "path/to/basis",
-                "output_dir": "path/to/output"
-              },
-              "calculation": {
-                "max_scf_iterations": 150,
-                "scf_convergence_threshold": 1e-9
-              },
-              "output": {
-                "save_json": true,
-                "log_level": "DEBUG"
-
-              }
-            }
-
-        :param filepath: Path to JSON configuration file. If None, uses default locations.
+        :param filepath: Path to the configuration file.  When
+            ``None``, defaults to ``.qblock.config``.
         :type filepath: Optional[Union[str, Path]]
-        :returns: Configuration instance loaded from file.
+        :returns: Parsed configuration.
         :rtype: Configuration
-        :raises FileNotFoundError: If configuration file does not exist.
-        :raises ValueError: If JSON is malformed.
+        :raises FileNotFoundError: If an explicit *filepath* does
+            not exist.
+        :raises ValueError: If the file contains syntax errors.
         """
-        # If no filepath provided, try default locations
         if filepath is None:
-            default_paths = [
-                Path(".qblock.config"),
-                Path("qblock.config.json"),
-                Path(".config"),
-            ]
-            path = None
-            for default_path in default_paths:
-                if default_path.exists():
-                    path = default_path
-                    break
-            
-            if path is None:
-                # No default config found, return configuration with defaults
+            default_path: Path = Path(".qblock.config")
+            if not default_path.exists():
                 return cls()
+            path: Path = default_path
         else:
             path = Path(filepath)
-        
+
         if not path.exists():
-            raise FileNotFoundError(f"Configuration file not found: {path}")
-
-        try:
-            data = json.loads(path.read_text(encoding="utf-8"))
-        except json.JSONDecodeError as exc:
-            raise ValueError(f"Invalid JSON in {path}: {exc}") from exc
-
-        # Build configuration sections
-        paths = None
-        if "paths" in data:
-            paths = PathConfiguration(
-                basis_set_dir=Path(data["paths"].get("basis_set_dir", "q_block/environment/constants/numerical/basis_set")),
-                geometry_dir=Path(data["paths"].get("geometry_dir", "geometries")),
-                output_dir=Path(data["paths"].get("output_dir", "output")),
-                log_dir=Path(data["paths"].get("log_dir", "logs")),
+            raise FileNotFoundError(
+                f"Configuration file not found: {path}"
             )
 
-        calculation = None
-        if "calculation" in data:
-            calculation = CalculationDefaults(
-                max_scf_iterations=data["calculation"].get("max_scf_iterations", 100),
-                scf_convergence_threshold=data["calculation"].get("scf_convergence_threshold", 1e-8),
-                diis_start=data["calculation"].get("diis_start", 1),
-                diis_max_vectors=data["calculation"].get("diis_max_vectors", 6),
-                error_metric=data["calculation"].get("error_metric", "rms"),
-            )
-
-        output_cfg = None
-        if "output" in data:
-            output_cfg = OutputSettings(
-                save_json=data["output"].get("save_json", True),
-                save_text=data["output"].get("save_text", True),
-                save_log=data["output"].get("save_log", True),
-                save_matrices=data["output"].get("save_matrices", False),
-                log_level=data["output"].get("log_level", "INFO"),
-                json_indent=data["output"].get("json_indent", 2),
-                output_prefix=data["output"].get("output_prefix", "output"),
-            )
-
-        return cls(
-            paths=paths,
-            calculation=calculation,
-            output=output_cfg,
-        )
+        text: str = path.read_text(encoding="utf-8")
+        return cls._parse(text)
 
     @classmethod
-    def from_env(cls) -> "Configuration":
-        """Load configuration from environment variables.
+    def _parse(cls, text: str) -> "Configuration":
+        """Parse configuration from plain-text content.
 
-        Supported environment variables::
-
-            QBLOCK_BASIS_SET_DIR
-            QBLOCK_GEOMETRY_DIR
-            QBLOCK_OUTPUT_DIR
-            QBLOCK_LOG_DIR
-            QBLOCK_MAX_SCF_ITERATIONS
-            QBLOCK_SCF_CONVERGENCE_THRESHOLD
-            QBLOCK_DIIS_START
-            QBLOCK_DIIS_MAX_VECTORS
-            QBLOCK_ERROR_METRIC
-            QBLOCK_LOG_LEVEL
-            QBLOCK_SAVE_JSON
-            QBLOCK_SAVE_TEXT
-            QBLOCK_SAVE_LOG
-            QBLOCK_SAVE_MATRICES
-            QBLOCK_OUTPUT_PREFIX
-
-        :returns: Configuration instance from environment variables.
+        :param text: Raw file content.
+        :type text: str
+        :returns: Parsed configuration instance.
         :rtype: Configuration
+        :raises ValueError: On syntax errors.
         """
-        paths = PathConfiguration(
-            basis_set_dir=Path(os.getenv("QBLOCK_BASIS_SET_DIR", "q_block/environment/constants/numerical/basis_set")),
-            geometry_dir=Path(os.getenv("QBLOCK_GEOMETRY_DIR", "geometries")),
-            output_dir=Path(os.getenv("QBLOCK_OUTPUT_DIR", "output")),
-            log_dir=Path(os.getenv("QBLOCK_LOG_DIR", "logs")),
+        settings: Dict[str, Any] = {}
+        geometry_lines: List[str] = []
+        in_geometry: bool = False
+
+        for line_no, raw_line in enumerate(
+            text.splitlines(), start=1
+        ):
+            line: str = raw_line.strip()
+
+            # Skip empty lines and comments
+            if not line or line.startswith("#"):
+                continue
+
+            # Geometry block markers
+            if line.lower() == "$geometry":
+                if in_geometry:
+                    raise ValueError(
+                        f"Line {line_no}: nested $geometry block"
+                    )
+                in_geometry = True
+                continue
+
+            if line.lower() == "$end":
+                if not in_geometry:
+                    raise ValueError(
+                        f"Line {line_no}: $end without $geometry"
+                    )
+                in_geometry = False
+                continue
+
+            # Inside geometry block
+            if in_geometry:
+                geometry_lines.append(line)
+                continue
+
+            # Key = value pair
+            if "=" not in line:
+                raise ValueError(
+                    f"Line {line_no}: expected 'key = value', "
+                    f"got: {raw_line!r}"
+                )
+
+            key: str
+            value: str
+            key, _, value = line.partition("=")
+            key = key.strip()
+            value = value.strip()
+
+            if not key:
+                raise ValueError(
+                    f"Line {line_no}: empty key"
+                )
+
+            settings[key] = _cast_value(key, value)
+
+        if in_geometry:
+            raise ValueError(
+                "Unclosed $geometry block (missing $end)"
+            )
+
+        # Resolve global basis set for geometry defaults
+        global_basis_set: Optional[str] = settings.get(
+            "basis_set",
+            _KEY_DEFAULTS["basis_set"][1],
         )
 
-        calculation = CalculationDefaults(
-            max_scf_iterations=int(os.getenv("QBLOCK_MAX_SCF_ITERATIONS", "100")),
-            scf_convergence_threshold=float(os.getenv("QBLOCK_SCF_CONVERGENCE_THRESHOLD", "1e-8")),
-            diis_start=int(os.getenv("QBLOCK_DIIS_START", "1")),
-            diis_max_vectors=int(os.getenv("QBLOCK_DIIS_MAX_VECTORS", "6")),
-            error_metric=os.getenv("QBLOCK_ERROR_METRIC", "rms"),
-        )
+        geometry: List[List[Any]] = [
+            _parse_geometry_line(gl, global_basis_set)
+            for gl in geometry_lines
+        ]
 
-        output_cfg = OutputSettings(
-            save_json=os.getenv("QBLOCK_SAVE_JSON", "true").lower() == "true",
-            save_text=os.getenv("QBLOCK_SAVE_TEXT", "true").lower() == "true",
-            save_log=os.getenv("QBLOCK_SAVE_LOG", "true").lower() == "true",
-            save_matrices=os.getenv("QBLOCK_SAVE_MATRICES", "false").lower() == "true",
-            log_level=os.getenv("QBLOCK_LOG_LEVEL", "INFO"),
-            json_indent=int(os.getenv("QBLOCK_JSON_INDENT", "2")),
-            output_prefix=os.getenv("QBLOCK_OUTPUT_PREFIX", "output"),
-        )
+        # Build kwargs with defaults for missing keys
+        kwargs: Dict[str, Any] = {}
+        for key, (_, default) in _KEY_DEFAULTS.items():
+            kwargs[key] = settings.get(key, default)
 
-        return cls(
-            paths=paths,
-            calculation=calculation,
-            output=output_cfg,
-        )
+        kwargs["geometry"] = geometry
 
-    def save_to_file(self, filepath: Union[str, Path]) -> None:
-        """Save current configuration to a JSON file.
-
-        :param filepath: Path where to save configuration.
-        :type filepath: Union[str, Path]
-        :returns: None
-        :rtype: None
-        """
-        data = {
-            "paths": {
-                "basis_set_dir": str(self.paths.basis_set_dir),
-                "geometry_dir": str(self.paths.geometry_dir),
-                "output_dir": str(self.paths.output_dir),
-                "log_dir": str(self.paths.log_dir),
-            },
-            "calculation": {
-                "max_scf_iterations": self.calculation.max_scf_iterations,
-                "scf_convergence_threshold": self.calculation.scf_convergence_threshold,
-                "diis_start": self.calculation.diis_start,
-                "diis_max_vectors": self.calculation.diis_max_vectors,
-                "error_metric": self.calculation.error_metric,
-            },
-            "output": {
-                "save_json": self.output.save_json,
-                "save_text": self.output.save_text,
-                "save_log": self.output.save_log,
-                "save_matrices": self.output.save_matrices,
-                "log_level": self.output.log_level,
-                "json_indent": self.output.json_indent,
-                "output_prefix": self.output.output_prefix,
-            },
-        }
-
-        Path(filepath).write_text(
-            json.dumps(data, indent=2),
-            encoding="utf-8"
-        )
+        return cls(**kwargs)
 
     def __repr__(self) -> str:
         """Return string representation of configuration.
@@ -384,11 +565,17 @@ class Configuration:
         :returns: Configuration summary.
         :rtype: str
         """
+        geom_desc: str = (
+            f"geometry_file={self.geometry_file!r}"
+            if self.geometry_file
+            else f"n_atoms={len(self.geometry)}"
+        )
         return (
-            f"Configuration(\n"
-            f"  output_dir={self.paths.output_dir},\n"
-            f"  max_scf_iterations={self.calculation.max_scf_iterations},\n"
-            f"  scf_convergence_threshold={self.calculation.scf_convergence_threshold},\n"
-            f"  log_level={self.output.log_level}\n"
+            f"Configuration("
+            f"basis_set={self.basis_set!r}, "
+            f"charge={self.charge}, "
+            f"multiplicity={self.multiplicity}, "
+            f"{geom_desc}, "
+            f"max_scf_iterations={self.max_scf_iterations}"
             f")"
         )

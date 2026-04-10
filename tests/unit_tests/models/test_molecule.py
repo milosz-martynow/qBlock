@@ -25,8 +25,8 @@ from q_block.environment.constants.natural.atoms_data import (
 )
 from q_block.environment.io.basis_set import Pople
 from q_block.environment.io.input_data import InputData
-from q_block.models.electron import Shell, SpinOrbital
 from q_block.models.atomic_system import AtomicSystem
+from q_block.models.electron import Shell, SpinOrbital
 from q_block.models.molecule import Molecule
 from tests.unit_tests.environment.constants import (
     BASIS_FILES,
@@ -36,7 +36,6 @@ from tests.unit_tests.environment.constants import (
     GOLDEN_ROOT,
     charge_ids,
 )
-
 
 # ======================================================================
 # Helper Functions
@@ -183,9 +182,9 @@ def test_molecule_golden_gto_population(basis_file: str, symbol: str) -> None:
 
     snapshot: Dict = _serialize_atom_for_test(atom=atom, basis_name=basis_name)
 
-    assert snapshot == golden_atom, (
-        f"GTO population mismatch for atom {symbol} in basis {basis_name}"
-    )
+    assert (
+        snapshot == golden_atom
+    ), f"GTO population mismatch for atom {symbol} in basis {basis_name}"
 
 
 # ======================================================================
@@ -212,7 +211,9 @@ def test_atomic_system_charge_single_atom(charge: int) -> None:
 @pytest.mark.parametrize(
     "q1, q2",
     list(itertools.product(CHARGE_VALUES, repeat=2)),
-    ids=[f"q1={q1},q2={q2}" for q1, q2 in itertools.product(CHARGE_VALUES, repeat=2)],
+    ids=[
+        f"q1={q1},q2={q2}" for q1, q2 in itertools.product(CHARGE_VALUES, repeat=2)
+    ],
 )
 def test_atomic_system_charge_two_atoms(q1: int, q2: int) -> None:
     """Verify AtomicSystem.charge equals sum of per-atom charges (H₂).
@@ -277,7 +278,9 @@ def _valid_h2_charge_combos() -> List[Tuple[int, int, int]]:
 @pytest.mark.parametrize(
     "q1, q2, mult",
     _valid_h2_charge_combos(),
-    ids=[f"q1={q1},q2={q2},mult={mult}" for q1, q2, mult in _valid_h2_charge_combos()],
+    ids=[
+        f"q1={q1},q2={q2},mult={mult}" for q1, q2, mult in _valid_h2_charge_combos()
+    ],
 )
 def test_molecule_n_electrons_h2_charge_combos(q1: int, q2: int, mult: int) -> None:
     """Verify Molecule.n_electrons for H₂ with all valid charge combinations.

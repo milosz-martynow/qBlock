@@ -32,29 +32,27 @@ applied to the shared result:
    ``ABS_TOL_EV`` eV.
 """
 
-import pytest
+from typing import Any, Callable, Dict, Tuple
 
 import numpy as np
-
-from typing import Any, Callable, Dict, Tuple
+import pytest
 
 from q_block.solvers.wavefunction.hartree_fock.unrestricted_hartree_fock import (
     UnrestrictedHartreeFock,
+)
+from tests.validation_tests.templates import (
+    make_atom_koopmans_ie_test,
+    make_atom_scf_converged_test,
+    make_molecule_homo_ie_positive_test,
+    make_molecule_koopmans_ie_test,
+    make_molecule_scf_converged_test,
+    make_molecule_total_energy_negative_test,
 )
 from tests.validation_tests.utils import _build_from_geometry
 from tests.validation_tests.validation_data import (
     ATOMS_HOMO_ENERGIES,
     MOLECULES_HOMO_ENERGIES,
 )
-from tests.validation_tests.templates import (
-    make_atom_scf_converged_test,
-    make_atom_koopmans_ie_test,
-    make_molecule_scf_converged_test,
-    make_molecule_total_energy_negative_test,
-    make_molecule_homo_ie_positive_test,
-    make_molecule_koopmans_ie_test,
-)
-
 
 # ---------------------------------------------------------------------------
 # Test data selection
@@ -84,7 +82,9 @@ _uhf_mol_entries = [
     params=[entry for _, entry in _uhf_atom_entries],
     ids=[key for key, _ in _uhf_atom_entries],
 )
-def uhf_atom_result(request: pytest.FixtureRequest) -> Tuple[Dict[str, Any], UnrestrictedHartreeFock]:
+def uhf_atom_result(
+    request: pytest.FixtureRequest,
+) -> Tuple[Dict[str, Any], UnrestrictedHartreeFock]:
     """Run UHF SCF for one open-shell atom (placed at origin) and return
     ``(entry, converged_hf)``."""
     entry = request.param
@@ -109,7 +109,9 @@ def uhf_atom_result(request: pytest.FixtureRequest) -> Tuple[Dict[str, Any], Unr
     params=[entry for _, entry in _uhf_mol_entries],
     ids=[key for key, _ in _uhf_mol_entries],
 )
-def uhf_molecule_result(request: pytest.FixtureRequest) -> Tuple[Dict[str, Any], UnrestrictedHartreeFock]:
+def uhf_molecule_result(
+    request: pytest.FixtureRequest,
+) -> Tuple[Dict[str, Any], UnrestrictedHartreeFock]:
     """Run UHF SCF for one open-shell molecule and return
     ``(entry, converged_hf)``."""
     entry = request.param
@@ -135,7 +137,9 @@ def uhf_molecule_result(request: pytest.FixtureRequest) -> Tuple[Dict[str, Any],
 
 # UHF-specific helper functions
 _uhf_homo_idx: Callable[[Dict[str, Any]], int] = lambda entry: entry["n_alpha"] - 1
-_uhf_epsilon: Callable[[UnrestrictedHartreeFock], np.ndarray] = lambda hf: hf.matrices["epsilon_alpha"]
+_uhf_epsilon: Callable[[UnrestrictedHartreeFock], np.ndarray] = (
+    lambda hf: hf.matrices["epsilon_alpha"]
+)
 
 
 def test_uhf_atom_scf_converged(uhf_atom_result) -> None:
@@ -154,7 +158,9 @@ def test_uhf_atom_koopmans_ie_vs_reference(uhf_atom_result) -> None:
 
     :param uhf_atom_result: Pytest fixture providing ``(entry, hf)``.
     """
-    return make_atom_koopmans_ie_test("UHF", _uhf_homo_idx, _uhf_epsilon)(uhf_atom_result)
+    return make_atom_koopmans_ie_test("UHF", _uhf_homo_idx, _uhf_epsilon)(
+        uhf_atom_result
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -183,7 +189,9 @@ def test_uhf_molecule_alpha_homo_ie_positive(uhf_molecule_result) -> None:
 
     :param uhf_molecule_result: Pytest fixture providing ``(entry, hf)``.
     """
-    return make_molecule_homo_ie_positive_test("UHF", _uhf_homo_idx, _uhf_epsilon)(uhf_molecule_result)
+    return make_molecule_homo_ie_positive_test("UHF", _uhf_homo_idx, _uhf_epsilon)(
+        uhf_molecule_result
+    )
 
 
 def test_uhf_molecule_koopmans_ie_vs_reference(uhf_molecule_result) -> None:
@@ -194,4 +202,6 @@ def test_uhf_molecule_koopmans_ie_vs_reference(uhf_molecule_result) -> None:
 
     :param uhf_molecule_result: Pytest fixture providing ``(entry, hf)``.
     """
-    return make_molecule_koopmans_ie_test("UHF", _uhf_homo_idx, _uhf_epsilon)(uhf_molecule_result)
+    return make_molecule_koopmans_ie_test("UHF", _uhf_homo_idx, _uhf_epsilon)(
+        uhf_molecule_result
+    )

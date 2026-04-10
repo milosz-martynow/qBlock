@@ -11,6 +11,7 @@ package "qBlock" {
     [constants]
     [io]
     [configuration]
+    [logs]
   }
   component [Models] as models #E8F4F8
   component [Solvers] as solvers #E8F4F8

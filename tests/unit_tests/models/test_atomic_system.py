@@ -55,10 +55,12 @@ def test_charge_neutral_single_atom() -> None:
 
 def test_charge_neutral_two_atoms() -> None:
     """Two neutral atoms should have total charge 0."""
-    system = _make_system([
-        ["H", 0.0, 0.0, 0.0],
-        ["He", 1.0, 0.0, 0.0],
-    ])
+    system = _make_system(
+        [
+            ["H", 0.0, 0.0, 0.0],
+            ["He", 1.0, 0.0, 0.0],
+        ]
+    )
     assert system.charge == 0
 
 
@@ -81,17 +83,21 @@ def test_charge_single_atom(charge: int, expected: int) -> None:
 
 def test_charge_mixed_charges() -> None:
     """System with mixed per-atom charges sums correctly."""
-    system = _make_system([
-        ["Na", 0.0, 0.0, 0.0, None, 1],
-        ["Cl", 2.0, 0.0, 0.0, None, -1],
-    ])
+    system = _make_system(
+        [
+            ["Na", 0.0, 0.0, 0.0, None, 1],
+            ["Cl", 2.0, 0.0, 0.0, None, -1],
+        ]
+    )
     assert system.charge == 0
 
 
 def test_charge_multiple_positive() -> None:
     """Multiple positively charged atoms."""
-    system = _make_system([
-        ["Li", 0.0, 0.0, 0.0, None, 1],
-        ["Li", 2.0, 0.0, 0.0, None, 1],
-    ])
+    system = _make_system(
+        [
+            ["Li", 0.0, 0.0, 0.0, None, 1],
+            ["Li", 2.0, 0.0, 0.0, None, 1],
+        ]
+    )
     assert system.charge == 2

@@ -25,11 +25,9 @@ RestrictedHartreeFock
 
 from typing import List, Tuple
 
-from q_block.solvers.spin_pair import SpinPair
-from q_block.solvers.wavefunction.hartree_fock.hartree_fock import (
-    HartreeFock,
-)
 from q_block.models.basis_functions import ContractedGaussianTypeOrbital
+from q_block.solvers.spin_pair import SpinPair
+from q_block.solvers.wavefunction.hartree_fock.hartree_fock import HartreeFock
 
 
 class RestrictedHartreeFock(HartreeFock):
@@ -88,13 +86,15 @@ class RestrictedHartreeFock(HartreeFock):
     ) -> None:
         if n_electrons % 2 != 0:
             raise ValueError(
-                f"RHF requires an even number of electrons; "
-                f"got {n_electrons}."
+                f"RHF requires an even number of electrons; " f"got {n_electrons}."
             )
         n_occ = n_electrons // 2
         super().__init__(
-            cgtos, nuclei, e_nuclear,
-            n_alpha=n_occ, n_beta=n_occ,
+            cgtos,
+            nuclei,
+            e_nuclear,
+            n_alpha=n_occ,
+            n_beta=n_occ,
             max_iterations=max_iterations,
             convergence_threshold=convergence_threshold,
             diis_start=diis_start,

@@ -31,9 +31,9 @@ from typing import List, Optional, Tuple, Union
 
 import numpy as np
 
+from q_block.models.basis_functions import ContractedGaussianTypeOrbital
 from q_block.solvers.scf import SCF
 from q_block.solvers.spin_pair import SpinPair
-from q_block.models.basis_functions import ContractedGaussianTypeOrbital
 
 logger = logging.getLogger(__name__)
 
@@ -96,7 +96,9 @@ class HartreeFock(SCF):
         calculation_error_metric: str = "rms",
     ) -> None:
         super().__init__(
-            cgtos, nuclei, e_nuclear,
+            cgtos,
+            nuclei,
+            e_nuclear,
             max_iterations=max_iterations,
             convergence_threshold=convergence_threshold,
             diis_start=diis_start,
@@ -152,7 +154,7 @@ class HartreeFock(SCF):
         :returns: Coulomb matrix **J**.
         :rtype: np.ndarray
         """
-        return np.einsum('ls,mnls->mn', P, self.eri)
+        return np.einsum("ls,mnls->mn", P, self.eri)
 
     def _build_exchange(self, P: np.ndarray) -> np.ndarray:
         r"""Exchange matrix from a density matrix.
@@ -167,7 +169,7 @@ class HartreeFock(SCF):
         :returns: Exchange matrix **K**.
         :rtype: np.ndarray
         """
-        return np.einsum('ls,mlns->mn', P, self.eri)
+        return np.einsum("ls,mlns->mn", P, self.eri)
 
     # ==================================================================
     # SCF hooks — concrete defaults (RHF / UHF)
@@ -256,13 +258,13 @@ class HartreeFock(SCF):
         """
         C_alpha, C_beta = C
         self._C = C_alpha
-        Ca_occ = C_alpha[:, :self._n_alpha]
+        Ca_occ = C_alpha[:, : self._n_alpha]
         P_alpha = Ca_occ @ Ca_occ.T
 
         if self._shared_spin:
             return SpinPair(P_alpha)
 
-        Cb_occ = C_beta[:, :self._n_beta]
+        Cb_occ = C_beta[:, : self._n_beta]
         return SpinPair(P_alpha, Cb_occ @ Cb_occ.T)
 
     def _initial_density(
@@ -284,13 +286,13 @@ class HartreeFock(SCF):
         :rtype: SpinPair
         """
         self._C = C
-        Ca_occ = C[:, :self._n_alpha]
+        Ca_occ = C[:, : self._n_alpha]
         P_alpha = Ca_occ @ Ca_occ.T
 
         if self._shared_spin:
             return SpinPair(P_alpha)
 
-        Cb_occ = C[:, :self._n_beta]
+        Cb_occ = C[:, : self._n_beta]
         return SpinPair(P_alpha, Cb_occ @ Cb_occ.T)
 
     # ==================================================================

@@ -47,9 +47,10 @@ class SpinPair(tuple):
         cls,
         alpha: np.ndarray,
         beta: Optional[np.ndarray] = None,
-    ) -> 'SpinPair':
+    ) -> "SpinPair":
         return super().__new__(
-            cls, (alpha, alpha if beta is None else beta),
+            cls,
+            (alpha, alpha if beta is None else beta),
         )
 
     def __init__(
@@ -89,7 +90,7 @@ class SpinPair(tuple):
     # ------ Factory helpers ---------------------------------------------
 
     @classmethod
-    def wrap(cls, obj: Union[tuple, 'SpinPair']) -> 'SpinPair':
+    def wrap(cls, obj: Union[tuple, "SpinPair"]) -> "SpinPair":
         """Ensure *obj* is a :class:`SpinPair`.
 
         Returns *obj* unchanged if it already is one; otherwise wraps
@@ -109,5 +110,5 @@ class SpinPair(tuple):
 
     def __repr__(self) -> str:
         mode = "shared" if self._shared else "independent"
-        shape = self[0].shape if hasattr(self[0], 'shape') else '?'
+        shape = self[0].shape if hasattr(self[0], "shape") else "?"
         return f"SpinPair(shape={shape}, {mode})"

@@ -57,11 +57,9 @@ from typing import List, Optional, Tuple, Union
 
 import numpy as np
 
-from q_block.solvers.spin_pair import SpinPair
-from q_block.solvers.wavefunction.hartree_fock.hartree_fock import (
-    HartreeFock,
-)
 from q_block.models.basis_functions import ContractedGaussianTypeOrbital
+from q_block.solvers.spin_pair import SpinPair
+from q_block.solvers.wavefunction.hartree_fock.hartree_fock import HartreeFock
 
 
 class RestrictedOpenShellHartreeFock(HartreeFock):
@@ -132,8 +130,11 @@ class RestrictedOpenShellHartreeFock(HartreeFock):
         n_alpha = n_closed + n_open
         n_beta = n_closed
         super().__init__(
-            cgtos, nuclei, e_nuclear,
-            n_alpha=n_alpha, n_beta=n_beta,
+            cgtos,
+            nuclei,
+            e_nuclear,
+            n_alpha=n_alpha,
+            n_beta=n_beta,
             max_iterations=max_iterations,
             convergence_threshold=convergence_threshold,
             diis_start=diis_start,
@@ -187,9 +188,9 @@ class RestrictedOpenShellHartreeFock(HartreeFock):
 
         F_eff_mo = np.zeros((n, n))
 
-        c = slice(0, nc)                  # closed indices
-        o = slice(nc, nc + no)            # open indices
-        v = slice(nc + no, n)             # virtual indices
+        c = slice(0, nc)  # closed indices
+        o = slice(nc, nc + no)  # open indices
+        v = slice(nc + no, n)  # virtual indices
 
         # Diagonal blocks
         F_eff_mo[c, c] = Fb_mo[c, c]

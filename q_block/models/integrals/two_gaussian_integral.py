@@ -183,9 +183,7 @@ class TwoGaussianIntegral(Integral):
         :rtype: float
         """
         # Extract centers from each CGTO
-        centers = [
-            (cgto.center.x, cgto.center.y, cgto.center.z) for cgto in cgtos
-        ]
+        centers = [(cgto.center.x, cgto.center.y, cgto.center.z) for cgto in cgtos]
 
         # Build iteration ranges for each primitive
         primitive_ranges = [range(cgto.n_primitives) for cgto in cgtos]
@@ -195,9 +193,7 @@ class TwoGaussianIntegral(Integral):
         # Iterate over all primitive combinations (Cartesian product)
         for indices in itertools.product(*primitive_ranges):
             # Collect exponents and coefficients for this combination
-            exponents = [
-                cgtos[i].exponents[idx] for i, idx in enumerate(indices)
-            ]
+            exponents = [cgtos[i].exponents[idx] for i, idx in enumerate(indices)]
             coefficients = [
                 cgtos[i].contractions[idx] for i, idx in enumerate(indices)
             ]

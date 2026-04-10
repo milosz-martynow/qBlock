@@ -14,13 +14,14 @@ All tests use pytest with parametrize, no test classes.
 import numpy as np
 import pytest
 
-from q_block import ContractedGaussianTypeOrbital, Molecule, TwoElectronRepulsion, Overlap
-from tests.unit_tests.environment.constants import ORIGIN
-from tests.unit_tests.utilities import (
-    h2_molecule,
-    water_molecule,
+from q_block import (
+    ContractedGaussianTypeOrbital,
+    Molecule,
+    Overlap,
+    TwoElectronRepulsion,
 )
-
+from tests.unit_tests.environment.constants import ORIGIN
+from tests.unit_tests.utilities import h2_molecule, water_molecule
 
 # ======================================================================
 # Primitive ERI Tests
@@ -36,10 +37,26 @@ def test_primitive_eri_self_positive() -> None:
     alpha: float = 1.0
 
     eri: float = TwoElectronRepulsion.primitive_eri(
-        alpha=alpha, A=A, lx1=0, ly1=0, lz1=0,
-        beta=alpha, B=A, lx2=0, ly2=0, lz2=0,
-        gamma=alpha, C=A, lx3=0, ly3=0, lz3=0,
-        delta=alpha, D=A, lx4=0, ly4=0, lz4=0,
+        alpha=alpha,
+        A=A,
+        lx1=0,
+        ly1=0,
+        lz1=0,
+        beta=alpha,
+        B=A,
+        lx2=0,
+        ly2=0,
+        lz2=0,
+        gamma=alpha,
+        C=A,
+        lx3=0,
+        ly3=0,
+        lz3=0,
+        delta=alpha,
+        D=A,
+        lx4=0,
+        ly4=0,
+        lz4=0,
     )
     assert eri > 0
 
@@ -51,10 +68,26 @@ def test_primitive_eri_two_center_positive() -> None:
     alpha: float = 1.0
 
     eri: float = TwoElectronRepulsion.primitive_eri(
-        alpha=alpha, A=A, lx1=0, ly1=0, lz1=0,
-        beta=alpha, B=A, lx2=0, ly2=0, lz2=0,
-        gamma=alpha, C=B, lx3=0, ly3=0, lz3=0,
-        delta=alpha, D=B, lx4=0, ly4=0, lz4=0,
+        alpha=alpha,
+        A=A,
+        lx1=0,
+        ly1=0,
+        lz1=0,
+        beta=alpha,
+        B=A,
+        lx2=0,
+        ly2=0,
+        lz2=0,
+        gamma=alpha,
+        C=B,
+        lx3=0,
+        ly3=0,
+        lz3=0,
+        delta=alpha,
+        D=B,
+        lx4=0,
+        ly4=0,
+        lz4=0,
     )
     assert eri > 0
 
@@ -68,10 +101,26 @@ def test_primitive_eri_four_center_positive() -> None:
     alpha: float = 1.0
 
     eri: float = TwoElectronRepulsion.primitive_eri(
-        alpha=alpha, A=A, lx1=0, ly1=0, lz1=0,
-        beta=alpha, B=B, lx2=0, ly2=0, lz2=0,
-        gamma=alpha, C=C, lx3=0, ly3=0, lz3=0,
-        delta=alpha, D=D, lx4=0, ly4=0, lz4=0,
+        alpha=alpha,
+        A=A,
+        lx1=0,
+        ly1=0,
+        lz1=0,
+        beta=alpha,
+        B=B,
+        lx2=0,
+        ly2=0,
+        lz2=0,
+        gamma=alpha,
+        C=C,
+        lx3=0,
+        ly3=0,
+        lz3=0,
+        delta=alpha,
+        D=D,
+        lx4=0,
+        ly4=0,
+        lz4=0,
     )
     # ERIs are always non-negative (unless numerical precision issues)
     assert eri >= -1e-12
@@ -86,10 +135,26 @@ def test_primitive_eri_far_apart_negligible() -> None:
     alpha: float = 1.0
 
     eri: float = TwoElectronRepulsion.primitive_eri(
-        alpha=alpha, A=A, lx1=0, ly1=0, lz1=0,
-        beta=alpha, B=B, lx2=0, ly2=0, lz2=0,
-        gamma=alpha, C=C, lx3=0, ly3=0, lz3=0,
-        delta=alpha, D=D, lx4=0, ly4=0, lz4=0,
+        alpha=alpha,
+        A=A,
+        lx1=0,
+        ly1=0,
+        lz1=0,
+        beta=alpha,
+        B=B,
+        lx2=0,
+        ly2=0,
+        lz2=0,
+        gamma=alpha,
+        C=C,
+        lx3=0,
+        ly3=0,
+        lz3=0,
+        delta=alpha,
+        D=D,
+        lx4=0,
+        ly4=0,
+        lz4=0,
     )
     # Far apart orbitals should have near-zero ERI
     assert abs(eri) < 0.1
@@ -102,19 +167,51 @@ def test_primitive_eri_decreases_with_distance() -> None:
 
     # Both at origin
     eri_close: float = TwoElectronRepulsion.primitive_eri(
-        alpha=alpha, A=A, lx1=0, ly1=0, lz1=0,
-        beta=alpha, B=A, lx2=0, ly2=0, lz2=0,
-        gamma=alpha, C=A, lx3=0, ly3=0, lz3=0,
-        delta=alpha, D=A, lx4=0, ly4=0, lz4=0,
+        alpha=alpha,
+        A=A,
+        lx1=0,
+        ly1=0,
+        lz1=0,
+        beta=alpha,
+        B=A,
+        lx2=0,
+        ly2=0,
+        lz2=0,
+        gamma=alpha,
+        C=A,
+        lx3=0,
+        ly3=0,
+        lz3=0,
+        delta=alpha,
+        D=A,
+        lx4=0,
+        ly4=0,
+        lz4=0,
     )
 
     # Separated by 2 Bohr
     B_far: tuple[float, float, float] = (2.0, 0.0, 0.0)
     eri_far: float = TwoElectronRepulsion.primitive_eri(
-        alpha=alpha, A=A, lx1=0, ly1=0, lz1=0,
-        beta=alpha, B=A, lx2=0, ly2=0, lz2=0,
-        gamma=alpha, C=B_far, lx3=0, ly3=0, lz3=0,
-        delta=alpha, D=B_far, lx4=0, ly4=0, lz4=0,
+        alpha=alpha,
+        A=A,
+        lx1=0,
+        ly1=0,
+        lz1=0,
+        beta=alpha,
+        B=A,
+        lx2=0,
+        ly2=0,
+        lz2=0,
+        gamma=alpha,
+        C=B_far,
+        lx3=0,
+        ly3=0,
+        lz3=0,
+        delta=alpha,
+        D=B_far,
+        lx4=0,
+        ly4=0,
+        lz4=0,
     )
 
     assert eri_close > eri_far
@@ -143,26 +240,98 @@ def test_primitive_eri_8fold_symmetry() -> None:
 
     # Original: (μν|λσ)
     eri_original = TwoElectronRepulsion.primitive_eri(
-        alpha, A, lx1, ly1, lz1, beta, B, lx2, ly2, lz2,
-        gamma, C, lx3, ly3, lz3, delta, D, lx4, ly4, lz4,
+        alpha,
+        A,
+        lx1,
+        ly1,
+        lz1,
+        beta,
+        B,
+        lx2,
+        ly2,
+        lz2,
+        gamma,
+        C,
+        lx3,
+        ly3,
+        lz3,
+        delta,
+        D,
+        lx4,
+        ly4,
+        lz4,
     )
 
     # (νμ|λσ) - swap first two
     eri_swap_12 = TwoElectronRepulsion.primitive_eri(
-        beta, B, lx2, ly2, lz2, alpha, A, lx1, ly1, lz1,
-        gamma, C, lx3, ly3, lz3, delta, D, lx4, ly4, lz4,
+        beta,
+        B,
+        lx2,
+        ly2,
+        lz2,
+        alpha,
+        A,
+        lx1,
+        ly1,
+        lz1,
+        gamma,
+        C,
+        lx3,
+        ly3,
+        lz3,
+        delta,
+        D,
+        lx4,
+        ly4,
+        lz4,
     )
 
     # (μν|σλ) - swap last two
     eri_swap_34 = TwoElectronRepulsion.primitive_eri(
-        alpha, A, lx1, ly1, lz1, beta, B, lx2, ly2, lz2,
-        delta, D, lx4, ly4, lz4, gamma, C, lx3, ly3, lz3,
+        alpha,
+        A,
+        lx1,
+        ly1,
+        lz1,
+        beta,
+        B,
+        lx2,
+        ly2,
+        lz2,
+        delta,
+        D,
+        lx4,
+        ly4,
+        lz4,
+        gamma,
+        C,
+        lx3,
+        ly3,
+        lz3,
     )
 
     # (λσ|μν) - swap bra and ket
     eri_swap_braket = TwoElectronRepulsion.primitive_eri(
-        gamma, C, lx3, ly3, lz3, delta, D, lx4, ly4, lz4,
-        alpha, A, lx1, ly1, lz1, beta, B, lx2, ly2, lz2,
+        gamma,
+        C,
+        lx3,
+        ly3,
+        lz3,
+        delta,
+        D,
+        lx4,
+        ly4,
+        lz4,
+        alpha,
+        A,
+        lx1,
+        ly1,
+        lz1,
+        beta,
+        B,
+        lx2,
+        ly2,
+        lz2,
     )
 
     assert eri_swap_12 == pytest.approx(expected=eri_original, rel=1e-10)
@@ -185,17 +354,45 @@ def test_contracted_eri_single_primitive_equals_primitive() -> None:
     )
 
     eri_contracted: float = TwoElectronRepulsion.contracted_eri(
-        cgto1=cgto, lx1=0, ly1=0, lz1=0,
-        cgto2=cgto, lx2=0, ly2=0, lz2=0,
-        cgto3=cgto, lx3=0, ly3=0, lz3=0,
-        cgto4=cgto, lx4=0, ly4=0, lz4=0,
+        cgto1=cgto,
+        lx1=0,
+        ly1=0,
+        lz1=0,
+        cgto2=cgto,
+        lx2=0,
+        ly2=0,
+        lz2=0,
+        cgto3=cgto,
+        lx3=0,
+        ly3=0,
+        lz3=0,
+        cgto4=cgto,
+        lx4=0,
+        ly4=0,
+        lz4=0,
     )
     A = (0.0, 0.0, 0.0)
     eri_primitive: float = TwoElectronRepulsion.primitive_eri(
-        alpha=1.0, A=A, lx1=0, ly1=0, lz1=0,
-        beta=1.0, B=A, lx2=0, ly2=0, lz2=0,
-        gamma=1.0, C=A, lx3=0, ly3=0, lz3=0,
-        delta=1.0, D=A, lx4=0, ly4=0, lz4=0,
+        alpha=1.0,
+        A=A,
+        lx1=0,
+        ly1=0,
+        lz1=0,
+        beta=1.0,
+        B=A,
+        lx2=0,
+        ly2=0,
+        lz2=0,
+        gamma=1.0,
+        C=A,
+        lx3=0,
+        ly3=0,
+        lz3=0,
+        delta=1.0,
+        D=A,
+        lx4=0,
+        ly4=0,
+        lz4=0,
     )
     assert eri_contracted == pytest.approx(expected=eri_primitive, rel=1e-10)
 
@@ -210,10 +407,22 @@ def test_contracted_eri_positive() -> None:
     )
 
     eri: float = TwoElectronRepulsion.contracted_eri(
-        cgto1=cgto, lx1=0, ly1=0, lz1=0,
-        cgto2=cgto, lx2=0, ly2=0, lz2=0,
-        cgto3=cgto, lx3=0, ly3=0, lz3=0,
-        cgto4=cgto, lx4=0, ly4=0, lz4=0,
+        cgto1=cgto,
+        lx1=0,
+        ly1=0,
+        lz1=0,
+        cgto2=cgto,
+        lx2=0,
+        ly2=0,
+        lz2=0,
+        cgto3=cgto,
+        lx3=0,
+        ly3=0,
+        lz3=0,
+        cgto4=cgto,
+        lx4=0,
+        ly4=0,
+        lz4=0,
     )
     assert eri > 0
 
@@ -277,13 +486,27 @@ def test_eri_tensor_8fold_symmetry_h2(h2_molecule: Molecule) -> None:
                     eri_val = ERI.tensor[mu, nu, lam, sig]
 
                     # Check all 8 permutations
-                    assert ERI.tensor[nu, mu, lam, sig] == pytest.approx(eri_val, rel=1e-10)
-                    assert ERI.tensor[mu, nu, sig, lam] == pytest.approx(eri_val, rel=1e-10)
-                    assert ERI.tensor[nu, mu, sig, lam] == pytest.approx(eri_val, rel=1e-10)
-                    assert ERI.tensor[lam, sig, mu, nu] == pytest.approx(eri_val, rel=1e-10)
-                    assert ERI.tensor[sig, lam, mu, nu] == pytest.approx(eri_val, rel=1e-10)
-                    assert ERI.tensor[lam, sig, nu, mu] == pytest.approx(eri_val, rel=1e-10)
-                    assert ERI.tensor[sig, lam, nu, mu] == pytest.approx(eri_val, rel=1e-10)
+                    assert ERI.tensor[nu, mu, lam, sig] == pytest.approx(
+                        eri_val, rel=1e-10
+                    )
+                    assert ERI.tensor[mu, nu, sig, lam] == pytest.approx(
+                        eri_val, rel=1e-10
+                    )
+                    assert ERI.tensor[nu, mu, sig, lam] == pytest.approx(
+                        eri_val, rel=1e-10
+                    )
+                    assert ERI.tensor[lam, sig, mu, nu] == pytest.approx(
+                        eri_val, rel=1e-10
+                    )
+                    assert ERI.tensor[sig, lam, mu, nu] == pytest.approx(
+                        eri_val, rel=1e-10
+                    )
+                    assert ERI.tensor[lam, sig, nu, mu] == pytest.approx(
+                        eri_val, rel=1e-10
+                    )
+                    assert ERI.tensor[sig, lam, nu, mu] == pytest.approx(
+                        eri_val, rel=1e-10
+                    )
 
 
 # ======================================================================
@@ -338,7 +561,9 @@ def test_eri_coulomb_greater_than_exchange(h2_molecule: Molecule) -> None:
         for nu in range(mu + 1, ERI.n_basis):  # Only off-diagonal
             J = ERI.tensor[mu, mu, nu, nu]  # Coulomb
             K = ERI.tensor[mu, nu, mu, nu]  # Exchange
-            assert J >= K - 1e-10, f"Coulomb J[{mu},{nu}]={J} should be >= Exchange K[{mu},{nu}]={K}"
+            assert (
+                J >= K - 1e-10
+            ), f"Coulomb J[{mu},{nu}]={J} should be >= Exchange K[{mu},{nu}]={K}"
 
 
 # ======================================================================

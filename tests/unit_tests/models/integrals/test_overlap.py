@@ -9,7 +9,7 @@ Tests cover:
 
 All tests use pytest with parametrize, no test classes.
 
-TODO: 
+TODO:
 - Add tests for specific molecules (e.g., H2, H2O) to verify expected overlap values
 - add tests of overlap of orbitals higher that d (e.g., f, g) if implemented in the future
 """
@@ -25,7 +25,6 @@ from tests.unit_tests.utilities import (
     h2_molecule,
     water_molecule,
 )
-
 
 # ======================================================================
 # Gaussian Product Center Tests
@@ -87,8 +86,16 @@ def test_primitive_overlap_self(lx: int, ly: int, lz: int) -> None:
     A: tuple[float, float, float] = (0.0, 0.0, 0.0)
     alpha: float = 1.0
     overlap: float = Overlap.primitive_overlap(
-        alpha=alpha, A=A, lx1=lx, ly1=ly, lz1=lz,
-        beta=alpha, B=A, lx2=lx, ly2=ly, lz2=lz
+        alpha=alpha,
+        A=A,
+        lx1=lx,
+        ly1=ly,
+        lz1=lz,
+        beta=alpha,
+        B=A,
+        lx2=lx,
+        ly2=ly,
+        lz2=lz,
     )
     assert overlap == pytest.approx(expected=1.0, rel=1e-6)
 
@@ -103,7 +110,9 @@ def test_primitive_overlap_self(lx: int, ly: int, lz: int) -> None:
     ALL_ORBITAL_COMPONENTS,
     ids=get_orbital_ids(),
 )
-def test_primitive_overlap_same_center_diff_exponents(lx: int, ly: int, lz: int) -> None:
+def test_primitive_overlap_same_center_diff_exponents(
+    lx: int, ly: int, lz: int
+) -> None:
     """Verify two orbitals at same center with different exponents have positive overlap < 1.
 
     :param lx: int - Angular momentum component in x direction.
@@ -112,8 +121,16 @@ def test_primitive_overlap_same_center_diff_exponents(lx: int, ly: int, lz: int)
     """
     A: tuple[float, float, float] = (0.0, 0.0, 0.0)
     overlap: float = Overlap.primitive_overlap(
-        alpha=1.0, A=A, lx1=lx, ly1=ly, lz1=lz,
-        beta=2.0, B=A, lx2=lx, ly2=ly, lz2=lz
+        alpha=1.0,
+        A=A,
+        lx1=lx,
+        ly1=ly,
+        lz1=lz,
+        beta=2.0,
+        B=A,
+        lx2=lx,
+        ly2=ly,
+        lz2=lz,
     )
     assert overlap > 0
     assert overlap < 1.0
@@ -143,8 +160,16 @@ def test_primitive_overlap_separated(lx: int, ly: int, lz: int) -> None:
     A: tuple[float, float, float] = (0.0, 0.0, 0.0)
     B: tuple[float, float, float] = (0.0, 0.0, 2.0)
     overlap: float = Overlap.primitive_overlap(
-        alpha=1.0, A=A, lx1=lx, ly1=ly, lz1=lz,
-        beta=1.0, B=B, lx2=lx, ly2=ly, lz2=lz
+        alpha=1.0,
+        A=A,
+        lx1=lx,
+        ly1=ly,
+        lz1=lz,
+        beta=1.0,
+        B=B,
+        lx2=lx,
+        ly2=ly,
+        lz2=lz,
     )
     # Magnitude of overlap should be less than self-overlap (1.0)
     assert abs(overlap) < 1.0
@@ -170,8 +195,16 @@ def test_primitive_overlap_far_apart(lx: int, ly: int, lz: int) -> None:
     A: tuple[float, float, float] = (0.0, 0.0, 0.0)
     B: tuple[float, float, float] = (0.0, 0.0, 100.0)
     overlap: float = Overlap.primitive_overlap(
-        alpha=1.0, A=A, lx1=lx, ly1=ly, lz1=lz,
-        beta=1.0, B=B, lx2=lx, ly2=ly, lz2=lz
+        alpha=1.0,
+        A=A,
+        lx1=lx,
+        ly1=ly,
+        lz1=lz,
+        beta=1.0,
+        B=B,
+        lx2=lx,
+        ly2=ly,
+        lz2=lz,
     )
     assert overlap == pytest.approx(expected=0.0, abs=1e-10)
 
@@ -228,8 +261,16 @@ def test_primitive_overlap_orthogonal_same_shell(
     lx1, ly1, lz1 = orbital1
     lx2, ly2, lz2 = orbital2
     overlap: float = Overlap.primitive_overlap(
-        alpha=alpha, A=A, lx1=lx1, ly1=ly1, lz1=lz1,
-        beta=alpha, B=A, lx2=lx2, ly2=ly2, lz2=lz2
+        alpha=alpha,
+        A=A,
+        lx1=lx1,
+        ly1=ly1,
+        lz1=lz1,
+        beta=alpha,
+        B=A,
+        lx2=lx2,
+        ly2=ly2,
+        lz2=lz2,
     )
     assert overlap == pytest.approx(expected=0.0, abs=1e-10)
 
@@ -288,8 +329,16 @@ def test_primitive_overlap_orthogonal_different_shells(
     lx1, ly1, lz1 = orbital1
     lx2, ly2, lz2 = orbital2
     overlap: float = Overlap.primitive_overlap(
-        alpha=alpha, A=A, lx1=lx1, ly1=ly1, lz1=lz1,
-        beta=alpha, B=A, lx2=lx2, ly2=ly2, lz2=lz2
+        alpha=alpha,
+        A=A,
+        lx1=lx1,
+        ly1=ly1,
+        lz1=lz1,
+        beta=alpha,
+        B=A,
+        lx2=lx2,
+        ly2=ly2,
+        lz2=lz2,
     )
     assert overlap == pytest.approx(expected=0.0, abs=1e-10)
 
@@ -308,12 +357,19 @@ def test_contracted_overlap_single_primitive_equals_primitive() -> None:
         contractions=[1.0],
     )
     overlap: float = Overlap.contracted_overlap(
-        cgto1=cgto, lx1=0, ly1=0, lz1=0,
-        cgto2=cgto, lx2=0, ly2=0, lz2=0
+        cgto1=cgto, lx1=0, ly1=0, lz1=0, cgto2=cgto, lx2=0, ly2=0, lz2=0
     )
     primitive: float = Overlap.primitive_overlap(
-        alpha=1.0, A=(0.0, 0.0, 0.0), lx1=0, ly1=0, lz1=0,
-        beta=1.0, B=(0.0, 0.0, 0.0), lx2=0, ly2=0, lz2=0
+        alpha=1.0,
+        A=(0.0, 0.0, 0.0),
+        lx1=0,
+        ly1=0,
+        lz1=0,
+        beta=1.0,
+        B=(0.0, 0.0, 0.0),
+        lx2=0,
+        ly2=0,
+        lz2=0,
     )
     assert overlap == pytest.approx(expected=primitive, rel=1e-10)
 
@@ -327,8 +383,7 @@ def test_contracted_overlap_multiple_primitives_positive() -> None:
         contractions=[0.5, 0.3, 0.2],
     )
     overlap: float = Overlap.contracted_overlap(
-        cgto1=cgto, lx1=0, ly1=0, lz1=0,
-        cgto2=cgto, lx2=0, ly2=0, lz2=0
+        cgto1=cgto, lx1=0, ly1=0, lz1=0, cgto2=cgto, lx2=0, ly2=0, lz2=0
     )
     assert overlap > 0
 

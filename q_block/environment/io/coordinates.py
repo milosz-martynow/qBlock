@@ -101,13 +101,9 @@ class CartesianCoordinates(Coordinates):
         try:
             it = list(seq)
         except TypeError:
-            raise ValueError(
-                "Input must be an iterable with three numeric values"
-            )
+            raise ValueError("Input must be an iterable with three numeric values")
         if len(it) != 3:
-            raise ValueError(
-                "Sequence must have exactly three elements (x, y, z)"
-            )
+            raise ValueError("Sequence must have exactly three elements (x, y, z)")
         try:
             x, y, z = map(float, it)
         except (TypeError, ValueError) as exc:
@@ -150,7 +146,9 @@ class CartesianCoordinates(Coordinates):
         :returns: String representation in the form 'CartesianCoordinates(x=..., y=..., z=...)'.
         :rtype: str
         """
-        return f"CartesianCoordinates(x={self.x:.3f}, y={self.y:.3f}, z={self.z:.3f})"
+        return (
+            f"CartesianCoordinates(x={self.x:.3f}, y={self.y:.3f}, z={self.z:.3f})"
+        )
 
     def to_bohr(self) -> "CartesianCoordinates":
         """Return a new :class:`CartesianCoordinates` converted to Bohr.

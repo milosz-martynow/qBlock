@@ -18,23 +18,24 @@ from typing import List, Tuple
 
 import pytest
 
-from q_block.environment.constants.natural.atoms_data import ATOMS_SYMBOLS_SYMBOL_TO_Z
+from q_block.environment.constants.natural.atoms_data import (
+    ATOMS_SYMBOLS_SYMBOL_TO_Z,
+)
 from q_block.environment.io.basis_set import Pople
 from q_block.environment.io.input_data import InputData
-from q_block.models.molecule import Molecule
 from q_block.models.initialization import (
+    RHF,
+    ROHF,
+    UHF,
     HartreeFock,
     QuantumCalculationContext,
-    ROHF,
-    RHF,
-    UHF,
 )
+from q_block.models.molecule import Molecule
 from tests.unit_tests.environment.constants import (
     BASIS_6_31G,
     CHARGE_VALUES,
     charge_ids,
 )
-
 
 # ======================================================================
 # Helper Functions

@@ -23,7 +23,6 @@ from scipy.linalg import eigh, fractional_matrix_power
 from q_block.solvers.diagonalisation import diagonalise_fock, diagonalise_single
 from tests.unit_tests.utilities import make_overlap, make_symmetric
 
-
 # ======================================================================
 # diagonalise_single Tests — identity basis
 # ======================================================================
@@ -109,9 +108,7 @@ def test_single_nontrivial_X_solves_generalised_problem() -> None:
     C, epsilon = diagonalise_single(F, X)
 
     # Verify the generalised eigenvalue equation F C = S C diag(epsilon)
-    np.testing.assert_allclose(
-        F @ C, S @ C @ np.diag(epsilon), atol=1e-10
-    )
+    np.testing.assert_allclose(F @ C, S @ C @ np.diag(epsilon), atol=1e-10)
 
 
 def test_single_nontrivial_X_orthonormality() -> None:
@@ -231,12 +228,8 @@ def test_fock_tuple_each_channel_correct() -> None:
 
     np.testing.assert_allclose(eps_tuple[0], eps_a_ref, atol=1e-14)
     np.testing.assert_allclose(eps_tuple[1], eps_b_ref, atol=1e-14)
-    np.testing.assert_allclose(
-        np.abs(C_tuple[0]), np.abs(C_a_ref), atol=1e-14
-    )
-    np.testing.assert_allclose(
-        np.abs(C_tuple[1]), np.abs(C_b_ref), atol=1e-14
-    )
+    np.testing.assert_allclose(np.abs(C_tuple[0]), np.abs(C_a_ref), atol=1e-14)
+    np.testing.assert_allclose(np.abs(C_tuple[1]), np.abs(C_b_ref), atol=1e-14)
 
 
 # ======================================================================

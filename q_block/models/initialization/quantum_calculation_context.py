@@ -31,11 +31,10 @@ This module implements a three-level hierarchy:
      :math:`N_{closed}`, :math:`N_{open}`, multiplicity check
 """
 
-from typing import Literal, Optional, List
+from typing import List, Literal, Optional
 
-from q_block.models.molecule import Molecule
 from q_block.models.basis_functions import ContractedGaussianTypeOrbital
-
+from q_block.models.molecule import Molecule
 
 # ──────────────────────────────────────────────────────────────────────
 # Allowed HF method literals

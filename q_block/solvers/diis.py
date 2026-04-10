@@ -72,9 +72,7 @@ class DIIS:
 
     def __init__(self, max_vectors: int = 6) -> None:
         if max_vectors < 2:
-            raise ValueError(
-                f"max_vectors must be >= 2; got {max_vectors}."
-            )
+            raise ValueError(f"max_vectors must be >= 2; got {max_vectors}.")
         self.max_vectors: int = max_vectors
         self._fock_vectors: List[np.ndarray] = []
         self._error_vectors: List[np.ndarray] = []
@@ -105,8 +103,7 @@ class DIIS:
         """
         is_tuple = isinstance(fock, tuple)
         fock_flat = (
-            np.concatenate([f.ravel() for f in fock]) if is_tuple
-            else fock.ravel()
+            np.concatenate([f.ravel() for f in fock]) if is_tuple else fock.ravel()
         )
 
         # Store vectors; trim to max size
@@ -150,9 +147,7 @@ class DIIS:
         )
 
         # Extrapolate Fock matrix
-        fock_new_flat = sum(
-            coeffs[i] * self._fock_vectors[i] for i in range(n)
-        )
+        fock_new_flat = sum(coeffs[i] * self._fock_vectors[i] for i in range(n))
 
         if is_tuple:
             single_size = fock[0].size

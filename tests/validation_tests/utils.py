@@ -5,8 +5,10 @@ from typing import Dict, List, Tuple, Union
 
 from q_block.environment.io.basis_set import Pople
 from q_block.environment.io.input_data import InputData
+from q_block.models.initialization.nuclear_repulsion_energy import (
+    NuclearRepulsionEnergy,
+)
 from q_block.models.molecule import Molecule
-from q_block.models.initialization.nuclear_repulsion_energy import NuclearRepulsionEnergy
 
 HARTREE_TO_EV: float = 27.211386
 """Conversion factor: 1 Hartree = 27.211386 eV."""
@@ -37,7 +39,9 @@ def _get_basis(filepath: Union[Path, str]) -> Pople:
 def _build_from_geometry(
     geometry: List[Dict],
     multiplicity: int,
-    basis_set_filename: Union[Path, str] = Path("q_block/environment/constants/numerical/basis_set/pople/3-21G.gbs"),
+    basis_set_filename: Union[Path, str] = Path(
+        "q_block/environment/constants/numerical/basis_set/pople/3-21G.gbs"
+    ),
 ) -> Tuple:
     """Build a Molecule from a geometry list and return SCF inputs.
 

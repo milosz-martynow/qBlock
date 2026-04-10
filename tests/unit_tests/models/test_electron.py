@@ -13,7 +13,6 @@ import pytest
 
 from q_block.models.electron import Orbital, Shell, SpinOrbital, SubShell
 
-
 # ======================================================================
 # SpinOrbital Tests
 # ======================================================================
@@ -119,10 +118,10 @@ def test_orbital_quantum_mismatch_raises() -> None:
 @pytest.mark.parametrize(
     "n, l, expected_orbitals, expected_capacity",
     [
-        (1, 0, 1, 2),    # 1s: 1 orbital, 2 electrons
-        (2, 1, 3, 6),    # 2p: 3 orbitals, 6 electrons
-        (3, 2, 5, 10),   # 3d: 5 orbitals, 10 electrons
-        (4, 3, 7, 14),   # 4f: 7 orbitals, 14 electrons
+        (1, 0, 1, 2),  # 1s: 1 orbital, 2 electrons
+        (2, 1, 3, 6),  # 2p: 3 orbitals, 6 electrons
+        (3, 2, 5, 10),  # 3d: 5 orbitals, 10 electrons
+        (4, 3, 7, 14),  # 4f: 7 orbitals, 14 electrons
     ],
     ids=["s_subshell", "p_subshell", "d_subshell", "f_subshell"],
 )
@@ -181,11 +180,11 @@ def test_subshell_invalid_parameters(n: int, l: int, reason: str) -> None:
 @pytest.mark.parametrize(
     "n, expected_subshells",
     [
-        (1, 1),   # 1s only
-        (2, 2),   # 2s, 2p
-        (3, 3),   # 3s, 3p, 3d
-        (4, 4),   # 4s, 4p, 4d, 4f
-        (5, 5),   # 5s, 5p, 5d, 5f, 5g
+        (1, 1),  # 1s only
+        (2, 2),  # 2s, 2p
+        (3, 3),  # 3s, 3p, 3d
+        (4, 4),  # 4s, 4p, 4d, 4f
+        (5, 5),  # 5s, 5p, 5d, 5f, 5g
     ],
     ids=["n=1", "n=2", "n=3", "n=4", "n=5"],
 )

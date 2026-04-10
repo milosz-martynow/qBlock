@@ -75,7 +75,9 @@ class SpinOrbital:
         self.data: Optional[Any] = None  # optional numerical data storage
 
     def __repr__(self) -> str:
-        return f"So(n={self.n},l={self.l},m={self.m},s={self.s},occ={self.occupied})"
+        return (
+            f"So(n={self.n},l={self.l},m={self.m},s={self.s},occ={self.occupied})"
+        )
 
 
 class Orbital:

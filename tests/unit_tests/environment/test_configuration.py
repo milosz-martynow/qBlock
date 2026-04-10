@@ -1,407 +1,686 @@
-"""Unit tests for q_block.configuration module.
+"""Unit tests for q_block.environment.configuration module.
 
 Tests cover:
-- PathConfiguration: directory paths for inputs and outputs
-- CalculationDefaults: default SCF parameters
-- OutputSettings: output format configuration
-- Configuration: main configuration container
-- Configuration.from_file: loading from JSON
-- Configuration.from_env: loading from environment variables
-- Configuration.save_to_file: saving to JSON
+- Configuration: default values and programmatic creation
+- Configuration.from_file: loading from plain-text config files
+- Configuration._parse: inline geometry, geometry_file, key=value parsing
+- _cast_value: type casting for recognised keys
+- _parse_geometry_line: per-atom parsing with global fallbacks
+- Error handling: unknown keys, malformed geometry, missing $end
 
 All tests use pytest with parametrize, no test classes.
 """
 
-import json
-import os
 from pathlib import Path
-from typing import Dict
+from typing import Any, List
 
 import pytest
 
 from q_block.environment.configuration import (
-    CalculationDefaults,
     Configuration,
-    OutputSettings,
-    PathConfiguration,
+    _cast_value,
+    _parse_geometry_line,
 )
 
 
 # ======================================================================
-# PathConfiguration Tests
+# Default values
 # ======================================================================
 
 
-def test_path_configuration_defaults() -> None:
-    """Verify PathConfiguration creates default paths correctly."""
-    paths: PathConfiguration = PathConfiguration()
+def test_configuration_defaults() -> None:
+    """Verify Configuration initializes with correct defaults."""
+    config: Configuration = Configuration()
 
-    assert isinstance(paths.basis_set_dir, Path)
-    assert isinstance(paths.geometry_dir, Path)
-    assert isinstance(paths.output_dir, Path)
-    assert isinstance(paths.log_dir, Path)
-    assert "basis_set" in str(paths.basis_set_dir)
-
-
-def test_path_configuration_custom_paths() -> None:
-    """Verify PathConfiguration accepts custom path specifications."""
-    paths: PathConfiguration = PathConfiguration(
-        basis_set_dir=Path("custom/basis"),
-        geometry_dir=Path("custom/geom"),
-        output_dir=Path("custom/out"),
-        log_dir=Path("custom/logs"),
-    )
-
-    assert paths.basis_set_dir == Path("custom/basis")
-    assert paths.geometry_dir == Path("custom/geom")
-    assert paths.output_dir == Path("custom/out")
-    assert paths.log_dir == Path("custom/logs")
+    assert config.basis_set == "STO-3G"
+    assert config.charge == 0
+    assert config.multiplicity == 1
+    assert config.geometry_file is None
+    assert config.geometry == []
+    assert config.max_scf_iterations == 100
+    assert config.scf_convergence_threshold == pytest.approx(1e-8)
+    assert config.diis_start == 1
+    assert config.diis_max_vectors == 6
+    assert config.error_metric == "rms"
+    assert config.output_dir == "output"
+    assert config.log_level == "INFO"
+    assert config.save_json is True
+    assert config.save_text is True
 
 
-def test_path_configuration_ensure_directories(tmp_path: Path) -> None:
-    """Verify ensure_directories creates missing directories.
-
-    :param tmp_path: Pytest fixture providing a temporary directory.
-    :type tmp_path: Path
-    """
-    paths: PathConfiguration = PathConfiguration(
-        output_dir=tmp_path / "output",
-        log_dir=tmp_path / "logs",
-    )
-
-    assert not paths.output_dir.exists()
-    assert not paths.log_dir.exists()
-
-    paths.ensure_directories()
-
-    assert paths.output_dir.exists()
-    assert paths.log_dir.exists()
-    assert paths.output_dir.is_dir()
-    assert paths.log_dir.is_dir()
-
-
-# ======================================================================
-# CalculationDefaults Tests
-# ======================================================================
-
-
-def test_calculation_defaults_values() -> None:
-    """Verify CalculationDefaults has sensible default values."""
-    calc: CalculationDefaults = CalculationDefaults()
-
-    assert calc.max_scf_iterations == 100
-    assert calc.scf_convergence_threshold == pytest.approx(1e-8)
-    assert calc.diis_start == 1
-    assert calc.diis_max_vectors == 6
-    assert calc.error_metric == "rms"
-
-
-def test_calculation_defaults_custom_values() -> None:
-    """Verify CalculationDefaults accepts custom values."""
-    calc: CalculationDefaults = CalculationDefaults(
+def test_configuration_custom_values() -> None:
+    """Verify Configuration accepts custom keyword arguments."""
+    config: Configuration = Configuration(
+        basis_set="3-21G",
+        charge=1,
+        multiplicity=2,
         max_scf_iterations=200,
         scf_convergence_threshold=1e-10,
         diis_start=3,
         diis_max_vectors=10,
         error_metric="max",
-    )
-
-    assert calc.max_scf_iterations == 200
-    assert calc.scf_convergence_threshold == pytest.approx(1e-10)
-    assert calc.diis_start == 3
-    assert calc.diis_max_vectors == 10
-    assert calc.error_metric == "max"
-
-
-# ======================================================================
-# OutputSettings Tests
-# ======================================================================
-
-
-def test_output_settings_defaults() -> None:
-    """Verify OutputSettings has correct default values."""
-    settings: OutputSettings = OutputSettings()
-
-    assert settings.save_json is True
-    assert settings.save_text is True
-    assert settings.save_log is True
-    assert settings.save_matrices is False
-    assert settings.log_level == "INFO"
-    assert settings.json_indent == 2
-    assert settings.output_prefix == "output"
-
-
-def test_output_settings_custom() -> None:
-    """Verify OutputSettings accepts custom values."""
-    settings: OutputSettings = OutputSettings(
+        output_dir="custom_output",
+        log_level="DEBUG",
         save_json=False,
         save_text=False,
-        save_log=False,
-        save_matrices=True,
-        log_level="DEBUG",
-        json_indent=4,
-        output_prefix="custom_output",
     )
 
-    assert settings.save_json is False
-    assert settings.save_text is False
-    assert settings.save_log is False
-    assert settings.save_matrices is True
-    assert settings.log_level == "DEBUG"
-    assert settings.json_indent == 4
-    assert settings.output_prefix == "custom_output"
+    assert config.basis_set == "3-21G"
+    assert config.charge == 1
+    assert config.multiplicity == 2
+    assert config.max_scf_iterations == 200
+    assert config.scf_convergence_threshold == pytest.approx(1e-10)
+    assert config.diis_start == 3
+    assert config.diis_max_vectors == 10
+    assert config.error_metric == "max"
+    assert config.output_dir == "custom_output"
+    assert config.log_level == "DEBUG"
+    assert config.save_json is False
+    assert config.save_text is False
 
 
-# ======================================================================
-# Configuration Tests
-# ======================================================================
+def test_configuration_geometry_list() -> None:
+    """Verify Configuration stores inline geometry list."""
+    geom: List[List[Any]] = [
+        ["H", 0.0, 0.0, 0.0],
+        ["H", 0.0, 0.0, 0.74],
+    ]
+    config: Configuration = Configuration(geometry=geom)
 
-
-def test_configuration_init_defaults() -> None:
-    """Verify Configuration initializes with all default sub-configs."""
-    config: Configuration = Configuration()
-
-    assert isinstance(config.paths, PathConfiguration)
-    assert isinstance(config.calculation, CalculationDefaults)
-    assert isinstance(config.output, OutputSettings)
-
-
-def test_configuration_convenience_overrides() -> None:
-    """Verify Configuration convenience parameters override defaults."""
-    config: Configuration = Configuration(
-        output_dir="custom_output",
-        max_scf_iterations=150,
-        scf_convergence_threshold=1e-9,
-    )
-
-    assert config.paths.output_dir == Path("custom_output")
-    assert config.calculation.max_scf_iterations == 150
-    assert config.calculation.scf_convergence_threshold == pytest.approx(1e-9)
+    assert len(config.geometry) == 2
+    assert config.geometry[0][0] == "H"
+    assert config.geometry[1][3] == pytest.approx(0.74)
 
 
 def test_configuration_repr() -> None:
     """Verify Configuration.__repr__ shows key settings."""
     config: Configuration = Configuration(
-        output_dir="test_out",
+        basis_set="3-21G",
+        charge=1,
+        multiplicity=2,
         max_scf_iterations=75,
     )
 
     repr_str: str = repr(config)
 
     assert "Configuration(" in repr_str
-    assert "output_dir=test_out" in repr_str
+    assert "3-21G" in repr_str
     assert "max_scf_iterations=75" in repr_str
 
 
 # ======================================================================
-# Configuration.from_file Tests
+# _cast_value
 # ======================================================================
-
-
-def test_configuration_from_file_valid(tmp_path: Path) -> None:
-    """Verify from_file loads configuration from JSON file.
-
-    :param tmp_path: Pytest fixture providing a temporary directory.
-    :type tmp_path: Path
-    """
-    config_data: Dict = {
-        "paths": {
-            "output_dir": "file_output",
-            "log_dir": "file_logs",
-        },
-        "calculation": {
-            "max_scf_iterations": 250,
-            "scf_convergence_threshold": 1e-10,
-        },
-        "output": {
-            "log_level": "DEBUG",
-            "save_matrices": True,
-        },
-    }
-
-    config_file: Path = tmp_path / "config.json"
-    config_file.write_text(json.dumps(config_data), encoding="utf-8")
-
-    config: Configuration = Configuration.from_file(config_file)
-
-    assert config.paths.output_dir == Path("file_output")
-    assert config.paths.log_dir == Path("file_logs")
-    assert config.calculation.max_scf_iterations == 250
-    assert config.calculation.scf_convergence_threshold == pytest.approx(1e-10)
-    assert config.output.log_level == "DEBUG"
-    assert config.output.save_matrices is True
-
-
-def test_configuration_from_file_not_found() -> None:
-    """Verify from_file raises FileNotFoundError for missing file."""
-    with pytest.raises(FileNotFoundError):
-        Configuration.from_file("nonexistent_config.json")
-
-
-def test_configuration_from_file_invalid_json(tmp_path: Path) -> None:
-    """Verify from_file raises ValueError for malformed JSON.
-
-    :param tmp_path: Pytest fixture providing a temporary directory.
-    :type tmp_path: Path
-    """
-    bad_file: Path = tmp_path / "bad.json"
-    bad_file.write_text("{ invalid json }", encoding="utf-8")
-
-    with pytest.raises(ValueError):
-        Configuration.from_file(bad_file)
-
-
-def test_configuration_from_file_partial(tmp_path: Path) -> None:
-    """Verify from_file handles partial configuration (uses defaults).
-
-    :param tmp_path: Pytest fixture providing a temporary directory.
-    :type tmp_path: Path
-    """
-    config_data: Dict = {
-        "calculation": {
-            "max_scf_iterations": 50,
-        }
-    }
-
-    config_file: Path = tmp_path / "partial.json"
-    config_file.write_text(json.dumps(config_data), encoding="utf-8")
-
-    config: Configuration = Configuration.from_file(config_file)
-
-    assert config.calculation.max_scf_iterations == 50
-    assert config.calculation.scf_convergence_threshold == pytest.approx(1e-8)
-    assert config.output.save_json is True
-
-
-# ======================================================================
-# Configuration.from_env Tests
-# ======================================================================
-
-
-def test_configuration_from_env_defaults(monkeypatch: pytest.MonkeyPatch) -> None:
-    """Verify from_env uses defaults when no env vars set.
-
-    :param monkeypatch: Pytest fixture for modifying environment.
-    :type monkeypatch: pytest.MonkeyPatch
-    """
-    for key in list(os.environ.keys()):
-        if key.startswith("QBLOCK_"):
-            monkeypatch.delenv(key, raising=False)
-
-    config: Configuration = Configuration.from_env()
-
-    assert config.calculation.max_scf_iterations == 100
-    assert config.output.log_level == "INFO"
-
-
-def test_configuration_from_env_with_vars(monkeypatch: pytest.MonkeyPatch) -> None:
-    """Verify from_env reads configuration from environment variables.
-
-    :param monkeypatch: Pytest fixture for modifying environment.
-    :type monkeypatch: pytest.MonkeyPatch
-    """
-    monkeypatch.setenv("QBLOCK_OUTPUT_DIR", "env_output")
-    monkeypatch.setenv("QBLOCK_MAX_SCF_ITERATIONS", "175")
-    monkeypatch.setenv("QBLOCK_SCF_CONVERGENCE_THRESHOLD", "1e-9")
-    monkeypatch.setenv("QBLOCK_LOG_LEVEL", "DEBUG")
-    monkeypatch.setenv("QBLOCK_SAVE_MATRICES", "true")
-    monkeypatch.setenv("QBLOCK_OUTPUT_PREFIX", "test_prefix")
-
-    config: Configuration = Configuration.from_env()
-
-    assert config.paths.output_dir == Path("env_output")
-    assert config.calculation.max_scf_iterations == 175
-    assert config.calculation.scf_convergence_threshold == pytest.approx(1e-9)
-    assert config.output.log_level == "DEBUG"
-    assert config.output.save_matrices is True
-    assert config.output.output_prefix == "test_prefix"
 
 
 @pytest.mark.parametrize(
-    "env_value, expected",
+    "key, raw, expected",
     [
-        ("true", True),
-        ("True", True),
-        ("TRUE", True),
-        ("false", False),
-        ("False", False),
-        ("FALSE", False),
-        ("", False),
-        ("anything_else", False),
+        ("basis_set", "3-21G", "3-21G"),
+        ("charge", "2", 2),
+        ("multiplicity", "3", 3),
+        ("max_scf_iterations", "200", 200),
+        ("scf_convergence_threshold", "1e-10", 1e-10),
+        ("diis_start", "5", 5),
+        ("diis_max_vectors", "8", 8),
+        ("error_metric", "max", "max"),
+        ("output_dir", "results", "results"),
+        ("log_level", "DEBUG", "DEBUG"),
+        ("save_json", "true", True),
+        ("save_json", "false", False),
+        ("save_json", "True", True),
+        ("save_text", "yes", True),
+        ("save_text", "0", False),
     ],
-    ids=["true", "True", "TRUE", "false", "False", "FALSE", "empty", "other"],
+    ids=[
+        "str_basis_set",
+        "int_charge",
+        "int_multiplicity",
+        "int_max_iter",
+        "float_threshold",
+        "int_diis_start",
+        "int_diis_max",
+        "str_error_metric",
+        "str_output_dir",
+        "str_log_level",
+        "bool_true",
+        "bool_false",
+        "bool_True",
+        "bool_yes",
+        "bool_zero",
+    ],
 )
-def test_configuration_from_env_bool_parsing(
-    monkeypatch: pytest.MonkeyPatch, env_value: str, expected: bool
+def test_cast_value(
+    key: str, raw: str, expected: Any
 ) -> None:
-    """Verify from_env correctly parses boolean environment variables.
+    """Verify _cast_value converts strings to correct types.
 
-    :param monkeypatch: Pytest fixture for modifying environment.
-    :type monkeypatch: pytest.MonkeyPatch
-    :param env_value: String value in environment variable.
-    :type env_value: str
-    :param expected: Expected boolean result.
-    :type expected: bool
+    :param key: Configuration key name.
+    :type key: str
+    :param raw: Raw string value.
+    :type raw: str
+    :param expected: Expected typed value.
+    :type expected: Any
     """
-    monkeypatch.setenv("QBLOCK_SAVE_JSON", env_value)
+    result: Any = _cast_value(key, raw)
 
-    config: Configuration = Configuration.from_env()
+    if isinstance(expected, float):
+        assert result == pytest.approx(expected)
+    else:
+        assert result == expected
 
-    assert config.output.save_json == expected
+
+def test_cast_value_unknown_key() -> None:
+    """Verify _cast_value raises ValueError for unknown keys."""
+    with pytest.raises(ValueError, match="Unknown configuration key"):
+        _cast_value("nonexistent_key", "value")
 
 
 # ======================================================================
-# Configuration.save_to_file Tests
+# _parse_geometry_line
 # ======================================================================
 
 
-def test_configuration_save_to_file(tmp_path: Path) -> None:
-    """Verify save_to_file creates valid JSON configuration file.
+def test_parse_geometry_line_minimal() -> None:
+    """Verify parsing a 4-field geometry line with global basis."""
+    result: List[Any] = _parse_geometry_line(
+        "H  0.0  0.0  0.74", "STO-3G"
+    )
+
+    assert result[0] == "H"
+    assert result[1] == pytest.approx(0.0)
+    assert result[2] == pytest.approx(0.0)
+    assert result[3] == pytest.approx(0.74)
+    assert result[4] == "STO-3G"
+
+
+def test_parse_geometry_line_per_atom_basis() -> None:
+    """Verify per-atom basis set overrides global."""
+    result: List[Any] = _parse_geometry_line(
+        "O  0.0  0.0  0.0  6-31G", "STO-3G"
+    )
+
+    assert result[0] == "O"
+    assert result[4] == "6-31G"
+
+
+def test_parse_geometry_line_per_atom_charge() -> None:
+    """Verify per-atom charge is parsed."""
+    result: List[Any] = _parse_geometry_line(
+        "Fe  0.0  0.0  0.0  STO-3G  2", "STO-3G"
+    )
+
+    assert result[0] == "Fe"
+    assert result[4] == "STO-3G"
+    assert result[5] == 2
+
+
+def test_parse_geometry_line_no_global_basis() -> None:
+    """Verify 4-field line without global basis returns 4 items."""
+    result: List[Any] = _parse_geometry_line(
+        "H  0.0  0.0  0.0", None
+    )
+
+    assert len(result) == 4
+    assert result[0] == "H"
+
+
+def test_parse_geometry_line_too_few_fields() -> None:
+    """Verify ValueError for fewer than 4 fields."""
+    with pytest.raises(ValueError, match="at least 4 fields"):
+        _parse_geometry_line("H  0.0  0.0", "STO-3G")
+
+
+def test_parse_geometry_line_bad_coordinates() -> None:
+    """Verify ValueError for non-numeric coordinates."""
+    with pytest.raises(ValueError, match="Coordinates must be numeric"):
+        _parse_geometry_line("H  abc  0.0  0.0", "STO-3G")
+
+
+def test_parse_geometry_line_bad_charge() -> None:
+    """Verify ValueError for non-integer per-atom charge."""
+    with pytest.raises(ValueError, match="Per-atom charge"):
+        _parse_geometry_line(
+            "H  0.0  0.0  0.0  STO-3G  abc", "STO-3G"
+        )
+
+
+# ======================================================================
+# Configuration.from_file
+# ======================================================================
+
+
+def test_from_file_full(tmp_path: Path) -> None:
+    """Verify from_file loads all settings from a config file.
 
     :param tmp_path: Pytest fixture providing a temporary directory.
     :type tmp_path: Path
     """
+    config_text: str = (
+        "basis_set = 3-21G\n"
+        "charge = 1\n"
+        "multiplicity = 2\n"
+        "max_scf_iterations = 250\n"
+        "scf_convergence_threshold = 1e-10\n"
+        "diis_start = 3\n"
+        "diis_max_vectors = 10\n"
+        "error_metric = max\n"
+        "output_dir = results\n"
+        "log_level = DEBUG\n"
+        "save_json = false\n"
+        "save_text = false\n"
+        "\n"
+        "$geometry\n"
+        "H  0.0  0.0  0.0\n"
+        "H  0.0  0.0  0.74\n"
+        "$end\n"
+    )
+
+    config_file: Path = tmp_path / "test.qblock.config"
+    config_file.write_text(config_text, encoding="utf-8")
+
+    config: Configuration = Configuration.from_file(config_file)
+
+    assert config.basis_set == "3-21G"
+    assert config.charge == 1
+    assert config.multiplicity == 2
+    assert config.max_scf_iterations == 250
+    assert config.scf_convergence_threshold == pytest.approx(1e-10)
+    assert config.diis_start == 3
+    assert config.diis_max_vectors == 10
+    assert config.error_metric == "max"
+    assert config.output_dir == "results"
+    assert config.log_level == "DEBUG"
+    assert config.save_json is False
+    assert config.save_text is False
+    assert len(config.geometry) == 2
+    assert config.geometry[0][0] == "H"
+    assert config.geometry[1][3] == pytest.approx(0.74)
+
+
+def test_from_file_partial(tmp_path: Path) -> None:
+    """Verify from_file uses defaults for unspecified keys.
+
+    :param tmp_path: Pytest fixture providing a temporary directory.
+    :type tmp_path: Path
+    """
+    config_text: str = "max_scf_iterations = 50\n"
+
+    config_file: Path = tmp_path / "partial.qblock.config"
+    config_file.write_text(config_text, encoding="utf-8")
+
+    config: Configuration = Configuration.from_file(config_file)
+
+    assert config.max_scf_iterations == 50
+    assert config.basis_set == "STO-3G"
+    assert config.scf_convergence_threshold == pytest.approx(1e-8)
+    assert config.save_json is True
+
+
+def test_from_file_not_found() -> None:
+    """Verify from_file raises FileNotFoundError for missing file."""
+    with pytest.raises(FileNotFoundError):
+        Configuration.from_file("nonexistent.qblock.config")
+
+
+def test_from_file_no_default_returns_defaults() -> None:
+    """Verify from_file with no argument returns defaults when .qblock.config missing."""
+    config: Configuration = Configuration.from_file()
+
+    assert config.basis_set == "STO-3G"
+    assert config.max_scf_iterations == 100
+
+
+def test_from_file_comments_and_blanks(tmp_path: Path) -> None:
+    """Verify comments and blank lines are ignored.
+
+    :param tmp_path: Pytest fixture providing a temporary directory.
+    :type tmp_path: Path
+    """
+    config_text: str = (
+        "# This is a comment\n"
+        "\n"
+        "basis_set = 3-21G\n"
+        "# Another comment\n"
+        "\n"
+        "charge = 0\n"
+    )
+
+    config_file: Path = tmp_path / "comments.qblock.config"
+    config_file.write_text(config_text, encoding="utf-8")
+
+    config: Configuration = Configuration.from_file(config_file)
+
+    assert config.basis_set == "3-21G"
+    assert config.charge == 0
+
+
+def test_from_file_geometry_file_key(tmp_path: Path) -> None:
+    """Verify geometry_file key is parsed correctly.
+
+    :param tmp_path: Pytest fixture providing a temporary directory.
+    :type tmp_path: Path
+    """
+    config_text: str = "geometry_file = geometries/water.xyz\n"
+
+    config_file: Path = tmp_path / "geom_file.qblock.config"
+    config_file.write_text(config_text, encoding="utf-8")
+
+    config: Configuration = Configuration.from_file(config_file)
+
+    assert config.geometry_file == "geometries/water.xyz"
+    assert config.geometry == []
+
+
+def test_from_file_per_atom_overrides(tmp_path: Path) -> None:
+    """Verify per-atom basis_set and charge override globals.
+
+    :param tmp_path: Pytest fixture providing a temporary directory.
+    :type tmp_path: Path
+    """
+    config_text: str = (
+        "basis_set = STO-3G\n"
+        "\n"
+        "$geometry\n"
+        "H  0.0  0.0  0.0\n"
+        "O  0.0  0.0  1.0  6-31G  -1\n"
+        "$end\n"
+    )
+
+    config_file: Path = tmp_path / "overrides.qblock.config"
+    config_file.write_text(config_text, encoding="utf-8")
+
+    config: Configuration = Configuration.from_file(config_file)
+
+    assert len(config.geometry) == 2
+    # H atom gets global basis_set
+    assert config.geometry[0][4] == "STO-3G"
+    # O atom has per-atom overrides
+    assert config.geometry[1][4] == "6-31G"
+    assert config.geometry[1][5] == -1
+
+
+# ======================================================================
+# Error handling
+# ======================================================================
+
+
+def test_from_file_unknown_key(tmp_path: Path) -> None:
+    """Verify ValueError for unknown configuration keys.
+
+    :param tmp_path: Pytest fixture providing a temporary directory.
+    :type tmp_path: Path
+    """
+    config_text: str = "unknown_key = value\n"
+
+    config_file: Path = tmp_path / "bad_key.qblock.config"
+    config_file.write_text(config_text, encoding="utf-8")
+
+    with pytest.raises(ValueError, match="Unknown configuration key"):
+        Configuration.from_file(config_file)
+
+
+def test_from_file_unclosed_geometry(tmp_path: Path) -> None:
+    """Verify ValueError for unclosed $geometry block.
+
+    :param tmp_path: Pytest fixture providing a temporary directory.
+    :type tmp_path: Path
+    """
+    config_text: str = (
+        "$geometry\n"
+        "H  0.0  0.0  0.0\n"
+    )
+
+    config_file: Path = tmp_path / "unclosed.qblock.config"
+    config_file.write_text(config_text, encoding="utf-8")
+
+    with pytest.raises(ValueError, match="Unclosed"):
+        Configuration.from_file(config_file)
+
+
+def test_from_file_nested_geometry(tmp_path: Path) -> None:
+    """Verify ValueError for nested $geometry blocks.
+
+    :param tmp_path: Pytest fixture providing a temporary directory.
+    :type tmp_path: Path
+    """
+    config_text: str = (
+        "$geometry\n"
+        "$geometry\n"
+        "$end\n"
+        "$end\n"
+    )
+
+    config_file: Path = tmp_path / "nested.qblock.config"
+    config_file.write_text(config_text, encoding="utf-8")
+
+    with pytest.raises(ValueError, match="nested"):
+        Configuration.from_file(config_file)
+
+
+def test_from_file_end_without_geometry(tmp_path: Path) -> None:
+    """Verify ValueError for $end without $geometry.
+
+    :param tmp_path: Pytest fixture providing a temporary directory.
+    :type tmp_path: Path
+    """
+    config_text: str = "$end\n"
+
+    config_file: Path = tmp_path / "orphan_end.qblock.config"
+    config_file.write_text(config_text, encoding="utf-8")
+
+    with pytest.raises(ValueError, match="without"):
+        Configuration.from_file(config_file)
+
+
+def test_from_file_missing_equals(tmp_path: Path) -> None:
+    """Verify ValueError for lines without '=' outside geometry.
+
+    :param tmp_path: Pytest fixture providing a temporary directory.
+    :type tmp_path: Path
+    """
+    config_text: str = "this is not a valid line\n"
+
+    config_file: Path = tmp_path / "bad_syntax.qblock.config"
+    config_file.write_text(config_text, encoding="utf-8")
+
+    with pytest.raises(ValueError, match="key = value"):
+        Configuration.from_file(config_file)
+
+
+# ======================================================================
+# Getter methods
+# ======================================================================
+
+
+def test_get_basis_set_returns_str() -> None:
+    """Verify get_basis_set returns str."""
+    config: Configuration = Configuration(basis_set="6-31G")
+
+    result: str = config.get_basis_set()
+
+    assert result == "6-31G"
+    assert isinstance(result, str)
+
+
+def test_get_charge_returns_int() -> None:
+    """Verify get_charge returns int."""
+    config: Configuration = Configuration(charge=-1)
+
+    assert config.get_charge() == -1
+    assert isinstance(config.get_charge(), int)
+
+
+def test_get_multiplicity_returns_int() -> None:
+    """Verify get_multiplicity returns int."""
+    config: Configuration = Configuration(multiplicity=3)
+
+    assert config.get_multiplicity() == 3
+    assert isinstance(config.get_multiplicity(), int)
+
+
+def test_get_geometry_file_returns_path() -> None:
+    """Verify get_geometry_file returns Path when set."""
     config: Configuration = Configuration(
-        output_dir="saved_output",
-        max_scf_iterations=125,
-        scf_convergence_threshold=5e-9,
+        geometry_file="geometries/water.xyz"
     )
 
-    save_path: Path = tmp_path / "saved_config.json"
-    config.save_to_file(save_path)
+    result: Optional[Path] = config.get_geometry_file()
 
-    assert save_path.exists()
-
-    loaded_config: Configuration = Configuration.from_file(save_path)
-
-    assert loaded_config.paths.output_dir == Path("saved_output")
-    assert loaded_config.calculation.max_scf_iterations == 125
-    assert loaded_config.calculation.scf_convergence_threshold == pytest.approx(5e-9)
+    assert result is not None
+    assert isinstance(result, Path)
+    assert result == Path("geometries/water.xyz")
 
 
-def test_configuration_roundtrip(tmp_path: Path) -> None:
-    """Verify configuration can be saved and loaded without data loss.
+def test_get_geometry_file_returns_none() -> None:
+    """Verify get_geometry_file returns None when unset."""
+    config: Configuration = Configuration()
+
+    assert config.get_geometry_file() is None
+
+
+def test_get_geometry_returns_list() -> None:
+    """Verify get_geometry returns geometry list."""
+    geom: List[List[Any]] = [
+        ["H", 0.0, 0.0, 0.0],
+        ["H", 0.0, 0.0, 0.74],
+    ]
+    config: Configuration = Configuration(geometry=geom)
+
+    result: List[List[Any]] = config.get_geometry()
+
+    assert len(result) == 2
+    assert result[0][0] == "H"
+    assert result[1][3] == pytest.approx(0.74)
+
+
+def test_get_geometry_empty_default() -> None:
+    """Verify get_geometry returns empty list by default."""
+    config: Configuration = Configuration()
+
+    assert config.get_geometry() == []
+
+
+def test_get_max_scf_iterations_returns_int() -> None:
+    """Verify get_max_scf_iterations returns int."""
+    config: Configuration = Configuration(
+        max_scf_iterations=200
+    )
+
+    assert config.get_max_scf_iterations() == 200
+    assert isinstance(config.get_max_scf_iterations(), int)
+
+
+def test_get_scf_convergence_threshold_returns_float() -> None:
+    """Verify get_scf_convergence_threshold returns float."""
+    config: Configuration = Configuration(
+        scf_convergence_threshold=1e-10
+    )
+
+    assert config.get_scf_convergence_threshold() == pytest.approx(
+        1e-10
+    )
+    assert isinstance(
+        config.get_scf_convergence_threshold(), float
+    )
+
+
+def test_get_diis_start_returns_int() -> None:
+    """Verify get_diis_start returns int."""
+    config: Configuration = Configuration(diis_start=5)
+
+    assert config.get_diis_start() == 5
+    assert isinstance(config.get_diis_start(), int)
+
+
+def test_get_diis_max_vectors_returns_int() -> None:
+    """Verify get_diis_max_vectors returns int."""
+    config: Configuration = Configuration(diis_max_vectors=10)
+
+    assert config.get_diis_max_vectors() == 10
+    assert isinstance(config.get_diis_max_vectors(), int)
+
+
+def test_get_error_metric_returns_str() -> None:
+    """Verify get_error_metric returns str."""
+    config: Configuration = Configuration(error_metric="max")
+
+    assert config.get_error_metric() == "max"
+    assert isinstance(config.get_error_metric(), str)
+
+
+def test_get_output_dir_returns_path() -> None:
+    """Verify get_output_dir returns Path."""
+    config: Configuration = Configuration(
+        output_dir="custom_results"
+    )
+
+    result: Path = config.get_output_dir()
+
+    assert isinstance(result, Path)
+    assert result == Path("custom_results")
+
+
+def test_get_output_dir_default_returns_path() -> None:
+    """Verify get_output_dir returns Path for default."""
+    config: Configuration = Configuration()
+
+    result: Path = config.get_output_dir()
+
+    assert isinstance(result, Path)
+    assert result == Path("output")
+
+
+def test_get_log_level_returns_str() -> None:
+    """Verify get_log_level returns str."""
+    config: Configuration = Configuration(log_level="DEBUG")
+
+    assert config.get_log_level() == "DEBUG"
+    assert isinstance(config.get_log_level(), str)
+
+
+def test_get_save_json_returns_bool() -> None:
+    """Verify get_save_json returns bool."""
+    config: Configuration = Configuration(save_json=False)
+
+    assert config.get_save_json() is False
+    assert isinstance(config.get_save_json(), bool)
+
+
+def test_get_save_text_returns_bool() -> None:
+    """Verify get_save_text returns bool."""
+    config: Configuration = Configuration(save_text=False)
+
+    assert config.get_save_text() is False
+    assert isinstance(config.get_save_text(), bool)
+
+
+def test_getters_after_from_file(tmp_path: Path) -> None:
+    """Verify getter methods work on file-loaded config.
 
     :param tmp_path: Pytest fixture providing a temporary directory.
     :type tmp_path: Path
     """
-    original: Configuration = Configuration(
-        output_dir="roundtrip_output",
-        max_scf_iterations=333,
-        scf_convergence_threshold=7.5e-10,
+    config_text: str = (
+        "basis_set = 3-21G\n"
+        "charge = 1\n"
+        "multiplicity = 2\n"
+        "output_dir = results\n"
+        "geometry_file = mol.xyz\n"
+        "save_json = false\n"
     )
-    original.output.log_level = "WARNING"
-    original.output.output_prefix = "roundtrip_test"
 
-    save_path: Path = tmp_path / "roundtrip.json"
-    original.save_to_file(save_path)
+    config_file: Path = tmp_path / "getter.qblock.config"
+    config_file.write_text(config_text, encoding="utf-8")
 
-    loaded: Configuration = Configuration.from_file(save_path)
+    config: Configuration = Configuration.from_file(config_file)
 
-    assert loaded.paths.output_dir == original.paths.output_dir
-    assert loaded.calculation.max_scf_iterations == original.calculation.max_scf_iterations
-    assert loaded.calculation.scf_convergence_threshold == pytest.approx(
-        original.calculation.scf_convergence_threshold
-    )
-    assert loaded.output.log_level == original.output.log_level
-    assert loaded.output.output_prefix == original.output.output_prefix
+    assert config.get_basis_set() == "3-21G"
+    assert config.get_charge() == 1
+    assert config.get_multiplicity() == 2
+    assert config.get_output_dir() == Path("results")
+    assert isinstance(config.get_output_dir(), Path)
+    assert config.get_geometry_file() == Path("mol.xyz")
+    assert isinstance(config.get_geometry_file(), Path)
+    assert config.get_save_json() is False
+    assert config.get_save_text() is True

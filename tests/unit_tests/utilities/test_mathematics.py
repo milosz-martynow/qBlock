@@ -15,10 +15,9 @@ import pytest
 
 from q_block.utilities.mathematics import (
     double_factorial,
-    normalization_constant,
     get_cartesian_components,
+    normalization_constant,
 )
-
 
 # ======================================================================
 # double_factorial Tests
@@ -28,14 +27,14 @@ from q_block.utilities.mathematics import (
 @pytest.mark.parametrize(
     "n, expected",
     [
-        (-1, 1),   # Quantum chemistry convention: (-1)!! = 1
-        (0, 1),    # 0!! = 1
-        (1, 1),    # 1!! = 1
-        (2, 2),    # 2!! = 2
-        (3, 3),    # 3!! = 3 * 1 = 3
-        (4, 8),    # 4!! = 4 * 2 = 8
-        (5, 15),   # 5!! = 5 * 3 * 1 = 15
-        (6, 48),   # 6!! = 6 * 4 * 2 = 48
+        (-1, 1),  # Quantum chemistry convention: (-1)!! = 1
+        (0, 1),  # 0!! = 1
+        (1, 1),  # 1!! = 1
+        (2, 2),  # 2!! = 2
+        (3, 3),  # 3!! = 3 * 1 = 3
+        (4, 8),  # 4!! = 4 * 2 = 8
+        (5, 15),  # 5!! = 5 * 3 * 1 = 15
+        (6, 48),  # 6!! = 6 * 4 * 2 = 48
         (7, 105),  # 7!! = 7 * 5 * 3 * 1 = 105
     ],
     ids=["n=-1", "n=0", "n=1", "n=2", "n=3", "n=4", "n=5", "n=6", "n=7"],
@@ -160,9 +159,7 @@ def test_normalization_constant_d_orbital_formula() -> None:
     """
     alpha: float = 1.0
     norm: float = normalization_constant(alpha, 1, 1, 0)
-    expected: float = (2.0 * alpha / math.pi) ** 0.75 * math.sqrt(
-        16.0 * alpha**2
-    )
+    expected: float = (2.0 * alpha / math.pi) ** 0.75 * math.sqrt(16.0 * alpha**2)
     assert abs(norm - expected) < 1e-10
 
 
@@ -208,7 +205,9 @@ def _generate_cartesian_components(l: int) -> List[Tuple[int, int, int]]:
     :returns: List of all valid (lx, ly, lz) component tuples.
     :rtype: List[Tuple[int, int, int]]
     """
-    return [(lx, ly, l - lx - ly) for lx in range(l + 1) for ly in range(l + 1 - lx)]
+    return [
+        (lx, ly, l - lx - ly) for lx in range(l + 1) for ly in range(l + 1 - lx)
+    ]
 
 
 @pytest.mark.parametrize(
@@ -225,16 +224,16 @@ def _generate_cartesian_components(l: int) -> List[Tuple[int, int, int]]:
         (8, _generate_cartesian_components(8)),  # l
     ],
     ids=[
-        "s (l=0)", 
-        "p (l=1)", 
-        "d (l=2)", 
-        "f (l=3)", 
-        "g (l=4)", 
-        "h (l=5)", 
-        "i (l=6)", 
-        "k (l=7)", 
-        "l (l=8)"
-        ],
+        "s (l=0)",
+        "p (l=1)",
+        "d (l=2)",
+        "f (l=3)",
+        "g (l=4)",
+        "h (l=5)",
+        "i (l=6)",
+        "k (l=7)",
+        "l (l=8)",
+    ],
 )
 def test_get_cartesian_components(
     l: int, expected_components: List[Tuple[int, int, int]]

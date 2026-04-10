@@ -19,14 +19,19 @@ import numpy as np
 import pytest
 
 from q_block import Molecule
-from q_block.solvers.wavefunction.hartree_fock.restricted_hartree_fock import (
-    RestrictedHartreeFock,
-)
 from q_block.models.initialization.nuclear_repulsion_energy import (
     NuclearRepulsionEnergy,
 )
-from tests.unit_tests.utilities import extract_nuclei, h2_molecule, h2_rhf, water_molecule, water_rhf
-
+from q_block.solvers.wavefunction.hartree_fock.restricted_hartree_fock import (
+    RestrictedHartreeFock,
+)
+from tests.unit_tests.utilities import (
+    extract_nuclei,
+    h2_molecule,
+    h2_rhf,
+    water_molecule,
+    water_rhf,
+)
 
 # ======================================================================
 # Construction & Validation Tests
@@ -46,7 +51,10 @@ def test_even_electrons_accepted(h2_molecule: Molecule) -> None:
     cgtos = h2_molecule.contracted_gaussian_type_orbitals
     e_nuc = NuclearRepulsionEnergy(molecule=h2_molecule).energy
     rhf = RestrictedHartreeFock(
-        cgtos=cgtos, nuclei=nuclei, e_nuclear=e_nuc, n_electrons=2,
+        cgtos=cgtos,
+        nuclei=nuclei,
+        e_nuclear=e_nuc,
+        n_electrons=2,
     )
     assert rhf.n_occ == 1
 
@@ -56,9 +64,7 @@ def test_even_electrons_accepted(h2_molecule: Molecule) -> None:
     [1, 3, 5, 7],
     ids=["1e", "3e", "5e", "7e"],
 )
-def test_odd_electrons_raises(
-    h2_molecule: Molecule, n_electrons: int
-) -> None:
+def test_odd_electrons_raises(h2_molecule: Molecule, n_electrons: int) -> None:
     """RHF with an odd electron count should raise ValueError.
 
     Closed-shell RHF mandates even electron counts.  Odd values
@@ -75,7 +81,9 @@ def test_odd_electrons_raises(
     e_nuc = NuclearRepulsionEnergy(molecule=h2_molecule).energy
     with pytest.raises(ValueError, match="even number of electrons"):
         RestrictedHartreeFock(
-            cgtos=cgtos, nuclei=nuclei, e_nuclear=e_nuc,
+            cgtos=cgtos,
+            nuclei=nuclei,
+            e_nuclear=e_nuc,
             n_electrons=n_electrons,
         )
 
@@ -321,7 +329,9 @@ def test_water_rhf_density_trace(water_rhf: RestrictedHartreeFock) -> None:
     np.testing.assert_allclose(n_electrons, 10.0, atol=1e-8)
 
 
-def test_water_rhf_electronic_energy_negative(water_rhf: RestrictedHartreeFock) -> None:
+def test_water_rhf_electronic_energy_negative(
+    water_rhf: RestrictedHartreeFock,
+) -> None:
     """Electronic energy for water should be negative.
 
     :param water_rhf: Uninitialised RHF for water/STO-3G.

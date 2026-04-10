@@ -4,17 +4,17 @@ This module defines the :class:`Molecule` class, a minimal placeholder
 for molecular systems that extends :class:`q_block.atomic_system.AtomicSystem`.
 """
 
-from typing import Optional, Dict, List, Any, Union, Tuple
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import pandas as pd
 
-from q_block.models.atomic_system import AtomicSystem
-from q_block.environment.io.input_data import InputData
-from q_block.environment.io.coordinates import CartesianCoordinates
 from q_block.environment.io.basis_set import BasisSet
-from q_block.models.electron import SubShell
+from q_block.environment.io.coordinates import CartesianCoordinates
+from q_block.environment.io.input_data import InputData
 from q_block.models.atom import Atom
+from q_block.models.atomic_system import AtomicSystem
 from q_block.models.basis_functions import ContractedGaussianTypeOrbital
+from q_block.models.electron import SubShell
 
 
 class Molecule(AtomicSystem):
@@ -66,7 +66,9 @@ class Molecule(AtomicSystem):
         self.populate_spinorbitals_with_gto()
 
         # CGTO basis — populated by make_contracted_gaussian_type_orbital()
-        self.contracted_gaussian_type_orbitals: Optional[List[ContractedGaussianTypeOrbital]] = None
+        self.contracted_gaussian_type_orbitals: Optional[
+            List[ContractedGaussianTypeOrbital]
+        ] = None
 
         # Validate basis sets (only when one was provided), electron count,
         # and multiplicity consistency
@@ -128,9 +130,7 @@ class Molecule(AtomicSystem):
         :raises ValueError: On parity mismatch or impossible multiplicity.
         """
         if self.multiplicity < 1:
-            raise ValueError(
-                f"Multiplicity must be >= 1; got {self.multiplicity}."
-            )
+            raise ValueError(f"Multiplicity must be >= 1; got {self.multiplicity}.")
         n_unpaired = self.multiplicity - 1
         if (self.n_electrons - n_unpaired) % 2 != 0:
             raise ValueError(
@@ -343,9 +343,7 @@ class Molecule(AtomicSystem):
                 # Collect basis shells for this l
                 basis_shells: List[Dict[str, List[float]]] = []
                 for region in ("core", "valence_inner", "valence_outer"):
-                    basis_shells.extend(
-                        regions.get(region, {}).get(l, [])
-                    )
+                    basis_shells.extend(regions.get(region, {}).get(l, []))
 
                 if len(basis_shells) < len(subshells):
                     raise ValueError(
@@ -436,7 +434,10 @@ class Molecule(AtomicSystem):
 
             for subshell in atom._all_subshells:
                 for orbital in subshell.orbitals:
-                    for so, s in ((orbital.spin_up, +0.5), (orbital.spin_down, -0.5)):
+                    for so, s in (
+                        (orbital.spin_up, +0.5),
+                        (orbital.spin_down, -0.5),
+                    ):
                         if not so.occupied or not so.data:
                             continue
 

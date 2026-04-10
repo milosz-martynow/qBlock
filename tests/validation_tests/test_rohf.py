@@ -26,29 +26,27 @@ applied to the shared result:
    ``ABS_TOL_EV`` eV.
 """
 
-import pytest
+from typing import Any, Callable, Dict, Tuple
 
 import numpy as np
-
-from typing import Any, Callable, Dict, Tuple
+import pytest
 
 from q_block.solvers.wavefunction.hartree_fock.restricted_open_shell_hartree_fock import (
     RestrictedOpenShellHartreeFock,
+)
+from tests.validation_tests.templates import (
+    make_atom_koopmans_ie_test,
+    make_atom_scf_converged_test,
+    make_molecule_homo_ie_positive_test,
+    make_molecule_koopmans_ie_test,
+    make_molecule_scf_converged_test,
+    make_molecule_total_energy_negative_test,
 )
 from tests.validation_tests.utils import _build_from_geometry
 from tests.validation_tests.validation_data import (
     ATOMS_HOMO_ENERGIES,
     MOLECULES_HOMO_ENERGIES,
 )
-from tests.validation_tests.templates import (
-    make_atom_scf_converged_test,
-    make_atom_koopmans_ie_test,
-    make_molecule_scf_converged_test,
-    make_molecule_total_energy_negative_test,
-    make_molecule_homo_ie_positive_test,
-    make_molecule_koopmans_ie_test,
-)
-
 
 # ---------------------------------------------------------------------------
 # Test data selection
@@ -78,7 +76,9 @@ _rohf_mol_entries = [
     params=[entry for _, entry in _rohf_atom_entries],
     ids=[key for key, _ in _rohf_atom_entries],
 )
-def rohf_atom_result(request: pytest.FixtureRequest) -> Tuple[Dict[str, Any], RestrictedOpenShellHartreeFock]:
+def rohf_atom_result(
+    request: pytest.FixtureRequest,
+) -> Tuple[Dict[str, Any], RestrictedOpenShellHartreeFock]:
     """Run ROHF SCF for one open-shell atom (placed at origin) and return
     ``(entry, converged_hf)``."""
     entry = request.param
@@ -103,7 +103,9 @@ def rohf_atom_result(request: pytest.FixtureRequest) -> Tuple[Dict[str, Any], Re
     params=[entry for _, entry in _rohf_mol_entries],
     ids=[key for key, _ in _rohf_mol_entries],
 )
-def rohf_molecule_result(request: pytest.FixtureRequest) -> Tuple[Dict[str, Any], RestrictedOpenShellHartreeFock]:
+def rohf_molecule_result(
+    request: pytest.FixtureRequest,
+) -> Tuple[Dict[str, Any], RestrictedOpenShellHartreeFock]:
     """Run ROHF SCF for one open-shell molecule and return
     ``(entry, converged_hf)``."""
     entry = request.param
@@ -128,8 +130,12 @@ def rohf_molecule_result(request: pytest.FixtureRequest) -> Tuple[Dict[str, Any]
 # ---------------------------------------------------------------------------
 
 # ROHF-specific helper functions
-_rohf_homo_idx: Callable[[Dict[str, Any]], int] = lambda entry: entry["n_closed"] + entry["n_open"] - 1
-_rohf_epsilon: Callable[[RestrictedOpenShellHartreeFock], np.ndarray] = lambda hf: hf.matrices["epsilon"]
+_rohf_homo_idx: Callable[[Dict[str, Any]], int] = (
+    lambda entry: entry["n_closed"] + entry["n_open"] - 1
+)
+_rohf_epsilon: Callable[[RestrictedOpenShellHartreeFock], np.ndarray] = (
+    lambda hf: hf.matrices["epsilon"]
+)
 
 
 def test_rohf_atom_scf_converged(rohf_atom_result) -> None:
@@ -149,7 +155,9 @@ def test_rohf_atom_koopmans_ie_vs_reference(rohf_atom_result) -> None:
 
     :param rohf_atom_result: Pytest fixture providing ``(entry, hf)``.
     """
-    return make_atom_koopmans_ie_test("ROHF", _rohf_homo_idx, _rohf_epsilon)(rohf_atom_result)
+    return make_atom_koopmans_ie_test("ROHF", _rohf_homo_idx, _rohf_epsilon)(
+        rohf_atom_result
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -178,7 +186,9 @@ def test_rohf_molecule_homo_ie_positive(rohf_molecule_result) -> None:
 
     :param rohf_molecule_result: Pytest fixture providing ``(entry, hf)``.
     """
-    return make_molecule_homo_ie_positive_test("ROHF", _rohf_homo_idx, _rohf_epsilon)(rohf_molecule_result)
+    return make_molecule_homo_ie_positive_test(
+        "ROHF", _rohf_homo_idx, _rohf_epsilon
+    )(rohf_molecule_result)
 
 
 def test_rohf_molecule_koopmans_ie_vs_reference(rohf_molecule_result) -> None:
@@ -190,4 +200,6 @@ def test_rohf_molecule_koopmans_ie_vs_reference(rohf_molecule_result) -> None:
 
     :param rohf_molecule_result: Pytest fixture providing ``(entry, hf)``.
     """
-    return make_molecule_koopmans_ie_test("ROHF", _rohf_homo_idx, _rohf_epsilon)(rohf_molecule_result)
+    return make_molecule_koopmans_ie_test("ROHF", _rohf_homo_idx, _rohf_epsilon)(
+        rohf_molecule_result
+    )

@@ -11,16 +11,11 @@ Steps:
     3. Inspect molecule properties
 """
 
-import logging
-
 from q_block.environment.io.input_data import InputData
+from q_block.environment.logs import setup_logging
 from q_block.models.molecule import Molecule
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(name)s %(levelname)s: %(message)s",
-)
-logger = logging.getLogger(__name__)
+logger = setup_logging(__name__)
 
 # ══════════════════════════════════════════════════════════════════════════════
 # 1. DEFINE ATOMS USING InputData

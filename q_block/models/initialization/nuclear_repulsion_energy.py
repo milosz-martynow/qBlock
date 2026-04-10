@@ -159,9 +159,7 @@ class NuclearRepulsionEnergy:
         :rtype: float
         """
         R_ab = math.sqrt(
-            (R_a[0] - R_b[0]) ** 2
-            + (R_a[1] - R_b[1]) ** 2
-            + (R_a[2] - R_b[2]) ** 2
+            (R_a[0] - R_b[0]) ** 2 + (R_a[1] - R_b[1]) ** 2 + (R_a[2] - R_b[2]) ** 2
         )
 
         if R_ab < 1e-10:

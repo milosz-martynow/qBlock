@@ -1,7 +1,7 @@
 """Input/output helpers and basis-set utilities."""
 
 from .basis_set import BasisSet, Pople
-from .coordinates import Coordinates, CartesianCoordinates
+from .coordinates import CartesianCoordinates, Coordinates
 
 __all__ = [
     "BasisSet",
@@ -9,4 +9,3 @@ __all__ = [
     "Coordinates",
     "CartesianCoordinates",
 ]
-

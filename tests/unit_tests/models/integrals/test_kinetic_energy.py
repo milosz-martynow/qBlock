@@ -13,7 +13,7 @@ All tests use pytest with parametrize, no test classes.
 import numpy as np
 import pytest
 
-from q_block import ContractedGaussianTypeOrbital, Molecule, KineticEnergy, Overlap
+from q_block import ContractedGaussianTypeOrbital, KineticEnergy, Molecule, Overlap
 from tests.unit_tests.environment.constants import ORIGIN
 from tests.unit_tests.utilities import (
     ALL_ORBITAL_COMPONENTS,
@@ -21,7 +21,6 @@ from tests.unit_tests.utilities import (
     h2_molecule,
     water_molecule,
 )
-
 
 # ======================================================================
 # Primitive Kinetic Energy Tests - Parametrized by Orbital Type
@@ -47,8 +46,16 @@ def test_primitive_kinetic_self_positive(lx: int, ly: int, lz: int) -> None:
     A: tuple[float, float, float] = (0.0, 0.0, 0.0)
     alpha: float = 1.0
     kinetic: float = KineticEnergy.primitive_kinetic(
-        alpha=alpha, A=A, lx1=lx, ly1=ly, lz1=lz,
-        beta=alpha, B=A, lx2=lx, ly2=ly, lz2=lz
+        alpha=alpha,
+        A=A,
+        lx1=lx,
+        ly1=ly,
+        lz1=lz,
+        beta=alpha,
+        B=A,
+        lx2=lx,
+        ly2=ly,
+        lz2=lz,
     )
     assert kinetic > 0
 
@@ -63,7 +70,9 @@ def test_primitive_kinetic_self_positive(lx: int, ly: int, lz: int) -> None:
     ALL_ORBITAL_COMPONENTS,
     ids=get_orbital_ids(),
 )
-def test_primitive_kinetic_same_center_diff_exponents(lx: int, ly: int, lz: int) -> None:
+def test_primitive_kinetic_same_center_diff_exponents(
+    lx: int, ly: int, lz: int
+) -> None:
     """Verify two orbitals at same center with different exponents have positive kinetic energy.
 
     :param lx: int - Angular momentum component in x direction.
@@ -72,8 +81,16 @@ def test_primitive_kinetic_same_center_diff_exponents(lx: int, ly: int, lz: int)
     """
     A: tuple[float, float, float] = (0.0, 0.0, 0.0)
     kinetic: float = KineticEnergy.primitive_kinetic(
-        alpha=1.0, A=A, lx1=lx, ly1=ly, lz1=lz,
-        beta=2.0, B=A, lx2=lx, ly2=ly, lz2=lz
+        alpha=1.0,
+        A=A,
+        lx1=lx,
+        ly1=ly,
+        lz1=lz,
+        beta=2.0,
+        B=A,
+        lx2=lx,
+        ly2=ly,
+        lz2=lz,
     )
     assert kinetic > 0
 
@@ -98,8 +115,16 @@ def test_primitive_kinetic_far_apart(lx: int, ly: int, lz: int) -> None:
     A: tuple[float, float, float] = (0.0, 0.0, 0.0)
     B: tuple[float, float, float] = (0.0, 0.0, 100.0)
     kinetic: float = KineticEnergy.primitive_kinetic(
-        alpha=1.0, A=A, lx1=lx, ly1=ly, lz1=lz,
-        beta=1.0, B=B, lx2=lx, ly2=ly, lz2=lz
+        alpha=1.0,
+        A=A,
+        lx1=lx,
+        ly1=ly,
+        lz1=lz,
+        beta=1.0,
+        B=B,
+        lx2=lx,
+        ly2=ly,
+        lz2=lz,
     )
     assert kinetic == pytest.approx(expected=0.0, abs=1e-10)
 
@@ -119,14 +144,12 @@ def test_primitive_kinetic_increases_with_exponent() -> None:
 
     # Lower exponent (more diffuse)
     T_low: float = KineticEnergy.primitive_kinetic(
-        alpha=0.5, A=A, lx1=0, ly1=0, lz1=0,
-        beta=0.5, B=A, lx2=0, ly2=0, lz2=0
+        alpha=0.5, A=A, lx1=0, ly1=0, lz1=0, beta=0.5, B=A, lx2=0, ly2=0, lz2=0
     )
 
     # Higher exponent (more compact)
     T_high: float = KineticEnergy.primitive_kinetic(
-        alpha=2.0, A=A, lx1=0, ly1=0, lz1=0,
-        beta=2.0, B=A, lx2=0, ly2=0, lz2=0
+        alpha=2.0, A=A, lx1=0, ly1=0, lz1=0, beta=2.0, B=A, lx2=0, ly2=0, lz2=0
     )
 
     assert T_low < T_high
@@ -143,13 +166,11 @@ def test_primitive_kinetic_symmetric() -> None:
     B: tuple[float, float, float] = (1.0, 0.5, 0.2)
 
     T_ab: float = KineticEnergy.primitive_kinetic(
-        alpha=1.5, A=A, lx1=1, ly1=0, lz1=0,
-        beta=2.0, B=B, lx2=0, ly2=1, lz2=0
+        alpha=1.5, A=A, lx1=1, ly1=0, lz1=0, beta=2.0, B=B, lx2=0, ly2=1, lz2=0
     )
 
     T_ba: float = KineticEnergy.primitive_kinetic(
-        alpha=2.0, A=B, lx1=0, ly1=1, lz1=0,
-        beta=1.5, B=A, lx2=1, ly2=0, lz2=0
+        alpha=2.0, A=B, lx1=0, ly1=1, lz1=0, beta=1.5, B=A, lx2=1, ly2=0, lz2=0
     )
 
     assert T_ab == pytest.approx(expected=T_ba, rel=1e-10)
@@ -169,14 +190,23 @@ def test_contracted_kinetic_single_primitive_equals_primitive() -> None:
         contractions=[1.0],
     )
     kinetic_contracted: float = KineticEnergy.contracted_kinetic(
-        cgto1=cgto, lx1=0, ly1=0, lz1=0,
-        cgto2=cgto, lx2=0, ly2=0, lz2=0
+        cgto1=cgto, lx1=0, ly1=0, lz1=0, cgto2=cgto, lx2=0, ly2=0, lz2=0
     )
     kinetic_primitive: float = KineticEnergy.primitive_kinetic(
-        alpha=1.0, A=(0.0, 0.0, 0.0), lx1=0, ly1=0, lz1=0,
-        beta=1.0, B=(0.0, 0.0, 0.0), lx2=0, ly2=0, lz2=0
+        alpha=1.0,
+        A=(0.0, 0.0, 0.0),
+        lx1=0,
+        ly1=0,
+        lz1=0,
+        beta=1.0,
+        B=(0.0, 0.0, 0.0),
+        lx2=0,
+        ly2=0,
+        lz2=0,
     )
-    assert kinetic_contracted == pytest.approx(expected=kinetic_primitive, rel=1e-10)
+    assert kinetic_contracted == pytest.approx(
+        expected=kinetic_primitive, rel=1e-10
+    )
 
 
 def test_contracted_kinetic_multiple_primitives_positive() -> None:
@@ -188,8 +218,7 @@ def test_contracted_kinetic_multiple_primitives_positive() -> None:
         contractions=[0.5, 0.3, 0.2],
     )
     kinetic: float = KineticEnergy.contracted_kinetic(
-        cgto1=cgto, lx1=0, ly1=0, lz1=0,
-        cgto2=cgto, lx2=0, ly2=0, lz2=0
+        cgto1=cgto, lx1=0, ly1=0, lz1=0, cgto2=cgto, lx2=0, ly2=0, lz2=0
     )
     assert kinetic > 0
 
@@ -241,7 +270,9 @@ def test_kinetic_matrix_symmetry_h2(h2_molecule: Molecule) -> None:
 
     :param h2_molecule: Molecule - H2 molecule fixture with STO-3G basis.
     """
-    T: KineticEnergy = KineticEnergy(cgtos=h2_molecule.contracted_gaussian_type_orbitals)
+    T: KineticEnergy = KineticEnergy(
+        cgtos=h2_molecule.contracted_gaussian_type_orbitals
+    )
     np.testing.assert_array_almost_equal(actual=T.matrix, desired=T.matrix.T)
 
 
@@ -250,7 +281,9 @@ def test_kinetic_matrix_symmetry_water(water_molecule: Molecule) -> None:
 
     :param water_molecule: Molecule - Water molecule fixture with STO-3G basis.
     """
-    T: KineticEnergy = KineticEnergy(cgtos=water_molecule.contracted_gaussian_type_orbitals)
+    T: KineticEnergy = KineticEnergy(
+        cgtos=water_molecule.contracted_gaussian_type_orbitals
+    )
     np.testing.assert_array_almost_equal(actual=T.matrix, desired=T.matrix.T)
 
 
@@ -264,7 +297,9 @@ def test_kinetic_matrix_diagonal_positive_h2(h2_molecule: Molecule) -> None:
 
     :param h2_molecule: Molecule - H2 molecule fixture with STO-3G basis.
     """
-    T: KineticEnergy = KineticEnergy(cgtos=h2_molecule.contracted_gaussian_type_orbitals)
+    T: KineticEnergy = KineticEnergy(
+        cgtos=h2_molecule.contracted_gaussian_type_orbitals
+    )
     diagonal: np.ndarray = np.diag(v=T.matrix)
     assert all(d > 0 for d in diagonal)
 
@@ -274,7 +309,9 @@ def test_kinetic_matrix_diagonal_positive_water(water_molecule: Molecule) -> Non
 
     :param water_molecule: Molecule - Water molecule fixture with STO-3G basis.
     """
-    T: KineticEnergy = KineticEnergy(cgtos=water_molecule.contracted_gaussian_type_orbitals)
+    T: KineticEnergy = KineticEnergy(
+        cgtos=water_molecule.contracted_gaussian_type_orbitals
+    )
     diagonal: np.ndarray = np.diag(v=T.matrix)
     assert all(d > 0 for d in diagonal)
 
@@ -289,17 +326,23 @@ def test_kinetic_matrix_positive_semidefinite_h2(h2_molecule: Molecule) -> None:
 
     :param h2_molecule: Molecule - H2 molecule fixture with STO-3G basis.
     """
-    T: KineticEnergy = KineticEnergy(cgtos=h2_molecule.contracted_gaussian_type_orbitals)
+    T: KineticEnergy = KineticEnergy(
+        cgtos=h2_molecule.contracted_gaussian_type_orbitals
+    )
     eigenvalues: np.ndarray = np.linalg.eigvalsh(a=T.matrix)
     assert all(ev >= -1e-10 for ev in eigenvalues)
 
 
-def test_kinetic_matrix_positive_semidefinite_water(water_molecule: Molecule) -> None:
+def test_kinetic_matrix_positive_semidefinite_water(
+    water_molecule: Molecule,
+) -> None:
     """Verify kinetic matrix is positive semi-definite.
 
     :param water_molecule: Molecule - Water molecule fixture with STO-3G basis.
     """
-    T: KineticEnergy = KineticEnergy(cgtos=water_molecule.contracted_gaussian_type_orbitals)
+    T: KineticEnergy = KineticEnergy(
+        cgtos=water_molecule.contracted_gaussian_type_orbitals
+    )
     eigenvalues: np.ndarray = np.linalg.eigvalsh(a=T.matrix)
     assert all(ev >= -1e-10 for ev in eigenvalues)
 
@@ -309,7 +352,9 @@ def test_kinetic_matrix_repr(h2_molecule: Molecule) -> None:
 
     :param h2_molecule: Molecule - H2 molecule fixture with STO-3G basis.
     """
-    T: KineticEnergy = KineticEnergy(cgtos=h2_molecule.contracted_gaussian_type_orbitals)
+    T: KineticEnergy = KineticEnergy(
+        cgtos=h2_molecule.contracted_gaussian_type_orbitals
+    )
     repr_str: str = repr(T)
     assert "KineticEnergy" in repr_str
     assert "n_basis" in repr_str
@@ -320,7 +365,9 @@ def test_kinetic_matrix_getitem(h2_molecule: Molecule) -> None:
 
     :param h2_molecule: Molecule - H2 molecule fixture with STO-3G basis.
     """
-    T: KineticEnergy = KineticEnergy(cgtos=h2_molecule.contracted_gaussian_type_orbitals)
+    T: KineticEnergy = KineticEnergy(
+        cgtos=h2_molecule.contracted_gaussian_type_orbitals
+    )
     assert T[0, 0] == T.matrix[0, 0]
     assert T[0, 1] == T.matrix[0, 1]
 
@@ -335,7 +382,9 @@ def test_h2_kinetic_matrix_dimension(h2_molecule: Molecule) -> None:
 
     :param h2_molecule: Molecule - H2 molecule fixture with STO-3G basis.
     """
-    T: KineticEnergy = KineticEnergy(cgtos=h2_molecule.contracted_gaussian_type_orbitals)
+    T: KineticEnergy = KineticEnergy(
+        cgtos=h2_molecule.contracted_gaussian_type_orbitals
+    )
     assert T.n_basis == 2
 
 
@@ -344,7 +393,9 @@ def test_h2_kinetic_off_diagonal_positive(h2_molecule: Molecule) -> None:
 
     :param h2_molecule: Molecule - H2 molecule fixture with STO-3G basis.
     """
-    T: KineticEnergy = KineticEnergy(cgtos=h2_molecule.contracted_gaussian_type_orbitals)
+    T: KineticEnergy = KineticEnergy(
+        cgtos=h2_molecule.contracted_gaussian_type_orbitals
+    )
     # T[0,1] is kinetic coupling between 1s on H1 and 1s on H2
     assert T[0, 1] > 0
 
@@ -359,7 +410,9 @@ def test_water_kinetic_matrix_dimension(water_molecule: Molecule) -> None:
 
     :param water_molecule: Molecule - Water molecule fixture with STO-3G basis.
     """
-    T: KineticEnergy = KineticEnergy(cgtos=water_molecule.contracted_gaussian_type_orbitals)
+    T: KineticEnergy = KineticEnergy(
+        cgtos=water_molecule.contracted_gaussian_type_orbitals
+    )
     # O: 1s, 2s, 2px, 2py, 2pz = 5 functions
     # H1: 1s = 1 function
     # H2: 1s = 1 function
@@ -372,7 +425,9 @@ def test_water_kinetic_matrix_shape(water_molecule: Molecule) -> None:
 
     :param water_molecule: Molecule - Water molecule fixture with STO-3G basis.
     """
-    T: KineticEnergy = KineticEnergy(cgtos=water_molecule.contracted_gaussian_type_orbitals)
+    T: KineticEnergy = KineticEnergy(
+        cgtos=water_molecule.contracted_gaussian_type_orbitals
+    )
     assert T.matrix.shape == (7, 7)
 
 
@@ -386,7 +441,9 @@ def test_kinetic_vs_overlap_different_magnitudes(h2_molecule: Molecule) -> None:
 
     :param h2_molecule: Molecule - H2 molecule fixture with STO-3G basis.
     """
-    T: KineticEnergy = KineticEnergy(cgtos=h2_molecule.contracted_gaussian_type_orbitals)
+    T: KineticEnergy = KineticEnergy(
+        cgtos=h2_molecule.contracted_gaussian_type_orbitals
+    )
     S: Overlap = Overlap(cgtos=h2_molecule.contracted_gaussian_type_orbitals)
 
     # Diagonal of S should be ~1, diagonal of T should be related to kinetic energy

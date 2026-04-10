@@ -16,11 +16,13 @@ pandas objects.
 """
 
 from pathlib import Path
-from typing import Any, List, Union, Optional
+from typing import Any, List, Optional, Union
 
 import pandas as pd
 
-from q_block.environment.constants.natural.atoms_data import ATOMS_SYMBOLS_SYMBOL_TO_Z
+from q_block.environment.constants.natural.atoms_data import (
+    ATOMS_SYMBOLS_SYMBOL_TO_Z,
+)
 from q_block.environment.io.coordinates import CartesianCoordinates
 from q_block.models.atom import Atom
 
@@ -94,7 +96,9 @@ class InputData:
 
         return symbol
 
-    def from_script(self, atom_data: List[List[Any]], atom_prefix: str = "") -> None:
+    def from_script(
+        self, atom_data: List[List[Any]], atom_prefix: str = ""
+    ) -> None:
         """Populate this :class:`InputData` from a Python structure.
 
         The expected input format is::
@@ -178,7 +182,9 @@ class InputData:
             ],
         )
 
-    def from_xyz_file(self, xyz_path: Union[str, Path], atom_prefix: str = "") -> None:
+    def from_xyz_file(
+        self, xyz_path: Union[str, Path], atom_prefix: str = ""
+    ) -> None:
         """Populate this :class:`InputData` from an XYZ file.
 
         The function accepts the conventional XYZ format::
@@ -214,9 +220,7 @@ class InputData:
         try:
             n_atoms = int(first_line)
         except ValueError:
-            raise ValueError(
-                "First line of XYZ file must be an integer atom count"
-            )
+            raise ValueError("First line of XYZ file must be an integer atom count")
 
         coord_lines = [ln.strip() for ln in raw_lines[2:] if ln.strip()]
         if len(coord_lines) != n_atoms:

@@ -11,27 +11,26 @@ The to_dataframe() method creates a MultiIndex DataFrame containing
 all occupied spin-orbitals with their quantum numbers and GTO data.
 """
 
-import logging
-
 import pandas as pd
 
 from q_block.environment.io.basis_set import Pople
 from q_block.environment.io.input_data import InputData
+from q_block.environment.logs import setup_logging
 from q_block.models.molecule import Molecule
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(name)s %(levelname)s: %(message)s",
-)
-logger = logging.getLogger(__name__)
+logger = setup_logging(__name__)
 
 # ══════════════════════════════════════════════════════════════════════════════
 # 1. LOAD BASIS SETS
 # ══════════════════════════════════════════════════════════════════════════════
 # Different basis sets for different atoms (mixed basis).
 
-basis_3_21G = Pople(filepath="q_block/environment/constants/numerical/basis_set/pople/3-21G.gbs")
-basis_6_31G = Pople(filepath="q_block/environment/constants/numerical/basis_set/pople/6-31G.gbs")
+basis_3_21G = Pople(
+    filepath="q_block/environment/constants/numerical/basis_set/pople/3-21G.gbs"
+)
+basis_6_31G = Pople(
+    filepath="q_block/environment/constants/numerical/basis_set/pople/6-31G.gbs"
+)
 
 logger.info("Loaded basis sets: 3-21G and 6-31G\n")
 

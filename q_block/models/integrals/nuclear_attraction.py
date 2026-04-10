@@ -28,10 +28,10 @@ from typing import List, Tuple
 from q_block.models.basis_functions import ContractedGaussianTypeOrbital
 from q_block.models.integrals.two_gaussian_integral import TwoGaussianIntegral
 from q_block.utilities.mathematics import (
-    normalization_constant,
     boys_function,
-    hermite_expansion_coefficients,
     hermite_coulomb_table,
+    hermite_expansion_coefficients,
+    normalization_constant,
 )
 
 
@@ -78,7 +78,9 @@ class NuclearAttraction(TwoGaussianIntegral):
         nuclei: List[Tuple[int, Tuple[float, float, float]]],
     ) -> None:
         if not nuclei:
-            raise ValueError("Cannot build nuclear attraction matrix without nuclei.")
+            raise ValueError(
+                "Cannot build nuclear attraction matrix without nuclei."
+            )
         # Call parent constructor with nuclei as keyword argument
         super().__init__(cgtos, nuclei=nuclei)
 

@@ -36,7 +36,6 @@ from tests.unit_tests.environment.constants import (
 )
 from tests.unit_tests.verification_data.expected_atom_pure import EXPECTED_ATOM_PURE
 
-
 # Type aliases for spin-orbital mappings
 SpinKey = Tuple[int, int, int, float]
 SpinMap = Dict[SpinKey, bool]
@@ -161,18 +160,18 @@ def test_atom_pure_matches_expected(atomic_number: int) -> None:
 
     actual: SpinMap = extract_spin_map(atom)
 
-    assert set(actual.keys()) == set(expected_pure.keys()), (
-        f"Spin-orbital key mismatch for atomic_number={atomic_number}"
-    )
+    assert set(actual.keys()) == set(
+        expected_pure.keys()
+    ), f"Spin-orbital key mismatch for atomic_number={atomic_number}"
 
     for key in actual:
-        assert actual[key] == expected_pure[key], (
-            f"Value mismatch at atomic_number={atomic_number} on spin orbital {key}"
-        )
+        assert (
+            actual[key] == expected_pure[key]
+        ), f"Value mismatch at atomic_number={atomic_number} on spin orbital {key}"
 
-    assert count_spin_map(actual) == atomic_number, (
-        f"Electron count mismatch for atomic_number={atomic_number}"
-    )
+    assert (
+        count_spin_map(actual) == atomic_number
+    ), f"Electron count mismatch for atomic_number={atomic_number}"
 
 
 # ======================================================================
@@ -224,9 +223,9 @@ def test_golden_gto_population(basis_file: str, symbol: str) -> None:
 
     snapshot: Dict = _serialize_atom_for_test(atom=atom, basis_name=basis_name)
 
-    assert snapshot == golden_atom, (
-        f"GTO population mismatch for atom {symbol} in basis {basis_name}"
-    )
+    assert (
+        snapshot == golden_atom
+    ), f"GTO population mismatch for atom {symbol} in basis {basis_name}"
 
 
 # ======================================================================
@@ -275,7 +274,25 @@ def test_atom_open_shell(atomic_number: int) -> None:
 # Pure Aufbau closed-shell atoms (all subshells completely filled)
 # Differs from empirical CLOSED_SHELL_ATOMS due to exceptions like Pd, Cu, Cr, etc.
 PURE_AUFBAU_CLOSED_SHELL: List[int] = [
-    2, 4, 10, 12, 18, 20, 30, 36, 38, 48, 54, 56, 70, 80, 86, 88, 102, 112, 118
+    2,
+    4,
+    10,
+    12,
+    18,
+    20,
+    30,
+    36,
+    38,
+    48,
+    54,
+    56,
+    70,
+    80,
+    86,
+    88,
+    102,
+    112,
+    118,
 ]
 
 
@@ -288,10 +305,7 @@ def _generate_open_shell_test_cases() -> List[Tuple[int, bool]]:
     :returns: List of tuples with atomic number and expected open_shell value.
     :rtype: List[Tuple[int, bool]]
     """
-    return [
-        (z, z not in PURE_AUFBAU_CLOSED_SHELL)
-        for z in range(1, 119)
-    ]
+    return [(z, z not in PURE_AUFBAU_CLOSED_SHELL) for z in range(1, 119)]
 
 
 @pytest.mark.parametrize(
@@ -366,19 +380,19 @@ def test_open_shell_lists_counts() -> None:
     n_closed: int = len(CLOSED_SHELL_ATOMS)
     n_open: int = len(OPEN_SHELL_ATOMS)
 
-    assert n_closed + n_open == 118, (
-        f"Expected 118 total elements, got {n_closed} closed + {n_open} open"
-    )
+    assert (
+        n_closed + n_open == 118
+    ), f"Expected 118 total elements, got {n_closed} closed + {n_open} open"
 
 
 def test_open_shell_lists_no_duplicates() -> None:
     """Verify neither list contains duplicate entries."""
-    assert len(CLOSED_SHELL_ATOMS) == len(set(CLOSED_SHELL_ATOMS)), (
-        "CLOSED_SHELL_ATOMS contains duplicates"
-    )
-    assert len(OPEN_SHELL_ATOMS) == len(set(OPEN_SHELL_ATOMS)), (
-        "OPEN_SHELL_ATOMS contains duplicates"
-    )
+    assert len(CLOSED_SHELL_ATOMS) == len(
+        set(CLOSED_SHELL_ATOMS)
+    ), "CLOSED_SHELL_ATOMS contains duplicates"
+    assert len(OPEN_SHELL_ATOMS) == len(
+        set(OPEN_SHELL_ATOMS)
+    ), "OPEN_SHELL_ATOMS contains duplicates"
 
 
 @pytest.mark.parametrize(
@@ -409,17 +423,15 @@ def test_all_atoms_open_shell_consistency() -> None:
         symbol: str = ATOMS_SYMBOLS_Z_TO_SYMBOL[z]
 
         if z in closed_set:
-            assert atom.open_shell is False, (
-                f"Atom {symbol} (Z={z}) is in CLOSED_SHELL_ATOMS but has open_shell=True"
-            )
+            assert (
+                atom.open_shell is False
+            ), f"Atom {symbol} (Z={z}) is in CLOSED_SHELL_ATOMS but has open_shell=True"
         elif z in open_set:
-            assert atom.open_shell is True, (
-                f"Atom {symbol} (Z={z}) is in OPEN_SHELL_ATOMS but has open_shell=False"
-            )
+            assert (
+                atom.open_shell is True
+            ), f"Atom {symbol} (Z={z}) is in OPEN_SHELL_ATOMS but has open_shell=False"
         else:
-            raise AssertionError(
-                f"Atom {symbol} (Z={z}) is not in either list"
-            )
+            raise AssertionError(f"Atom {symbol} (Z={z}) is not in either list")
 
 
 # ======================================================================

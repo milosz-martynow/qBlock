@@ -14,7 +14,6 @@ import pytest
 
 from q_block.environment.io.coordinates import CartesianCoordinates, Coordinates
 
-
 # ======================================================================
 # CartesianCoordinates Initialization and Properties Tests
 # ======================================================================
@@ -130,6 +129,7 @@ def test_coordinates_as_tuple_uses_abstract_methods() -> None:
     Creates a dummy subclass to track method calls and verify the
     abstract interface is correctly used.
     """
+
     class DummyCoordinates(Coordinates):
         def __init__(self) -> None:
             self.calls: List[int] = []

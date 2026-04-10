@@ -8,7 +8,7 @@ implementations for different basis set families.
 Currently supported basis set types:
 
 * :class:`Pople` – Pople-style Gaussian basis sets, including:
-  
+
   - STO-nG minimal basis sets (STO-3G, STO-6G) – n Gaussians approximating
     Slater-type orbitals
   - Split-valence basis sets (3-21G, 6-31G, 6-311G, 6-311++G**) – different
@@ -50,7 +50,6 @@ from q_block.environment.constants.natural.atoms_data import (
     ATOMS_SYMBOLS_Z_TO_SYMBOL,
 )
 
-
 # ======================================================================
 # Type aliases
 # ======================================================================
@@ -85,6 +84,7 @@ BasisSetData: TypeAlias = Dict[
 # ======================================================================
 # G E N E R I C   B A S I S   S E T   (abstract base)
 # ======================================================================
+
 
 class BasisSet:
     """Base class for all basis set families.
@@ -123,9 +123,7 @@ class BasisSet:
 
         :raises NotImplementedError: Always, unless overridden.
         """
-        raise NotImplementedError(
-            "Subclasses must implement the parse() method."
-        )
+        raise NotImplementedError("Subclasses must implement the parse() method.")
 
     def __getitem__(self, key: Union[str, int]) -> Regions:
         """Retrieve basis set data for a specific element.
@@ -172,15 +170,16 @@ class BasisSet:
 # P O P L E   B A S I S   S E T
 # ======================================================================
 
+
 class Pople(BasisSet):
     """Pople-style Gaussian basis sets.
 
     This class parses Gaussian-format ``.gbs`` files for Pople basis
     sets and stores the result as an element-keyed dictionary with region
     classification (core / valence-inner / valence-outer).
-    
+
     Supported basis sets include:
-    
+
     * **STO-nG** (minimal basis): n Gaussian primitives approximate each
       Slater-type orbital (e.g., STO-3G, STO-6G)
     * **Split-valence** (3-21G, 6-31G, 6-311G, etc.): Different numbers of
@@ -392,4 +391,3 @@ class Pople(BasisSet):
             raise ValueError("No elements found in basis file.")
 
         return basis_by_element
-

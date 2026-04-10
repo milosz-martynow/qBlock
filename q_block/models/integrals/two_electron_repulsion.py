@@ -32,9 +32,9 @@ from q_block.models.basis_functions import ContractedGaussianTypeOrbital
 from q_block.models.integrals.two_gaussian_integral import TwoGaussianIntegral
 from q_block.utilities.mathematics import (
     boys_function,
-    normalization_constant,
-    hermite_expansion_coefficients,
     hermite_coulomb_table,
+    hermite_expansion_coefficients,
+    normalization_constant,
 )
 
 
@@ -393,7 +393,9 @@ class TwoElectronRepulsion(TwoGaussianIntegral):
             lx1 + lx2 + lx3 + lx4,
             ly1 + ly2 + ly3 + ly4,
             lz1 + lz2 + lz3 + lz4,
-            rho, PQ, PQ_sq,
+            rho,
+            PQ,
+            PQ_sq,
         )
 
         # Precompute sign-weighted E2 products per (t2, u2, v2)
@@ -430,19 +432,11 @@ class TwoElectronRepulsion(TwoGaussianIntegral):
                                     * E2_xy
                                     * Ez2[v2]
                                     * sign
-                                    * R_table[
-                                        t1 + t2, u1 + u2, v1 + v2
-                                    ]
+                                    * R_table[t1 + t2, u1 + u2, v1 + v2]
                                 )
 
         # Prefactor: 2π^(5/2) / (p*q*sqrt(p+q))
-        prefactor = (
-            2.0
-            * (math.pi ** 2.5)
-            / (p * q * math.sqrt(p + q))
-            * K_AB
-            * K_CD
-        )
+        prefactor = 2.0 * (math.pi**2.5) / (p * q * math.sqrt(p + q)) * K_AB * K_CD
 
         return N1 * N2 * N3 * N4 * prefactor * integral
 
@@ -473,13 +467,31 @@ class TwoElectronRepulsion(TwoGaussianIntegral):
         """
         alpha, beta, gamma, delta = exponents
         A, B, C, D = centers
-        (lx1, ly1, lz1), (lx2, ly2, lz2), (lx3, ly3, lz3), (lx4, ly4, lz4) = angular_momenta
+        (lx1, ly1, lz1), (lx2, ly2, lz2), (lx3, ly3, lz3), (lx4, ly4, lz4) = (
+            angular_momenta
+        )
 
         return TwoElectronRepulsion.primitive_eri(
-            alpha, A, lx1, ly1, lz1,
-            beta, B, lx2, ly2, lz2,
-            gamma, C, lx3, ly3, lz3,
-            delta, D, lx4, ly4, lz4,
+            alpha,
+            A,
+            lx1,
+            ly1,
+            lz1,
+            beta,
+            B,
+            lx2,
+            ly2,
+            lz2,
+            gamma,
+            C,
+            lx3,
+            ly3,
+            lz3,
+            delta,
+            D,
+            lx4,
+            ly4,
+            lz4,
         )
 
     # ==================================================================
@@ -645,9 +657,7 @@ class TwoElectronRepulsion(TwoGaussianIntegral):
         :returns: ERI tensor of shape ``(n_basis, n_basis, n_basis, n_basis)``.
         :rtype: np.ndarray
         """
-        tensor = np.zeros(
-            (self.n_basis, self.n_basis, self.n_basis, self.n_basis)
-        )
+        tensor = np.zeros((self.n_basis, self.n_basis, self.n_basis, self.n_basis))
 
         # --- Schwarz screening: precompute (μν|μν) bounds ----
         schwarz_threshold = 1e-12
@@ -659,8 +669,22 @@ class TwoElectronRepulsion(TwoGaussianIntegral):
                 shell_nu, lx2, ly2, lz2 = self._basis_map[nu]
                 cgto2 = self.cgtos[shell_nu]
                 diag = self._compute_element_4center(
-                    cgto1, lx1, ly1, lz1, cgto2, lx2, ly2, lz2,
-                    cgto1, lx1, ly1, lz1, cgto2, lx2, ly2, lz2,
+                    cgto1,
+                    lx1,
+                    ly1,
+                    lz1,
+                    cgto2,
+                    lx2,
+                    ly2,
+                    lz2,
+                    cgto1,
+                    lx1,
+                    ly1,
+                    lz1,
+                    cgto2,
+                    lx2,
+                    ly2,
+                    lz2,
                 )
                 val = math.sqrt(abs(diag))
                 schwarz[mu, nu] = val
@@ -698,10 +722,22 @@ class TwoElectronRepulsion(TwoGaussianIntegral):
                         cgto4 = self.cgtos[shell_sig]
 
                         element = self._compute_element_4center(
-                            cgto1, lx1, ly1, lz1,
-                            cgto2, lx2, ly2, lz2,
-                            cgto3, lx3, ly3, lz3,
-                            cgto4, lx4, ly4, lz4,
+                            cgto1,
+                            lx1,
+                            ly1,
+                            lz1,
+                            cgto2,
+                            lx2,
+                            ly2,
+                            lz2,
+                            cgto3,
+                            lx3,
+                            ly3,
+                            lz3,
+                            cgto4,
+                            lx4,
+                            ly4,
+                            lz4,
                         )
 
                         # Fill all 8 permutations

@@ -10,7 +10,6 @@ from typing import List
 from q_block.environment.io.basis_set import Pople
 from q_block.environment.io.coordinates import CartesianCoordinates
 
-
 # ======================================================================
 # Path Constants
 # ======================================================================

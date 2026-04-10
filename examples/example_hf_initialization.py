@@ -17,18 +17,13 @@ Each HF context:
     - Prepares data structures for SCF calculation
 """
 
-import logging
-
 from q_block.environment.io.basis_set import Pople
 from q_block.environment.io.input_data import InputData
-from q_block.models.molecule import Molecule
+from q_block.environment.logs import setup_logging
 from q_block.models.initialization import RHF, ROHF, UHF
+from q_block.models.molecule import Molecule
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(name)s %(levelname)s: %(message)s",
-)
-logger = logging.getLogger(__name__)
+logger = setup_logging(__name__)
 
 # ══════════════════════════════════════════════════════════════════════════════
 # 1. LOAD BASIS SETS
@@ -36,8 +31,12 @@ logger = logging.getLogger(__name__)
 # We use different basis sets for oxygen and hydrogen to demonstrate
 # that mixed basis sets are supported.
 
-basis_3_21G = Pople(filepath="q_block/environment/constants/numerical/basis_set/pople/3-21G.gbs")
-basis_6_31G = Pople(filepath="q_block/environment/constants/numerical/basis_set/pople/6-31G.gbs")
+basis_3_21G = Pople(
+    filepath="q_block/environment/constants/numerical/basis_set/pople/3-21G.gbs"
+)
+basis_6_31G = Pople(
+    filepath="q_block/environment/constants/numerical/basis_set/pople/6-31G.gbs"
+)
 
 
 # ══════════════════════════════════════════════════════════════════════════════

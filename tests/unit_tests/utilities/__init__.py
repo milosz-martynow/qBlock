@@ -11,6 +11,9 @@ import pytest
 
 from q_block import Molecule
 from q_block.environment.io.input_data import InputData
+from q_block.models.initialization.nuclear_repulsion_energy import (
+    NuclearRepulsionEnergy,
+)
 from q_block.solvers.wavefunction.hartree_fock.restricted_hartree_fock import (
     RestrictedHartreeFock,
 )
@@ -20,12 +23,8 @@ from q_block.solvers.wavefunction.hartree_fock.restricted_open_shell_hartree_foc
 from q_block.solvers.wavefunction.hartree_fock.unrestricted_hartree_fock import (
     UnrestrictedHartreeFock,
 )
-from q_block.models.initialization.nuclear_repulsion_energy import (
-    NuclearRepulsionEnergy,
-)
 from q_block.utilities.mathematics import get_cartesian_components
 from tests.unit_tests.environment.constants import BASIS_STO_3G
-
 
 # ======================================================================
 # Orbital Component Constants
@@ -35,7 +34,9 @@ from tests.unit_tests.environment.constants import BASIS_STO_3G
 ALL_ORBITAL_COMPONENTS: List[Tuple[int, int, int]] = (
     get_cartesian_components(0)  # s: [(0,0,0)]
     + get_cartesian_components(1)  # p: [(1,0,0), (0,1,0), (0,0,1)]
-    + get_cartesian_components(2)  # d: [(2,0,0), (1,1,0), (1,0,1), (0,2,0), (0,1,1), (0,0,2)]
+    + get_cartesian_components(
+        2
+    )  # d: [(2,0,0), (1,1,0), (1,0,1), (0,2,0), (0,1,1), (0,0,2)]
 )
 """All Cartesian orbital components for s, p, d shells."""
 
@@ -84,7 +85,9 @@ def get_orbital_ids(components: List[Tuple[int, int, int]] = None) -> List[str]:
     return [orbital_id(c) for c in components]
 
 
-def extract_nuclei(molecule: Molecule) -> List[Tuple[int, Tuple[float, float, float]]]:
+def extract_nuclei(
+    molecule: Molecule,
+) -> List[Tuple[int, Tuple[float, float, float]]]:
     """Extract nuclear positions and charges from a molecule.
 
     :param molecule: Molecule instance with atoms.
@@ -93,7 +96,10 @@ def extract_nuclei(molecule: Molecule) -> List[Tuple[int, Tuple[float, float, fl
     :rtype: List[Tuple[int, Tuple[float, float, float]]]
     """
     return [
-        (atom.atomic_number, (atom.coordinates.x, atom.coordinates.y, atom.coordinates.z))
+        (
+            atom.atomic_number,
+            (atom.coordinates.x, atom.coordinates.y, atom.coordinates.z),
+        )
         for atom in molecule.atoms
     ]
 
@@ -181,7 +187,9 @@ def water_molecule() -> Molecule:
 
 
 @pytest.fixture
-def h2_nuclei(h2_molecule: Molecule) -> List[Tuple[int, Tuple[float, float, float]]]:
+def h2_nuclei(
+    h2_molecule: Molecule,
+) -> List[Tuple[int, Tuple[float, float, float]]]:
     """Nuclear positions and charges for H2.
 
     :param h2_molecule: H2 molecule fixture.
@@ -193,7 +201,9 @@ def h2_nuclei(h2_molecule: Molecule) -> List[Tuple[int, Tuple[float, float, floa
 
 
 @pytest.fixture
-def water_nuclei(water_molecule: Molecule) -> List[Tuple[int, Tuple[float, float, float]]]:
+def water_nuclei(
+    water_molecule: Molecule,
+) -> List[Tuple[int, Tuple[float, float, float]]]:
     """Nuclear positions and charges for water.
 
     :param water_molecule: Water molecule fixture.
@@ -217,7 +227,10 @@ def h2_rhf(h2_molecule: Molecule) -> RestrictedHartreeFock:
     cgtos = h2_molecule.contracted_gaussian_type_orbitals
     e_nuc = NuclearRepulsionEnergy(molecule=h2_molecule).energy
     return RestrictedHartreeFock(
-        cgtos=cgtos, nuclei=nuclei, e_nuclear=e_nuc, n_electrons=2,
+        cgtos=cgtos,
+        nuclei=nuclei,
+        e_nuclear=e_nuc,
+        n_electrons=2,
     )
 
 
@@ -234,8 +247,11 @@ def h2_uhf(h2_molecule: Molecule) -> UnrestrictedHartreeFock:
     cgtos = h2_molecule.contracted_gaussian_type_orbitals
     e_nuc = NuclearRepulsionEnergy(molecule=h2_molecule).energy
     return UnrestrictedHartreeFock(
-        cgtos=cgtos, nuclei=nuclei, e_nuclear=e_nuc,
-        n_alpha=1, n_beta=1,
+        cgtos=cgtos,
+        nuclei=nuclei,
+        e_nuclear=e_nuc,
+        n_alpha=1,
+        n_beta=1,
     )
 
 
@@ -252,7 +268,10 @@ def water_rhf(water_molecule: Molecule) -> RestrictedHartreeFock:
     cgtos = water_molecule.contracted_gaussian_type_orbitals
     e_nuc = NuclearRepulsionEnergy(molecule=water_molecule).energy
     return RestrictedHartreeFock(
-        cgtos=cgtos, nuclei=nuclei, e_nuclear=e_nuc, n_electrons=10,
+        cgtos=cgtos,
+        nuclei=nuclei,
+        e_nuclear=e_nuc,
+        n_electrons=10,
     )
 
 
@@ -269,8 +288,11 @@ def water_uhf(water_molecule: Molecule) -> UnrestrictedHartreeFock:
     cgtos = water_molecule.contracted_gaussian_type_orbitals
     e_nuc = NuclearRepulsionEnergy(molecule=water_molecule).energy
     return UnrestrictedHartreeFock(
-        cgtos=cgtos, nuclei=nuclei, e_nuclear=e_nuc,
-        n_alpha=5, n_beta=5,
+        cgtos=cgtos,
+        nuclei=nuclei,
+        e_nuclear=e_nuc,
+        n_alpha=5,
+        n_beta=5,
     )
 
 
@@ -287,8 +309,11 @@ def h2_rohf(h2_molecule: Molecule) -> RestrictedOpenShellHartreeFock:
     cgtos = h2_molecule.contracted_gaussian_type_orbitals
     e_nuc = NuclearRepulsionEnergy(molecule=h2_molecule).energy
     return RestrictedOpenShellHartreeFock(
-        cgtos=cgtos, nuclei=nuclei, e_nuclear=e_nuc,
-        n_closed=1, n_open=0,
+        cgtos=cgtos,
+        nuclei=nuclei,
+        e_nuclear=e_nuc,
+        n_closed=1,
+        n_open=0,
     )
 
 
@@ -305,6 +330,9 @@ def water_rohf(water_molecule: Molecule) -> RestrictedOpenShellHartreeFock:
     cgtos = water_molecule.contracted_gaussian_type_orbitals
     e_nuc = NuclearRepulsionEnergy(molecule=water_molecule).energy
     return RestrictedOpenShellHartreeFock(
-        cgtos=cgtos, nuclei=nuclei, e_nuclear=e_nuc,
-        n_closed=5, n_open=0,
+        cgtos=cgtos,
+        nuclei=nuclei,
+        e_nuclear=e_nuc,
+        n_closed=5,
+        n_open=0,
     )

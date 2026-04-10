@@ -17,15 +17,14 @@ import numpy as np
 import pytest
 
 from q_block import Molecule
-from q_block.solvers.calculation_error_metric import CalculationErrorMetric
-from q_block.solvers.diis import DIIS
-from q_block.solvers.scf import SCF
 from q_block.models.basis_functions import ContractedGaussianTypeOrbital
 from q_block.models.initialization.nuclear_repulsion_energy import (
     NuclearRepulsionEnergy,
 )
+from q_block.solvers.calculation_error_metric import CalculationErrorMetric
+from q_block.solvers.diis import DIIS
+from q_block.solvers.scf import SCF
 from tests.unit_tests.utilities import extract_nuclei, h2_molecule
-
 
 # ======================================================================
 # Minimal concrete SCF subclass (RHF-like stub)
@@ -239,8 +238,13 @@ def test_max_iterations_validation(h2_molecule: Molecule) -> None:
     nuclei = extract_nuclei(h2_molecule)
     cgtos = h2_molecule.contracted_gaussian_type_orbitals
     with pytest.raises(ValueError, match="max_iterations must be >= 1"):
-        _StubRHF(cgtos=cgtos, nuclei=nuclei, e_nuclear=0.0, n_electrons=2,
-                 max_iterations=0)
+        _StubRHF(
+            cgtos=cgtos,
+            nuclei=nuclei,
+            e_nuclear=0.0,
+            n_electrons=2,
+            max_iterations=0,
+        )
 
 
 def test_convergence_threshold_validation(h2_molecule: Molecule) -> None:
@@ -257,8 +261,13 @@ def test_convergence_threshold_validation(h2_molecule: Molecule) -> None:
     nuclei = extract_nuclei(h2_molecule)
     cgtos = h2_molecule.contracted_gaussian_type_orbitals
     with pytest.raises(ValueError, match="convergence_threshold must be > 0"):
-        _StubRHF(cgtos=cgtos, nuclei=nuclei, e_nuclear=0.0, n_electrons=2,
-                 convergence_threshold=-1e-8)
+        _StubRHF(
+            cgtos=cgtos,
+            nuclei=nuclei,
+            e_nuclear=0.0,
+            n_electrons=2,
+            convergence_threshold=-1e-8,
+        )
 
 
 # ======================================================================

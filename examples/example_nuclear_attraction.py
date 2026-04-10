@@ -10,28 +10,29 @@ This script demonstrates how to:
     5. Compute the core Hamiltonian H = T + V
 """
 
-import logging
-
 import numpy as np
 
 from q_block.environment.io.basis_set import Pople
 from q_block.environment.io.input_data import InputData
-from q_block.models.molecule import Molecule
+from q_block.environment.logs import setup_logging
 from q_block.models.integrals import KineticEnergy, NuclearAttraction
+from q_block.models.molecule import Molecule
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(name)s %(levelname)s: %(message)s",
-)
-logger = logging.getLogger(__name__)
+logger = setup_logging(__name__)
 
 # ══════════════════════════════════════════════════════════════════════════════
 # 1. LOAD BASIS SETS
 # ══════════════════════════════════════════════════════════════════════════════
 
-basis_sto3g = Pople(filepath="q_block/environment/constants/numerical/basis_set/pople/STO-3G.gbs")
-basis_3_21G = Pople(filepath="q_block/environment/constants/numerical/basis_set/pople/3-21G.gbs")
-basis_6_31G = Pople(filepath="q_block/environment/constants/numerical/basis_set/pople/6-31G.gbs")
+basis_sto3g = Pople(
+    filepath="q_block/environment/constants/numerical/basis_set/pople/STO-3G.gbs"
+)
+basis_3_21G = Pople(
+    filepath="q_block/environment/constants/numerical/basis_set/pople/3-21G.gbs"
+)
+basis_6_31G = Pople(
+    filepath="q_block/environment/constants/numerical/basis_set/pople/6-31G.gbs"
+)
 
 logger.info("Loaded basis sets: STO-3G, 3-21G and 6-31G\n")
 

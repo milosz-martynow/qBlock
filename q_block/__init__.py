@@ -24,9 +24,12 @@ q_block/
 │   │                   containers (``InputData``), and output containers
 │   │                   (``OutputData``).
 │   │
-│   └── configuration.py  Runtime configuration management
-│                          (``Configuration``, ``PathConfiguration``,
-│                          ``CalculationDefaults``, ``OutputSettings``).
+│   └── configuration.py  Input configuration reader for plain-text
+│                          ``.qblock.config`` files
+│                          (``Configuration``).
+│
+│   └── logs.py            Centralised logging configuration
+│                          (``setup_logging``).
 │
 ├── models/             Physical models, systems, and theory.
 │   │                   Everything that mathematically describes the
@@ -84,21 +87,32 @@ from .environment.constants.natural.atoms_data import (
 
 # -- I/O --------------------------------------------------------------------
 from .environment.io.basis_set import BasisSet, Pople
+from .environment.io.coordinates import CartesianCoordinates, Coordinates
 from .environment.io.input_data import InputData
-from .environment.io.coordinates import Coordinates, CartesianCoordinates
 
 # -- Configuration ----------------------------------------------------------
 from .environment.configuration import Configuration
 
 # -- Composite systems ------------------------------------------------------
 from .models.atomic_system import AtomicSystem
-from .models.molecule import Molecule
 from .models.crystal import Crystal
+from .models.molecule import Molecule
 
 # -- Theory: initialization & basis functions --------------------------------
-from .models.initialization import QuantumCalculationContext, HartreeFock, RHF, UHF, ROHF
+from .models.initialization import (
+    RHF,
+    ROHF,
+    UHF,
+    HartreeFock,
+    QuantumCalculationContext,
+)
 from .models.basis_functions import ContractedGaussianTypeOrbital
-from .models.integrals import KineticEnergy, NuclearAttraction, Overlap, TwoElectronRepulsion
+from .models.integrals import (
+    KineticEnergy,
+    NuclearAttraction,
+    Overlap,
+    TwoElectronRepulsion,
+)
 
 __all__ = [
     "Atom",

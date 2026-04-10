@@ -21,7 +21,6 @@ import pytest
 
 from q_block.environment.io.output_data import OutputData
 
-
 # ======================================================================
 # OutputData.__init__ Tests
 # ======================================================================
@@ -70,7 +69,12 @@ def test_output_data_init_with_all_parameters() -> None:
     )
     test_iterations: List[Dict[str, float]] = [
         {"iteration": 1, "e_electronic": -1.0, "energy_change": -1.0, "error": 0.1},
-        {"iteration": 2, "e_electronic": -1.5, "energy_change": -0.5, "error": 0.01},
+        {
+            "iteration": 2,
+            "e_electronic": -1.5,
+            "energy_change": -0.5,
+            "error": 0.01,
+        },
     ]
 
     output: OutputData = OutputData(

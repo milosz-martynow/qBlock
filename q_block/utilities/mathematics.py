@@ -205,9 +205,7 @@ def boys_function_array(n_max: int, x: float) -> list:
         return result
 
     # Compute F_{n_max} directly
-    result[n_max] = (
-        _scipy_hyp1f1(n_max + 0.5, n_max + 1.5, -x) / (2 * n_max + 1)
-    )
+    result[n_max] = _scipy_hyp1f1(n_max + 0.5, n_max + 1.5, -x) / (2 * n_max + 1)
 
     # Downward recursion
     exp_neg_x = math.exp(-x)
@@ -354,4 +352,3 @@ def hermite_coulomb_table(
                         R[t, u, v, n] += (t - 1) * R[t - 2, u, v, n + 1]
 
     return R[:, :, :, 0]
-
