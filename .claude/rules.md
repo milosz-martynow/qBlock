@@ -48,6 +48,7 @@
 
 ## Architecture
 - Keep algorithmic optimizations pure Python (caching, DP tables, screening). No compiled extensions.
+- if anything is changed in the files and folder structure, then update the main README.md file.
 
 ## Diagrams
 - Always update all diagrams according to the changes in the code.

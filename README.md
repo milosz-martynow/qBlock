@@ -1,207 +1,146 @@
-# Dependencies
+﻿# qBlock
 
-## Operational system
-Operating System in which `qBlock` developed is Windows 11 Pro. For this environment this `README.md` is written.
-Nevertheless, it should be not a problem to follow below command with small changes to run it under Linux OS.
+A Python library for quantum chemistry calculations. qBlock implements Hartree-Fock self-consistent field (SCF) methods - Restricted (RHF), Unrestricted (UHF), and Restricted Open-Shell (ROHF) - built on Gaussian-type orbital (GTO) basis sets.
 
-## Python 
-Python in version [3.12.7](https://peps.python.org/pep-0693/). 
+---
 
-For better maintenance of Python code it is worth to use 
-[Python Virtual Environment](https://docs.python.org/3/library/venv.html).
+## Requirements
 
-You can create Python Virtual Environment by typing in terminal of your project root folder:
+- Windows 11 Pro (Linux should work with minor command adjustments)
+- Python 3.12
+
+### Setup
+
+Create and activate a virtual environment:
+
 ```
 python.exe -m venv .venv
 .venv\Scripts\activate
 ```
-Note - `'.venv'` name is included in `.gitignore` file.
 
-### PIP
-Upgrading pip will be useful, when issues with requirements libraries araises:
-```
-python.exe -m pip install --upgrade pip
-```
+Install qBlock with all dependencies:
 
-## Install packages
-To install `qBlock` with all project dependencies:
 ```
 pip.exe install -e .
 ```
 
-Sometimes, python does not come with `setuptools`. If so - above will not work until
-`setuptools` will be installed virtual environment:
+If `setuptools` is missing:
+
 ```
 pip.exe install setuptools==80.9.0
 ```
 
-## Test and formatting
-To test and format code type in terminal:
+---
+
+## Usage
+
+### Run an example
+
+Examples are standalone scripts located in `learn/examples/`:
+
+```
+python learn/examples/example_scf_hartree_fock.py
+python learn/examples/example_overlap_integral.py
+```
+
+### Run tests
+
+```
+pytest.exe .
+```
+
+Run only unit or validation tests:
+
+```
+pytest.exe tests/unit_tests/
+pytest.exe tests/validation_tests/
+```
+
+### Format and lint
+
 ```
 isort.exe .
 black.exe --config=.blackrc .\compute\ .\tests\ setup.py
 pylint.exe --rcfile=.pylintrc .\compute\ .\tests\ setup.py
-pytest.exe .
 ```
 
-## Examples
+---
 
-Code examples demonstrating how to use the library are provided as runnable
-Python scripts in the `examples` directory in the project root.
+## Architecture
 
-## Environment Module
-
-### Overview
-
-The `environment/` module provides the foundational infrastructure for qBlock calculations, consolidating all external data sources, configuration, and I/O interfaces into a single cohesive package.
-
-### Structure
+The project is organized into three top-level directories: `learn/`, `compute/`, and `tests/`. This order reflects the intended workflow - understand, implement, verify. Project follows LCT generic architecture which is described in detail in further sections:
 
 ```
-compute/environment/
-├── __init__.py              # Module exports
-├── configuration.py         # Configuration management
-├── constants/              # Natural and numerical constants
-│   ├── natural/           # Atomic data, physical constants
-│   └── numerical/         # Basis sets, numerical parameters
-└── io/                    # Input/output interfaces
-    ├── basis_set.py       # Basis set readers (Pople, etc.)
-    ├── coordinates.py     # Coordinate systems
-    ├── input_data.py      # Input data container
-    └── output_data.py     # Output data container
+project/
+├── learn/                   # Documentation, diagrams, and examples - no library code
+│   ├── architecture/        # Diagrams (e.g. UML) describing system structure and workflows
+│   └── examples/            # Runnable scripts demonstrating individual modules
+├── compute/                 # Core library
+│   ├── models/              # Domain layer: physical models and data structures
+│   ├── utilities/           # Shared mathematical functions used across the library
+│   ├── solvers/             # Algorithm layer: numerical solvers and convergence methods
+│   └── environment/         # Infrastructure: external data, I/O - input/output , and configuration
+│       ├── constants/       # Reference data: physical and numerical constants
+│       │   ├── natural/     # Nature based constants (e.g. physical and mathematical constants)
+│       │   └── numerical/   # Numerical parameters
+│       └── io/              # Interfaces for reading coordinates, basis sets, and data
+└── tests/                   # Correctness verification at unit and system level
+    ├── unit_tests/          # Fine-grained per-module tests
+    └── validation_tests/    # End-to-end tests verified against known reference data
 ```
 
-### Key Components
+### `learn/`
 
-#### 1. **constants/**
-Provides fundamental data for quantum chemistry calculations:
-- **natural/**: Atomic data (symbols, masses, electron configurations)
-- **numerical/**: Basis set files (.gbs format) and numerical parameters
+The `learn/` directory is the entry point for understanding the project. It contains:
 
-#### 2. **io/**
-Input/output interfaces for data exchange:
-- `BasisSet` classes for reading Gaussian basis sets
-- `Coordinates` for spatial representations (Cartesian, etc.)
-- `InputData` for structured molecular input
-- `OutputData` for calculation results with iteration history
+- **`architecture/`** - UML diagrams (component, block definition, activity, use case) describing the system structure and workflows.
+- **`examples/`** - Runnable Python scripts demonstrating how to use individual modules (integrals, SCF solvers, I/O, etc.).
+- *(Future)* Full API and mathematical documentation.
 
-#### 3. **configuration.py**
-Centralized configuration management:
-- `PathConfiguration`: File paths for inputs and outputs
-- `CalculationDefaults`: SCF and convergence parameters
-- `OutputSettings`: Output format preferences and filename prefix
+`learn/` does not contain executable library code - it is purely for comprehension and exploration.
 
-**Output Prefix Feature**: All saved output files can use a configurable prefix (default: `"output"`). This helps organize results from multiple calculations:
-```python
-config.output.output_prefix = "h2_molecule"
-# Files will be named: h2_molecule_results.json, h2_molecule_output.txt, etc.
+### `compute/`
+
+The `compute/` directory is the core library. Its internal architecture follows four layers:
+
+```
+compute/
+├── environment/     # External data, I/O, configuration
+│   ├── constants/
+│   │   ├── natural/     # Physical constants, atomic data
+│   │   └── numerical/   # Numerical parameters, basis set files
+│   └── io/              # Input/output interfaces
+├── models/          # Physical models and quantum theory
+│   ├── integrals/       # Integral engines (overlap, kinetic, nuclear, ERI)
+│   └── initialization/  # Calculation context, nuclear repulsion energy
+├── solvers/         # SCF algorithms (RHF, UHF, ROHF, DIIS)
+└── utilities/       # Shared mathematical utilities
 ```
 
-### Configuration Management
+- **`environment/`** - Infrastructure layer. Provides physical constants (`natural/`), numerical data and basis set files (`numerical/`), and I/O interfaces for reading coordinates, basis sets, and structured input/output data. Also manages runtime configuration.
+- **`models/`** - Domain layer. Defines atomic and molecular data structures, GTO basis functions, quantum mechanical integrals, and the Hartree-Fock calculation context.
+- **`solvers/`** - Algorithm layer. Implements SCF loop variants using the Template Method pattern. Each solver (`RestrictedHartreeFock`, `UnrestrictedHartreeFock`, `RestrictedOpenShellHartreeFock`) inherits from an abstract `SCF` base and provides its own Fock build, density matrix, and energy routines. Includes DIIS convergence acceleration.
+- **`utilities/`** - Shared mathematical functions (Boys function, Hermite expansion, normalization, double factorial) used across models and solvers.
 
-#### Default Configuration File
+### `tests/`
 
-qBlock automatically searches for configuration in the project root:
-1. `.qblock.config` (recommended)
-2. `qblock.config.json`
-3. `.config` (fallback)
+The `tests/` directory verifies correctness at two levels:
 
-#### Usage Examples
-
-**1. Use default configuration:**
-```python
-from compute.environment import Configuration
-
-config = Configuration()
+```
+tests/
+├── unit_tests/          # Fine-grained per-module tests
+│   ├── models/
+│   ├── solvers/
+│   ├── environment/
+│   ├── utilities/
+│   └── verification_data/   # Golden reference JSON files
+└── validation_tests/    # End-to-end HF calculations
+    ├── test_rhf.py
+    ├── test_uhf.py
+    ├── test_rohf.py
+    ├── validation_data.py   # Reference ionization energies
+    └── templates.py         # Reusable test factories
 ```
 
-**2. Load from file:**
-```python
-config = Configuration.from_file(".qblock.config")
-# Or auto-detect:
-config = Configuration.from_file()
-```
-
-**3. Load from environment variables:**
-```python
-# Set: QBLOCK_OUTPUT_DIR, QBLOCK_MAX_SCF_ITERATIONS, etc.
-config = Configuration.from_env()
-```
-
-**4. Override specific settings:**
-```python
-config = Configuration(
-    output_dir="custom_output",
-    max_scf_iterations=200,
-)
-```
-
-#### Configuration Priority
-
-Settings are applied in this order (later overrides earlier):
-1. **System defaults** — Built-in sensible defaults
-2. **Config file** — `.qblock.config` or specified file
-3. **Environment variables** — `QBLOCK_*` variables
-4. **Constructor arguments** — Direct parameter overrides
-
-### Example Configuration File
-
-```json
-{
-  "paths": {
-    "output_dir": "output",
-    "log_dir": "logs"
-  },
-  "calculation": {
-    "max_scf_iterations": 100,
-    "scf_convergence_threshold": 1e-08
-  },
-  "output": {
-    "save_json": true,
-    "log_level": "INFO",
-    "output_prefix": "output"
-  }
-}
-```
-
-### Migration from Previous Structure
-
-The `environment/` module consolidates what were previously separate top-level modules:
-
-| Previous | Current |
-|----------|---------|
-| `compute.constants` | `compute.environment.constants` |
-| `compute.io` | `compute.environment.io` |
-| `compute.configuration` | `compute.environment.configuration` |
-
-**Convenience imports** are available through `compute.__init__.py` for backward compatibility:
-
-```python
-# Both work:
-from compute.environment.io import InputData
-from compute import InputData  # Re-exported
-```
-
-### Design Rationale
-
-Grouping `constants`, `io`, and `configuration` into `environment` provides:
-
-1. **Semantic clarity**: All components manage external data and runtime environment
-2. **Reduced coupling**: Clear boundary between infrastructure and computation
-3. **Easier maintenance**: Related functionality in one place
-4. **Explicit dependencies**: Solvers and models explicitly depend on environment
-
-### Testing
-
-All tests have been updated to use the new import paths:
-
-```bash
-# Test configuration
-pytest tests/unit_tests/environment/test_configuration.py
-
-# Test I/O modules
-pytest tests/unit_tests/environment/io/
-
-# Run all tests
-pytest tests/
-```
+- **`unit_tests/`** - Tests individual classes and functions in isolation. Uses `@pytest.mark.parametrize` extensively; no test classes. Reference outputs are stored as JSON in `verification_data/`.
+- **`validation_tests/`** - End-to-end tests that run full SCF calculations on atoms and molecules and verify results against known ionization energies (Koopmans theorem) within a defined tolerance.
