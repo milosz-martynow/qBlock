@@ -68,7 +68,7 @@ pylint.exe --rcfile=.pylintrc .\compute\ .\tests\ setup.py
 
 ## Architecture
 
-The project is organized into three top-level directories: `learn/`, `compute/`, and `tests/`. This order reflects the intended workflow - understand, implement, verify. Project follows LCT generic architecture which is described in detail in further sections:
+The project - qBlock - is organized into three top-level directories: `learn/`, `compute/`, and `tests/`. This order reflects the intended workflow - understand, implement, verify and after expansion looks as follows:
 
 ```
 project/
@@ -88,7 +88,7 @@ project/
     ├── unit_tests/          # Fine-grained per-module tests
     └── validation_tests/    # End-to-end tests verified against known reference data
 ```
-
+It is worth to highlight that 0'th level `learn/`, `compute/`, and `tests/` are verbs, whereas lower level elements are nouns. only environment/constants is divided into two two adjectives.
 ### `learn/`
 
 The `learn/` directory is the entry point for understanding the project. It contains:
