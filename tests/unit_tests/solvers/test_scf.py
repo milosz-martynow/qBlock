@@ -1,4 +1,4 @@
-"""Unit tests for q_block.solvers.scf module.
+"""Unit tests for compute.solvers.scf module.
 
 Tests cover:
 - SCF construction and parameter validation
@@ -16,14 +16,14 @@ from typing import List, Tuple
 import numpy as np
 import pytest
 
-from q_block import Molecule
-from q_block.models.basis_functions import ContractedGaussianTypeOrbital
-from q_block.models.initialization.nuclear_repulsion_energy import (
+from compute import Molecule
+from compute.models.basis_functions import ContractedGaussianTypeOrbital
+from compute.models.initialization.nuclear_repulsion_energy import (
     NuclearRepulsionEnergy,
 )
-from q_block.solvers.calculation_error_metric import CalculationErrorMetric
-from q_block.solvers.diis import DIIS
-from q_block.solvers.scf import SCF
+from compute.solvers.calculation_error_metric import CalculationErrorMetric
+from compute.solvers.diis import DIIS
+from compute.solvers.scf import SCF
 from tests.unit_tests.utilities import extract_nuclei, h2_molecule
 
 # ======================================================================

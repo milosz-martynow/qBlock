@@ -1,4 +1,4 @@
-"""Unit tests for q_block.models.basis_functions module.
+"""Unit tests for compute.models.basis_functions module.
 
 Tests cover:
 - ContractedGaussianTypeOrbital class initialization, validation, and methods
@@ -13,11 +13,11 @@ from typing import List, Tuple
 
 import pytest
 
-from q_block import Atom, ContractedGaussianTypeOrbital, Molecule
-from q_block.environment.io.basis_set import Pople
-from q_block.environment.io.coordinates import CartesianCoordinates
-from q_block.environment.io.input_data import InputData
-from q_block.utilities.mathematics import normalization_constant
+from compute import Atom, ContractedGaussianTypeOrbital, Molecule
+from compute.environment.io.basis_set import Pople
+from compute.environment.io.coordinates import CartesianCoordinates
+from compute.environment.io.input_data import InputData
+from compute.utilities.mathematics import normalization_constant
 from tests.unit_tests.environment.constants import BASIS_6_31G, ORIGIN
 
 # ======================================================================

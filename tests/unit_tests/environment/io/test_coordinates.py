@@ -1,4 +1,4 @@
-"""Unit tests for q_block.io.coordinates module.
+"""Unit tests for compute.io.coordinates module.
 
 Tests cover:
 - CartesianCoordinates: initialization, representation, tuple conversion
@@ -12,7 +12,7 @@ from typing import List, Sequence, Tuple
 
 import pytest
 
-from q_block.environment.io.coordinates import CartesianCoordinates, Coordinates
+from compute.environment.io.coordinates import CartesianCoordinates, Coordinates
 
 # ======================================================================
 # CartesianCoordinates Initialization and Properties Tests

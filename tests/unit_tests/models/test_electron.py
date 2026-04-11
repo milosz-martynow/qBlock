@@ -1,4 +1,4 @@
-"""Unit tests for q_block.models.electron module.
+"""Unit tests for compute.models.electron module.
 
 Tests cover:
 - SpinOrbital: initialization, validation, representation
@@ -11,7 +11,7 @@ All tests use pytest with parametrize, no test classes.
 
 import pytest
 
-from q_block.models.electron import Orbital, Shell, SpinOrbital, SubShell
+from compute.models.electron import Orbital, Shell, SpinOrbital, SubShell
 
 # ======================================================================
 # SpinOrbital Tests

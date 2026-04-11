@@ -1,4 +1,4 @@
-"""Unit tests for q_block.utilities.mathematics module.
+"""Unit tests for compute.utilities.mathematics module.
 
 Tests cover:
 - double_factorial: double factorial computation including special cases
@@ -13,7 +13,7 @@ from typing import List, Tuple
 
 import pytest
 
-from q_block.utilities.mathematics import (
+from compute.utilities.mathematics import (
     double_factorial,
     get_cartesian_components,
     normalization_constant,

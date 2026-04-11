@@ -1,4 +1,4 @@
-"""Unit tests for q_block.io.input_data module.
+"""Unit tests for compute.io.input_data module.
 
 Tests cover:
 - InputData.from_xyz_file: reading XYZ geometry files
@@ -15,8 +15,8 @@ from typing import List
 import pandas as pd
 import pytest
 
-from q_block import AtomicSystem
-from q_block.environment.io.input_data import InputData
+from compute import AtomicSystem
+from compute.environment.io.input_data import InputData
 from tests.unit_tests.environment.constants import GEOMETRIES_DIR
 
 # ======================================================================

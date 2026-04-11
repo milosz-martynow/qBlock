@@ -39,8 +39,8 @@ pip.exe install setuptools==80.9.0
 To test and format code type in terminal:
 ```
 isort.exe .
-black.exe --config=.blackrc .\q_block\ .\tests\ setup.py
-pylint.exe --rcfile=.pylintrc .\q_block\ .\tests\ setup.py
+black.exe --config=.blackrc .\compute\ .\tests\ setup.py
+pylint.exe --rcfile=.pylintrc .\compute\ .\tests\ setup.py
 pytest.exe .
 ```
 
@@ -58,7 +58,7 @@ The `environment/` module provides the foundational infrastructure for qBlock ca
 ### Structure
 
 ```
-q_block/environment/
+compute/environment/
 ├── __init__.py              # Module exports
 ├── configuration.py         # Configuration management
 ├── constants/              # Natural and numerical constants
@@ -110,7 +110,7 @@ qBlock automatically searches for configuration in the project root:
 
 **1. Use default configuration:**
 ```python
-from q_block.environment import Configuration
+from compute.environment import Configuration
 
 config = Configuration()
 ```
@@ -170,16 +170,16 @@ The `environment/` module consolidates what were previously separate top-level m
 
 | Previous | Current |
 |----------|---------|
-| `q_block.constants` | `q_block.environment.constants` |
-| `q_block.io` | `q_block.environment.io` |
-| `q_block.configuration` | `q_block.environment.configuration` |
+| `compute.constants` | `compute.environment.constants` |
+| `compute.io` | `compute.environment.io` |
+| `compute.configuration` | `compute.environment.configuration` |
 
-**Convenience imports** are available through `q_block.__init__.py` for backward compatibility:
+**Convenience imports** are available through `compute.__init__.py` for backward compatibility:
 
 ```python
 # Both work:
-from q_block.environment.io import InputData
-from q_block import InputData  # Re-exported
+from compute.environment.io import InputData
+from compute import InputData  # Re-exported
 ```
 
 ### Design Rationale

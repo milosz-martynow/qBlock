@@ -1,4 +1,4 @@
-"""Unit tests for q_block.models.integrals.two_gaussian_integral module.
+"""Unit tests for compute.models.integrals.two_gaussian_integral module.
 
 Tests cover:
 - TwoGaussianIntegral abstract base class interface
@@ -9,7 +9,7 @@ All tests use pytest with parametrize, no test classes.
 
 import pytest
 
-from q_block.models.integrals.two_gaussian_integral import TwoGaussianIntegral
+from compute.models.integrals.two_gaussian_integral import TwoGaussianIntegral
 
 
 def test_two_gaussian_integral_cannot_be_instantiated() -> None:

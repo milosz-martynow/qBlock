@@ -15,7 +15,7 @@
 - `README.md` — Setup instructions and project description.
 
 ## Other Directories
-- `q_block/environment/constants/numerical/basis_set/pople/` — Gaussian basis set files like: `STO-3G`, `3-21G`.
+- `compute/environment/constants/numerical/basis_set/pople/` — Gaussian basis set files like: `STO-3G`, `3-21G`.
 - `examples/` — runnable scripts demonstrating the API (molecule creation, integrals, SCF, GTO dataframe).
 - `architecture/` — PlantUML diagrams: `scf_activity_diagram.puml`, `use_case_diagram.puml`, block definition diagrams for each sub-package (`io`, `methods`, `models`, `systems`, `theory`).
 
@@ -34,8 +34,8 @@ pip install -e .
 
 # Test & lint
 isort .
-black --config=.blackrc .\q_block\ .\tests\ setup.py
-pylint --rcfile=.pylintrc .\q_block\ .\tests\ setup.py
+black --config=.blackrc .\compute\ .\tests\ setup.py
+pylint --rcfile=.pylintrc .\compute\ .\tests\ setup.py
 pytest .
 ```
 
@@ -46,7 +46,7 @@ Per-module, parametrized, no test classes — bare functions with `@pytest.mark.
 - `constants.py` — shared fixtures: pre-loaded basis sets (`BASIS_3_21G`, `BASIS_STO_3G`, …), path constants (`BASIS_ROOT`, `GOLDEN_ROOT`, `GEOMETRIES_DIR`), `ORIGIN` coordinate.
 - `utils.py` — shared helpers: `ALL_ORBITAL_COMPONENTS`, `ORBITAL_LABELS`, `orbital_id()`, `get_orbital_ids()`.
 - `verification_data/` — golden reference files: `expected_atom_empirical.py`, `expected_atom_pure.py`, `gto_population/*.json`, `geometries/*.xyz` (H2, water, azobenzene, tetraethylammonium), `tools/` (generator scripts).
-- Mirror structure: `tests/unit_tests/io/test_coordinates.py` ↔ `q_block/io/coordinates.py`, etc.
+- Mirror structure: `tests/unit_tests/io/test_coordinates.py` ↔ `compute/io/coordinates.py`, etc.
 
 ### Validation Tests (`tests/validation_tests/`)
 End-to-end HF calculations verifying Koopmans' theorem ionization energies.

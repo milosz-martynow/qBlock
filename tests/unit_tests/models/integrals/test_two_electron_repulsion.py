@@ -1,4 +1,4 @@
-"""Unit tests for q_block.models.integrals.two_electron_repulsion module.
+"""Unit tests for compute.models.integrals.two_electron_repulsion module.
 
 Tests cover:
 - Primitive two-electron repulsion integrals (ERIs)
@@ -14,7 +14,7 @@ All tests use pytest with parametrize, no test classes.
 import numpy as np
 import pytest
 
-from q_block import (
+from compute import (
     ContractedGaussianTypeOrbital,
     Molecule,
     Overlap,

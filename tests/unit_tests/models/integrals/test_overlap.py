@@ -1,4 +1,4 @@
-"""Unit tests for q_block.models.integrals.overlap module.
+"""Unit tests for compute.models.integrals.overlap module.
 
 Tests cover:
 - Primitive overlap integrals for s, p, d orbitals
@@ -17,7 +17,7 @@ TODO:
 import numpy as np
 import pytest
 
-from q_block import ContractedGaussianTypeOrbital, Molecule, Overlap
+from compute import ContractedGaussianTypeOrbital, Molecule, Overlap
 from tests.unit_tests.environment.constants import ORIGIN
 from tests.unit_tests.utilities import (
     ALL_ORBITAL_COMPONENTS,

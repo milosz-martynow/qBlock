@@ -1,4 +1,4 @@
-"""Unit tests for q_block.models.integrals.kinetic_energy module.
+"""Unit tests for compute.models.integrals.kinetic_energy module.
 
 Tests cover:
 - Primitive kinetic energy integrals for s, p, d orbitals
@@ -13,7 +13,7 @@ All tests use pytest with parametrize, no test classes.
 import numpy as np
 import pytest
 
-from q_block import ContractedGaussianTypeOrbital, KineticEnergy, Molecule, Overlap
+from compute import ContractedGaussianTypeOrbital, KineticEnergy, Molecule, Overlap
 from tests.unit_tests.environment.constants import ORIGIN
 from tests.unit_tests.utilities import (
     ALL_ORBITAL_COMPONENTS,

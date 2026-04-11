@@ -1,4 +1,4 @@
-"""Unit tests for q_block.models.integrals.nuclear_attraction module.
+"""Unit tests for compute.models.integrals.nuclear_attraction module.
 
 Tests cover:
 - Primitive nuclear attraction integrals for s, p, d orbitals
@@ -14,7 +14,7 @@ All tests use pytest with parametrize, no test classes.
 import numpy as np
 import pytest
 
-from q_block import (
+from compute import (
     ContractedGaussianTypeOrbital,
     Molecule,
     NuclearAttraction,

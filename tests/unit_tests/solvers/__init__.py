@@ -1,1 +1,1 @@
-"""Tests for q_block.solvers module."""
+"""Tests for compute.solvers module."""

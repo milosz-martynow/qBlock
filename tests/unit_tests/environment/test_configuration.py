@@ -1,4 +1,4 @@
-"""Unit tests for q_block.environment.configuration module.
+"""Unit tests for compute.environment.configuration module.
 
 Tests cover:
 - Configuration: default values and programmatic creation
@@ -16,7 +16,7 @@ from typing import Any, List
 
 import pytest
 
-from q_block.environment.configuration import (
+from compute.environment.configuration import (
     Configuration,
     _cast_value,
     _parse_geometry_line,

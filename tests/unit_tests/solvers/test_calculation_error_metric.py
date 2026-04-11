@@ -1,4 +1,4 @@
-"""Unit tests for q_block.solvers.calculation_error_metric module.
+"""Unit tests for compute.solvers.calculation_error_metric module.
 
 Tests cover:
 - RMS metric computation for various error arrays
@@ -18,7 +18,7 @@ All tests use pytest with parametrize, no test classes.
 import numpy as np
 import pytest
 
-from q_block.solvers.calculation_error_metric import CalculationErrorMetric
+from compute.solvers.calculation_error_metric import CalculationErrorMetric
 
 # ======================================================================
 # Construction Tests

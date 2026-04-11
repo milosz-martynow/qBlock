@@ -1,4 +1,4 @@
-"""Unit tests for q_block.io.basis_set module.
+"""Unit tests for compute.io.basis_set module.
 
 Tests cover:
 - BasisSet generic behaviour (lookup, contains, repr, elements)
@@ -13,7 +13,7 @@ from typing import List
 
 import pytest
 
-from q_block.environment.io.basis_set import BasisSet
+from compute.environment.io.basis_set import BasisSet
 from tests.unit_tests.environment.constants import (
     BASIS_3_21G,
     BASIS_6_31G,

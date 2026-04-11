@@ -1,4 +1,4 @@
-"""Unit tests for q_block.models.initialization.nuclear_repulsion_energy module.
+"""Unit tests for compute.models.initialization.nuclear_repulsion_energy module.
 
 Tests cover:
 - Basic energy computation for H2 and water molecules
@@ -15,8 +15,8 @@ from typing import List, Tuple
 
 import pytest
 
-from q_block.models.initialization import NuclearRepulsionEnergy
-from q_block.models.molecule import Molecule
+from compute.models.initialization import NuclearRepulsionEnergy
+from compute.models.molecule import Molecule
 from tests.unit_tests.utilities import h2_molecule, water_molecule
 
 # ======================================================================

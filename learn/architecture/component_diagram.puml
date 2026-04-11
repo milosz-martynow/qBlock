@@ -1,0 +1,49 @@
+@startuml component_diagram
+
+skinparam linetype ortho
+
+' ═══════════════════════════════════════════════════════════
+' Component Definitions
+' ═══════════════════════════════════════════════════════════
+
+package "compute" {
+
+  package "environment" {
+    package "constants" {
+      package "natural" {
+      }
+      package "numerical" {
+      }
+    }
+  }
+
+  package "models" {
+  }
+
+  package "solvers" {
+  }
+
+  package "utilities" {
+  }
+
+}
+
+' ═══════════════════════════════════════════════════════════
+' Dependencies and Relationships
+' ═══════════════════════════════════════════════════════════
+
+' Component dependencies (ring - no diagonals, all lines straight)
+environment <--> solvers
+solvers <--> models
+models <--> utilities
+utilities <--> environment
+environment <--> models
+solvers <--> utilities
+
+' Layout: environment top-left, solvers top-right, utilities bottom-left, models bottom-right
+environment -[hidden]right- solvers
+utilities -[hidden]right- models
+models -[hidden]down- utilities
+solvers -[hidden]down- models
+
+@enduml

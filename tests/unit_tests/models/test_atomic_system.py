@@ -1,4 +1,4 @@
-"""Unit tests for q_block.models.atomic_system module.
+"""Unit tests for compute.models.atomic_system module.
 
 Tests cover:
 - AtomicSystem construction with and without InputData
@@ -12,8 +12,8 @@ from typing import List
 
 import pytest
 
-from q_block.environment.io.input_data import InputData
-from q_block.models.atomic_system import AtomicSystem
+from compute.environment.io.input_data import InputData
+from compute.models.atomic_system import AtomicSystem
 
 
 def test_atomic_system_default_construction() -> None:

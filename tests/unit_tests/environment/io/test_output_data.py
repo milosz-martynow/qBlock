@@ -1,4 +1,4 @@
-"""Unit tests for q_block.io.output_data module.
+"""Unit tests for compute.io.output_data module.
 
 Tests cover:
 - OutputData.__init__: manual construction with all parameters
@@ -19,7 +19,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from q_block.environment.io.output_data import OutputData
+from compute.environment.io.output_data import OutputData
 
 # ======================================================================
 # OutputData.__init__ Tests

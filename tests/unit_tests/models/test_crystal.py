@@ -1,4 +1,4 @@
-"""Unit tests for q_block.models.crystal module.
+"""Unit tests for compute.models.crystal module.
 
 Tests cover:
 - Crystal construction as AtomicSystem subclass
@@ -7,8 +7,8 @@ Tests cover:
 All tests use pytest with parametrize, no test classes.
 """
 
-from q_block.models.atomic_system import AtomicSystem
-from q_block.models.crystal import Crystal
+from compute.models.atomic_system import AtomicSystem
+from compute.models.crystal import Crystal
 
 
 def test_crystal_is_atomic_system_subclass() -> None:

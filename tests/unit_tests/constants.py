@@ -7,17 +7,17 @@ used across multiple test modules to ensure consistency and reduce duplication.
 from pathlib import Path
 from typing import List
 
-from q_block.environment.io.basis_set import Pople
-from q_block.environment.io.coordinates import CartesianCoordinates
+from compute.environment.io.basis_set import Pople
+from compute.environment.io.coordinates import CartesianCoordinates
 
 # ======================================================================
 # Path Constants
 # ======================================================================
 
-BASIS_ROOT: Path = Path("./q_block/environment/constants/numerical/basis_set/pople")
+BASIS_ROOT: Path = Path("./compute/environment/constants/numerical/basis_set/pople")
 """Root directory for Gaussian-format (GTO) basis set files."""
 
-STO_ROOT: Path = Path("./q_block/environment/constants/numerical/basis_set/pople")
+STO_ROOT: Path = Path("./compute/environment/constants/numerical/basis_set/pople")
 """Root directory for Slater-type (STO) basis set files."""
 
 GOLDEN_ROOT: Path = Path("./tests/unit_tests/verification_data/gto_population")

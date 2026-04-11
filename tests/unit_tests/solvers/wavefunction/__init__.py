@@ -1,1 +1,1 @@
-"""Tests for q_block.solvers.wavefunction module."""
+"""Tests for compute.solvers.wavefunction module."""

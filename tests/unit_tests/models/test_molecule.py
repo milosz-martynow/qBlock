@@ -1,4 +1,4 @@
-"""Unit tests for q_block.models.molecule module.
+"""Unit tests for compute.models.molecule module.
 
 Tests cover:
 - GTO population via Molecule golden reference
@@ -18,16 +18,16 @@ from typing import Any, Dict, Iterator, List, Tuple
 import pandas as pd
 import pytest
 
-from q_block import Atom
-from q_block.environment.constants.natural.atoms_data import (
+from compute import Atom
+from compute.environment.constants.natural.atoms_data import (
     ATOMS_SYMBOLS_SYMBOL_TO_Z,
     ATOMS_SYMBOLS_Z_TO_SYMBOL,
 )
-from q_block.environment.io.basis_set import Pople
-from q_block.environment.io.input_data import InputData
-from q_block.models.atomic_system import AtomicSystem
-from q_block.models.electron import Shell, SpinOrbital
-from q_block.models.molecule import Molecule
+from compute.environment.io.basis_set import Pople
+from compute.environment.io.input_data import InputData
+from compute.models.atomic_system import AtomicSystem
+from compute.models.electron import Shell, SpinOrbital
+from compute.models.molecule import Molecule
 from tests.unit_tests.environment.constants import (
     BASIS_FILES,
     BASIS_ROOT,

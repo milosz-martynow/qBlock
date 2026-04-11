@@ -9,21 +9,21 @@ from typing import List, Tuple
 import numpy as np
 import pytest
 
-from q_block import Molecule
-from q_block.environment.io.input_data import InputData
-from q_block.models.initialization.nuclear_repulsion_energy import (
+from compute import Molecule
+from compute.environment.io.input_data import InputData
+from compute.models.initialization.nuclear_repulsion_energy import (
     NuclearRepulsionEnergy,
 )
-from q_block.solvers.wavefunction.hartree_fock.restricted_hartree_fock import (
+from compute.solvers.wavefunction.hartree_fock.restricted_hartree_fock import (
     RestrictedHartreeFock,
 )
-from q_block.solvers.wavefunction.hartree_fock.restricted_open_shell_hartree_fock import (
+from compute.solvers.wavefunction.hartree_fock.restricted_open_shell_hartree_fock import (
     RestrictedOpenShellHartreeFock,
 )
-from q_block.solvers.wavefunction.hartree_fock.unrestricted_hartree_fock import (
+from compute.solvers.wavefunction.hartree_fock.unrestricted_hartree_fock import (
     UnrestrictedHartreeFock,
 )
-from q_block.utilities.mathematics import get_cartesian_components
+from compute.utilities.mathematics import get_cartesian_components
 from tests.unit_tests.environment.constants import BASIS_STO_3G
 
 # ======================================================================

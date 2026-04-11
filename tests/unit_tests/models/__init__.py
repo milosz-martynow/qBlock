@@ -1,1 +1,1 @@
-"""Tests for q_block.models module."""
+"""Tests for compute.models module."""

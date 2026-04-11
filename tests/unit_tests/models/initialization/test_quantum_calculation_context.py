@@ -1,4 +1,4 @@
-"""Unit tests for q_block.models.initialization module.
+"""Unit tests for compute.models.initialization module.
 
 Tests cover:
 - QuantumCalculationContext: generic parent class
@@ -18,19 +18,19 @@ from typing import List, Tuple
 
 import pytest
 
-from q_block.environment.constants.natural.atoms_data import (
+from compute.environment.constants.natural.atoms_data import (
     ATOMS_SYMBOLS_SYMBOL_TO_Z,
 )
-from q_block.environment.io.basis_set import Pople
-from q_block.environment.io.input_data import InputData
-from q_block.models.initialization import (
+from compute.environment.io.basis_set import Pople
+from compute.environment.io.input_data import InputData
+from compute.models.initialization import (
     RHF,
     ROHF,
     UHF,
     HartreeFock,
     QuantumCalculationContext,
 )
-from q_block.models.molecule import Molecule
+from compute.models.molecule import Molecule
 from tests.unit_tests.environment.constants import (
     BASIS_6_31G,
     CHARGE_VALUES,

@@ -1,1 +1,1 @@
-"""Unit tests for q_block.environment module."""
+"""Unit tests for compute.environment module."""

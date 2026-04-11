@@ -37,7 +37,7 @@ from typing import Any, Callable, Dict, Tuple
 import numpy as np
 import pytest
 
-from q_block.solvers.wavefunction.hartree_fock.unrestricted_hartree_fock import (
+from compute.solvers.wavefunction.hartree_fock.unrestricted_hartree_fock import (
     UnrestrictedHartreeFock,
 )
 from tests.validation_tests.templates import (

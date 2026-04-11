@@ -24,11 +24,11 @@ from copy import deepcopy
 from pathlib import Path
 from typing import Dict, List, Tuple
 
-from q_block.environment.constants.natural.atoms_data import (
+from compute.environment.constants.natural.atoms_data import (
     ATOMS_SYMBOLS_Z_TO_SYMBOL,
     EMPIRICAL_EXCEPTIONS,
 )
-from q_block.models.atom import Atom
+from compute.models.atom import Atom
 
 # Type aliases
 SpinKey = Tuple[int, int, int, float]  # (n, l, m, s)

@@ -1,1 +1,1 @@
-"""Tests for q_block.solvers.wavefunction.hartree_fock module."""
+"""Tests for compute.solvers.wavefunction.hartree_fock module."""

@@ -1,4 +1,4 @@
-"""Unit tests for q_block.models.integrals.integral module.
+"""Unit tests for compute.models.integrals.integral module.
 
 Tests cover:
 - Integral abstract base class interface
@@ -9,7 +9,7 @@ All tests use pytest with parametrize, no test classes.
 
 import pytest
 
-from q_block.models.integrals.integral import Integral
+from compute.models.integrals.integral import Integral
 
 
 def test_integral_cannot_be_instantiated() -> None:
