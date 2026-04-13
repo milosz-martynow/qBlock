@@ -63,7 +63,7 @@ solvers <--> utilities
 ' Test and learn package dependencies
 tests --> compute : tests
 learn --> compute : demonstrates
-documentation --> tests : demonstrates
+learn --> tests : demonstrates
 
 ' Layout: environment top-left, solvers top-right, utilities bottom-left, models bottom-right
 environment -[hidden]right- solvers
