@@ -40,11 +40,13 @@
 ## Tests
 - No test classes. 
 - Bare test functions with `@pytest.mark.parametrize`.
-- Unit tests mirror source tree: `tests/unit_tests/io/test_coordinates.py` ↔ `compute/io/coordinates.py`.
+- Verification tests mirror source tree: `tests/verification/io/test_coordinates.py` ↔ `compute/io/coordinates.py`.
 - Validation tests use factory functions from `templates.py`.
 - Test IDs: `Z{atomic_number}_{symbol}` for atoms.
-- All unit tests should be run to test applied changes.
+- All verification tests should be run to test applied changes.
 - One validation test for small atom and one validation test for small molecule should be run to test applied chandes
+- **Verification** ("Are we building the product right?") — tests implementation correctness.
+- **Validation** ("Are we building the right product?") — tests against external requirements.
 
 ## Architecture
 - Keep algorithmic optimizations pure Python (caching, DP tables, screening). No compiled extensions.
@@ -61,7 +63,7 @@
 - In BDD use "use" relations etc only inside folder or nested folder in main folder, unless different approach is requested.
 - Do not make title in BDD.
 - Do not trace blocks to the components from outside of the folder of BDD that is representing.
-- Each folder should be represented separetley - there should no be e.g. architecture/hartree_fock folder representation in BDD - there should be hartree_fock folder inside wavevefunction folder
+- Each folder should be represented separetley - there should no be e.g. architecture/hartree_fock folder representation in BDD - There should be hartree_fock folder inside wavevefunction folder.
 
 ## Logging
 - In logging use f strings to handle numbers.

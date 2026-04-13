@@ -1,0 +1,105 @@
+@startuml
+
+skinparam linetype ortho
+
+class Coordinates
+class CartesianCoordinates
+class BasisSet
+class Pople
+class InputData
+class OutputData
+class Configuration
+
+class Atom
+class AtomicSystem
+class Molecule
+class Crystal
+class ContractedGaussianTypeOrbital
+
+class SpinOrbital
+class Orbital
+class SubShell
+class Shell
+
+class QuantumCalculationContext
+class HartreeFock
+class RHF
+class UHF
+class ROHF
+class NuclearRepulsionEnergy
+
+class Integral
+class TwoGaussianIntegral
+class Overlap
+class KineticEnergy
+class NuclearAttraction
+class TwoElectronRepulsion
+
+class SCF
+class DIIS
+class CalculationErrorMetric
+class SpinPair
+
+class HartreeFockSolver
+class RestrictedHartreeFock
+class UnrestrictedHartreeFock
+class RestrictedOpenShellHartreeFock
+
+' Generalizations within environment.io
+CartesianCoordinates --|> Coordinates
+Pople --|> BasisSet
+
+' Generalizations within models
+Molecule --|> AtomicSystem
+Crystal --|> AtomicSystem
+
+' Composition: Atom contains Shells
+Atom *-- "1..*" Shell : contains
+Shell *-- "1..*" SubShell : contains
+SubShell *-- "1..*" Orbital : contains
+Orbital *-- "2" SpinOrbital : contains
+
+' Composition: AtomicSystem uses InputData
+AtomicSystem o-- "1" InputData : uses
+Atom o-- "0..1" BasisSet : uses
+Atom o-- "0..1" CartesianCoordinates : uses
+
+' Configuration usage
+Configuration ..> InputData : configures
+Configuration ..> BasisSet : selects
+
+' Composition: Atom contains GTOs
+Atom o-- "0..*" ContractedGaussianTypeOrbital : uses
+
+' Generalizations within models.initialization
+HartreeFock --|> QuantumCalculationContext
+RHF --|> HartreeFock
+UHF --|> HartreeFock
+ROHF --|> HartreeFock
+
+' Generalizations within models.integrals
+TwoGaussianIntegral --|> Integral
+Overlap --|> TwoGaussianIntegral
+KineticEnergy --|> TwoGaussianIntegral
+NuclearAttraction --|> TwoGaussianIntegral
+TwoElectronRepulsion --|> TwoGaussianIntegral
+
+' Generalizations within solvers.wavefunction.hartree_fock
+HartreeFockSolver --|> SCF
+RestrictedHartreeFock --|> HartreeFockSolver
+UnrestrictedHartreeFock --|> HartreeFockSolver
+RestrictedOpenShellHartreeFock --|> HartreeFockSolver
+
+' Cross-package relationships
+QuantumCalculationContext o-- "1" AtomicSystem : uses
+QuantumCalculationContext o-- "1" NuclearRepulsionEnergy : uses
+
+' SCF solver composition
+SCF o-- "1" DIIS : uses
+SCF o-- "1" CalculationErrorMetric : uses
+HartreeFockSolver ..> SpinPair : uses
+
+' OutputData creation
+OutputData ..> SCF : created from
+
+@enduml

@@ -1,9 +1,7 @@
-.venv
 .idea
-__pycache__
-*.egg-info
-*.log
-.github
-todo
-examples/output*
 .pytest_cache
+.venv
+*.egg-info
+examples/output*
+__pycache__
+*.pyc

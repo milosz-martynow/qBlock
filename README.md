@@ -49,11 +49,11 @@ python learn/examples/example_overlap_integral.py
 pytest.exe .
 ```
 
-Run only unit or validation tests:
+Run only verification or validation tests:
 
 ```
-pytest.exe tests/unit_tests/
-pytest.exe tests/validation_tests/
+pytest.exe tests/verification/
+pytest.exe tests/validation/
 ```
 
 ### Format and lint
@@ -85,10 +85,13 @@ project/
 │       │   └── numerical/   # Numerical parameters
 │       └── io/              # Interfaces for reading coordinates, basis sets, and data
 └── tests/                   # Correctness verification at unit and system level
-    ├── unit_tests/          # Fine-grained per-module tests
-    └── validation_tests/    # End-to-end tests verified against known reference data
+    ├── verification/    # Fine-grained per-module tests
+    └── validation/      # End-to-end tests verified against known reference data
 ```
 It is worth to highlight that 0'th level `learn/`, `compute/`, and `tests/` are verbs, whereas lower level elements are nouns. only environment/constants is divided into two two adjectives.
+
+**Verification vs Validation:** *Verification* answers "Are we building the product right?" (implementation correctness). *Validation* answers "Are we building the right product?" (external requirements).
+
 ### `learn/`
 
 The `learn/` directory is the entry point for understanding the project. It contains:
@@ -128,13 +131,13 @@ The `tests/` directory verifies correctness at two levels:
 
 ```
 tests/
-├── unit_tests/          # Fine-grained per-module tests
+├── verification/  # Fine-grained per-module tests
 │   ├── models/
 │   ├── solvers/
 │   ├── environment/
 │   ├── utilities/
 │   └── verification_data/   # Golden reference JSON files
-└── validation_tests/    # End-to-end HF calculations
+└── validation/    # End-to-end HF calculations
     ├── test_rhf.py
     ├── test_uhf.py
     ├── test_rohf.py
@@ -142,5 +145,7 @@ tests/
     └── templates.py         # Reusable test factories
 ```
 
-- **`unit_tests/`** - Tests individual classes and functions in isolation. Uses `@pytest.mark.parametrize` extensively; no test classes. Reference outputs are stored as JSON in `verification_data/`.
-- **`validation_tests/`** - End-to-end tests that run full SCF calculations on atoms and molecules and verify results against known ionization energies (Koopmans theorem) within a defined tolerance.
+*Verification* answers "Are we building the product right?" (implementation correctness). *Validation* answers "Are we building the right product?" (external requirements).
+
+- **`verification/`** - Tests individual classes and functions in isolation. Uses `@pytest.mark.parametrize` extensively; no test classes. Reference outputs are stored as JSON in `verification_data/`.
+- **`validation/`** - End-to-end tests that run full SCF calculations on atoms and molecules and verify results against known ionization energies (Koopmans theorem) within a defined tolerance.
