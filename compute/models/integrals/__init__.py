@@ -8,11 +8,13 @@ This module provides classes for computing integral matrices:
 - :class:`KineticEnergy`: Kinetic energy matrix T
 - :class:`NuclearAttraction`: Nuclear attraction matrix V
 - :class:`TwoElectronRepulsion`: Two-electron repulsion integral tensor (μν|λσ)
+- :class:`NumericalGrid`: Molecular integration grid for DFT
 """
 
 from .integral import Integral
 from .kinetic_energy import KineticEnergy
 from .nuclear_attraction import NuclearAttraction
+from .numerical_grid import NumericalGrid
 from .overlap import Overlap
 from .two_electron_repulsion import TwoElectronRepulsion
 from .two_gaussian_integral import TwoGaussianIntegral
@@ -21,6 +23,7 @@ __all__ = [
     "Integral",
     "KineticEnergy",
     "NuclearAttraction",
+    "NumericalGrid",
     "Overlap",
     "TwoElectronRepulsion",
     "TwoGaussianIntegral",

@@ -11,6 +11,14 @@
 - **isort** for import ordering.
 - Run before commit: `isort . && black --config=.blackrc . && pylint --rcfile=.pylintrc .`
 
+## Code
+- Do not call parameters as an argument of function/class/etc. if it is not use anywhere in the body of that function/class/etc.
+- Do not create functions that lives outside the class if it is called only in that class. Then this function should became a member of the class itself.
+- Do not create variables inside function/methods that not appear anywhere in function/methods. 
+- Do not return variables from functions/methods if they are not used anywhere in the code.
+- For computational heavy parts, use numpy, scpy or other optimized and fast library.
+- use Python mathematics only for basic operations that does not have impact on code speed.
+
 ## Naming
 - Classes should be Noun in `PascalCase`. Examples:  `ContractedGaussianTypeOrbital`, `NuclearAttraction`.
 - Functions/methods should be Verb in `snake_case`. Examples: `_build_fock`, `make_contracted_gaussian_type_orbital`.
@@ -64,6 +72,7 @@
 - Do not make title in BDD.
 - Do not trace blocks to the components from outside of the folder of BDD that is representing.
 - Each folder should be represented separetley - there should no be e.g. architecture/hartree_fock folder representation in BDD - There should be hartree_fock folder inside wavevefunction folder.
+- For blocks use only names of classes that exist in the code.
 
 ## Logging
 - In logging use f strings to handle numbers.
@@ -71,7 +80,9 @@
 
 ## Examples
 - All rules of this file should be also applied to the examples from example folder.
-- each example script name should start with "example".
+- Each example script name should start with "example".
+- Idea of examples is to have a scripts that, does not import anything outside the compute folder.
+- Always search other examples for pieces to reuse, and use them, but via copying raw code. It is about have to use the same functions/methods/classes/data across whole example folder but each example is standalone and not realted to other examples directly.
 
 ## files management
 - Remove/copy/move etc, should be done via git operations to keep full git repo history.

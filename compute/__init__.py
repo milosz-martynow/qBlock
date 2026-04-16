@@ -61,7 +61,10 @@ compute/
 │                       SCF loop machinery, DIIS convergence accelerator,
 │                       eigensolvers, and concrete Hartree-Fock solvers
 │                       (RestrictedHartreeFock, UnrestrictedHartreeFock,
-│                       RestrictedOpenShellHartreeFock).
+│                       RestrictedOpenShellHartreeFock) and Kohn-Sham DFT
+│                       solvers (RestrictedKohnSham, UnrestrictedKohnSham)
+│                       with exchange-correlation functionals (SVWN, PBE,
+│                       B3LYP).
 │
 └── utilities/          Shared mathematical utilities.
                         Pure-math helpers used across models and solvers:
@@ -101,8 +104,11 @@ from .models.molecule import Molecule
 # -- Theory: initialization & basis functions --------------------------------
 from .models.initialization import (
     RHF,
+    RKS,
     ROHF,
     UHF,
+    UKS,
+    DensityFunctionalTheory,
     HartreeFock,
     QuantumCalculationContext,
 )
@@ -110,6 +116,7 @@ from .models.basis_functions import ContractedGaussianTypeOrbital
 from .models.integrals import (
     KineticEnergy,
     NuclearAttraction,
+    NumericalGrid,
     Overlap,
     TwoElectronRepulsion,
 )
@@ -136,9 +143,13 @@ __all__ = [
     "RHF",
     "UHF",
     "ROHF",
+    "DensityFunctionalTheory",
+    "RKS",
+    "UKS",
     "ContractedGaussianTypeOrbital",
     "KineticEnergy",
     "NuclearAttraction",
+    "NumericalGrid",
     "Overlap",
     "TwoElectronRepulsion",
 ]

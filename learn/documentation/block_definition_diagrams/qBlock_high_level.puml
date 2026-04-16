@@ -40,10 +40,24 @@ class DIIS
 class CalculationErrorMetric
 class SpinPair
 
-class HartreeFockSolver
 class RestrictedHartreeFock
 class UnrestrictedHartreeFock
 class RestrictedOpenShellHartreeFock
+
+class NumericalGrid
+
+class ExchangeCorrelationFunctional
+class SVWN
+class PBE
+class B3LYP
+
+class DensityFunctionalTheory
+class RKS_Context <<RKS>>
+class UKS_Context <<UKS>>
+
+class KohnSham
+class RestrictedKohnSham
+class UnrestrictedKohnSham
 
 ' Generalizations within environment.io
 CartesianCoordinates --|> Coordinates
@@ -85,10 +99,26 @@ NuclearAttraction --|> TwoGaussianIntegral
 TwoElectronRepulsion --|> TwoGaussianIntegral
 
 ' Generalizations within solvers.wavefunction.hartree_fock
-HartreeFockSolver --|> SCF
-RestrictedHartreeFock --|> HartreeFockSolver
-UnrestrictedHartreeFock --|> HartreeFockSolver
-RestrictedOpenShellHartreeFock --|> HartreeFockSolver
+' Note: HartreeFock (solver) inherits from SCF but conflicts with HartreeFock (initialization)
+' PlantUML limitation: showing only concrete solver classes
+RestrictedHartreeFock --|> SCF
+UnrestrictedHartreeFock --|> SCF
+RestrictedOpenShellHartreeFock --|> SCF
+
+' Generalizations within solvers.electronic_density.kohn_sham
+KohnSham --|> SCF
+RestrictedKohnSham --|> KohnSham
+UnrestrictedKohnSham --|> KohnSham
+
+' Generalizations within solvers.electronic_density.functionals
+SVWN --|> ExchangeCorrelationFunctional
+PBE --|> ExchangeCorrelationFunctional
+B3LYP --|> ExchangeCorrelationFunctional
+
+' Generalizations within models.initialization (DFT)
+DensityFunctionalTheory --|> QuantumCalculationContext
+RKS_Context --|> DensityFunctionalTheory
+UKS_Context --|> DensityFunctionalTheory
 
 ' Cross-package relationships
 QuantumCalculationContext o-- "1" AtomicSystem : uses
@@ -97,7 +127,15 @@ QuantumCalculationContext o-- "1" NuclearRepulsionEnergy : uses
 ' SCF solver composition
 SCF o-- "1" DIIS : uses
 SCF o-- "1" CalculationErrorMetric : uses
-HartreeFockSolver ..> SpinPair : uses
+RestrictedHartreeFock ..> SpinPair : uses
+UnrestrictedHartreeFock ..> SpinPair : uses
+RestrictedOpenShellHartreeFock ..> SpinPair : uses
+
+' KohnSham solver composition
+KohnSham o-- "1" NumericalGrid : uses
+KohnSham o-- "1" ExchangeCorrelationFunctional : uses
+RestrictedKohnSham ..> SpinPair : uses
+UnrestrictedKohnSham ..> SpinPair : uses
 
 ' OutputData creation
 OutputData ..> SCF : created from

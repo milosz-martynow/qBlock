@@ -1,6 +1,6 @@
 ﻿# qBlock
 
-A Python library for quantum chemistry calculations. qBlock implements Hartree-Fock self-consistent field (SCF) methods - Restricted (RHF), Unrestricted (UHF), and Restricted Open-Shell (ROHF) - built on Gaussian-type orbital (GTO) basis sets.
+A Python library for quantum chemistry calculations. qBlock implements Hartree-Fock self-consistent field (SCF) methods - Restricted (RHF), Unrestricted (UHF), and Restricted Open-Shell (ROHF) - and Kohn-Sham Density Functional Theory (DFT) with LDA (SVWN), GGA (PBE), and hybrid (B3LYP) exchange-correlation functionals, built on Gaussian-type orbital (GTO) basis sets.
 
 ---
 
@@ -121,8 +121,8 @@ compute/
 ```
 
 - **`environment/`** - Infrastructure layer. Provides physical constants (`natural/`), numerical data and basis set files (`numerical/`), and I/O interfaces for reading coordinates, basis sets, and structured input/output data. Also manages runtime configuration.
-- **`models/`** - Domain layer. Defines atomic and molecular data structures, GTO basis functions, quantum mechanical integrals, and the Hartree-Fock calculation context.
-- **`solvers/`** - Algorithm layer. Implements SCF loop variants using the Template Method pattern. Each solver (`RestrictedHartreeFock`, `UnrestrictedHartreeFock`, `RestrictedOpenShellHartreeFock`) inherits from an abstract `SCF` base and provides its own Fock build, density matrix, and energy routines. Includes DIIS convergence acceleration.
+- **`models/`** - Domain layer. Defines atomic and molecular data structures, GTO basis functions, quantum mechanical integrals, numerical integration grids, and the Hartree-Fock and DFT calculation contexts.
+- **`solvers/`** - Algorithm layer. Implements SCF loop variants using the Template Method pattern. Hartree-Fock solvers (`RestrictedHartreeFock`, `UnrestrictedHartreeFock`, `RestrictedOpenShellHartreeFock`) and Kohn-Sham DFT solvers (`RestrictedKohnSham`, `UnrestrictedKohnSham`) inherit from an abstract `SCF` base. Exchange-correlation functionals (`SVWN`, `PBE`, `B3LYP`) provide the DFT energy and potential. Includes DIIS convergence acceleration and Becke-partitioned numerical integration grids.
 - **`utilities/`** - Shared mathematical functions (Boys function, Hermite expansion, normalization, double factorial) used across models and solvers.
 
 ### `tests/`
@@ -147,5 +147,5 @@ tests/
 
 *Verification* answers "Are we building the product right?" (implementation correctness). *Validation* answers "Are we building the right product?" (external requirements).
 
-- **`verification/`** - Tests individual classes and functions in isolation. Uses `@pytest.mark.parametrize` extensively; no test classes. Reference outputs are stored as JSON in `verification_data/`.
-- **`validation/`** - End-to-end tests that run full SCF calculations on atoms and molecules and verify results against known ionization energies (Koopmans theorem) within a defined tolerance.
+- **`verification/`** - Tests individual classes and functions in isolation. Uses `@pytest.mark.parametrize` extensively; no test classes. References used for verification testing are stored as JSON in `verification_data/`.
+- **`validation/`** - End-to-end tests that run full SCF calculations (HF and DFT) on atoms and molecules and verify results against known ionization energies (Koopmans theorem) and physical bounds within a defined tolerance.

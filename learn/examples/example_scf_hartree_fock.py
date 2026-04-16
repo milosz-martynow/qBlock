@@ -47,15 +47,6 @@ OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# CONFIGURATION
-# ══════════════════════════════════════════════════════════════════════════════
-
-CONFIG_PATH = Path(__file__).resolve().parent / ".qblock.config.example"
-config = Configuration.from_file(CONFIG_PATH)
-logger.info(f"Loaded configuration: {config}")
-
-
-# ══════════════════════════════════════════════════════════════════════════════
 # HELPER: extract nuclei list from a Molecule
 # ══════════════════════════════════════════════════════════════════════════════
 
@@ -77,6 +68,15 @@ def extract_nuclei(
         )
         for atom in mol.atoms
     ]
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# CONFIGURATION
+# ══════════════════════════════════════════════════════════════════════════════
+
+CONFIG_PATH = Path(__file__).resolve().parent / ".qblock.config.example"
+config = Configuration.from_file(CONFIG_PATH)
+logger.info(f"Loaded configuration: {config}")
 
 
 # ══════════════════════════════════════════════════════════════════════════════
