@@ -41,8 +41,35 @@ from compute.solvers.wavefunction.hartree_fock import (
 
 logger = setup_logging(__name__)
 
-# Output directory = subfolder next to this script, named after the script
-OUTPUT_DIR = Path(__file__).resolve().parent / f"output_{Path(__file__).stem}"
+try:
+    PROJECT_ROOT: Path = Path(__file__).resolve().parent.parent.parent
+    SCRIPT_DIR: Path = Path(__file__).resolve().parent
+    SCRIPT_NAME: str = Path(__file__).stem
+except NameError:
+    PROJECT_ROOT = Path.cwd()
+    if PROJECT_ROOT.name == "examples":
+        SCRIPT_DIR = PROJECT_ROOT
+        PROJECT_ROOT = PROJECT_ROOT.parent.parent
+    elif (PROJECT_ROOT / "learn" / "examples").exists():
+        SCRIPT_DIR = PROJECT_ROOT / "learn" / "examples"
+    else:
+        raise RuntimeError(
+            "Could not determine project root. "
+            "Please run from project root or examples directory."
+        )
+    SCRIPT_NAME = "example_scf_hartree_fock"
+
+BASIS_DIR: Path = (
+    PROJECT_ROOT
+    / "compute"
+    / "environment"
+    / "constants"
+    / "numerical"
+    / "basis_set"
+    / "pople"
+)
+
+OUTPUT_DIR = SCRIPT_DIR / f"output_{SCRIPT_NAME}"
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
 
@@ -74,7 +101,7 @@ def extract_nuclei(
 # CONFIGURATION
 # ══════════════════════════════════════════════════════════════════════════════
 
-CONFIG_PATH = Path(__file__).resolve().parent / ".qblock.config.example"
+CONFIG_PATH = SCRIPT_DIR / ".qblock.config.example"
 config = Configuration.from_file(CONFIG_PATH)
 logger.info(f"Loaded configuration: {config}")
 
@@ -84,10 +111,7 @@ logger.info(f"Loaded configuration: {config}")
 # ══════════════════════════════════════════════════════════════════════════════
 
 basis = Pople(
-    filepath=(
-        "compute/environment/constants/numerical/"
-        f"basis_set/pople/{config.get_basis_set()}.gbs"
-    )
+    filepath=str(BASIS_DIR / f"{config.get_basis_set()}.gbs")
 )
 logger.info(f"Loaded basis set: {config.get_basis_set()}\n")
 

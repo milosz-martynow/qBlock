@@ -11,6 +11,8 @@ The to_dataframe() method creates a MultiIndex DataFrame containing
 all occupied spin-orbitals with their quantum numbers and GTO data.
 """
 
+from pathlib import Path
+
 import pandas as pd
 
 from compute.environment.io.basis_set import Pople
@@ -20,17 +22,37 @@ from compute.models.molecule import Molecule
 
 logger = setup_logging(__name__)
 
+try:
+    PROJECT_ROOT: Path = Path(__file__).resolve().parent.parent.parent
+except NameError:
+    PROJECT_ROOT = Path.cwd()
+    if PROJECT_ROOT.name == "examples":
+        PROJECT_ROOT = PROJECT_ROOT.parent.parent
+    elif (PROJECT_ROOT / "learn" / "examples").exists():
+        pass
+    else:
+        raise RuntimeError(
+            "Could not determine project root. "
+            "Please run from project root or examples directory."
+        )
+
+BASIS_DIR: Path = (
+    PROJECT_ROOT
+    / "compute"
+    / "environment"
+    / "constants"
+    / "numerical"
+    / "basis_set"
+    / "pople"
+)
+
 # ══════════════════════════════════════════════════════════════════════════════
 # 1. LOAD BASIS SETS
 # ══════════════════════════════════════════════════════════════════════════════
 # Different basis sets for different atoms (mixed basis).
 
-basis_3_21G = Pople(
-    filepath="compute/environment/constants/numerical/basis_set/pople/3-21G.gbs"
-)
-basis_6_31G = Pople(
-    filepath="compute/environment/constants/numerical/basis_set/pople/6-31G.gbs"
-)
+basis_3_21G = Pople(filepath=str(BASIS_DIR / "3-21G.gbs"))
+basis_6_31G = Pople(filepath=str(BASIS_DIR / "6-31G.gbs"))
 
 logger.info("Loaded basis sets: 3-21G and 6-31G\n")
 

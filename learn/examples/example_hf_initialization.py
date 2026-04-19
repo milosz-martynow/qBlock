@@ -17,6 +17,8 @@ Each HF context:
     - Prepares data structures for SCF calculation
 """
 
+from pathlib import Path
+
 from compute.environment.io.basis_set import Pople
 from compute.environment.io.input_data import InputData
 from compute.environment.logs import setup_logging
@@ -25,18 +27,38 @@ from compute.models.molecule import Molecule
 
 logger = setup_logging(__name__)
 
+try:
+    PROJECT_ROOT: Path = Path(__file__).resolve().parent.parent.parent
+except NameError:
+    PROJECT_ROOT = Path.cwd()
+    if PROJECT_ROOT.name == "examples":
+        PROJECT_ROOT = PROJECT_ROOT.parent.parent
+    elif (PROJECT_ROOT / "learn" / "examples").exists():
+        pass
+    else:
+        raise RuntimeError(
+            "Could not determine project root. "
+            "Please run from project root or examples directory."
+        )
+
+BASIS_DIR: Path = (
+    PROJECT_ROOT
+    / "compute"
+    / "environment"
+    / "constants"
+    / "numerical"
+    / "basis_set"
+    / "pople"
+)
+
 # ══════════════════════════════════════════════════════════════════════════════
 # 1. LOAD BASIS SETS
 # ══════════════════════════════════════════════════════════════════════════════
 # We use different basis sets for oxygen and hydrogen to demonstrate
 # that mixed basis sets are supported.
 
-basis_3_21G = Pople(
-    filepath="compute/environment/constants/numerical/basis_set/pople/3-21G.gbs"
-)
-basis_6_31G = Pople(
-    filepath="compute/environment/constants/numerical/basis_set/pople/6-31G.gbs"
-)
+basis_3_21G = Pople(filepath=str(BASIS_DIR / "3-21G.gbs"))
+basis_6_31G = Pople(filepath=str(BASIS_DIR / "6-31G.gbs"))
 
 
 # ══════════════════════════════════════════════════════════════════════════════

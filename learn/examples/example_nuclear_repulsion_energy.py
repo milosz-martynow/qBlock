@@ -16,6 +16,7 @@ It does NOT involve basis functions — only geometry and atomic numbers.
 """
 
 import math
+from pathlib import Path
 
 from compute.environment.io.basis_set import Pople
 from compute.environment.io.input_data import InputData
@@ -25,19 +26,37 @@ from compute.models.molecule import Molecule
 
 logger = setup_logging(__name__)
 
+try:
+    PROJECT_ROOT: Path = Path(__file__).resolve().parent.parent.parent
+except NameError:
+    PROJECT_ROOT = Path.cwd()
+    if PROJECT_ROOT.name == "examples":
+        PROJECT_ROOT = PROJECT_ROOT.parent.parent
+    elif (PROJECT_ROOT / "learn" / "examples").exists():
+        pass
+    else:
+        raise RuntimeError(
+            "Could not determine project root. "
+            "Please run from project root or examples directory."
+        )
+
+BASIS_DIR: Path = (
+    PROJECT_ROOT
+    / "compute"
+    / "environment"
+    / "constants"
+    / "numerical"
+    / "basis_set"
+    / "pople"
+)
+
 # ══════════════════════════════════════════════════════════════════════════════
 # 1. LOAD BASIS SETS
 # ══════════════════════════════════════════════════════════════════════════════
 
-basis_sto3g = Pople(
-    filepath="compute/environment/constants/numerical/basis_set/pople/STO-3G.gbs"
-)
-basis_3_21G = Pople(
-    filepath="compute/environment/constants/numerical/basis_set/pople/3-21G.gbs"
-)
-basis_6_31G = Pople(
-    filepath="compute/environment/constants/numerical/basis_set/pople/6-31G.gbs"
-)
+basis_sto3g = Pople(filepath=str(BASIS_DIR / "STO-3G.gbs"))
+basis_3_21G = Pople(filepath=str(BASIS_DIR / "3-21G.gbs"))
+basis_6_31G = Pople(filepath=str(BASIS_DIR / "6-31G.gbs"))
 
 logger.info("Loaded basis sets: STO-3G, 3-21G and 6-31G\n")
 

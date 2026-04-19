@@ -20,6 +20,8 @@ Mathematical foundation:
         ψ_i(r) = Σ_μ C_μi * φ_μ(r)
 """
 
+from pathlib import Path
+
 from compute import Atom, Molecule
 from compute.environment.io.basis_set import Pople
 from compute.environment.io.coordinates import CartesianCoordinates
@@ -29,15 +31,37 @@ from compute.utilities.mathematics import get_cartesian_components
 
 logger = setup_logging(__name__)
 
+try:
+    PROJECT_ROOT: Path = Path(__file__).resolve().parent.parent.parent
+except NameError:
+    PROJECT_ROOT = Path.cwd()
+    if PROJECT_ROOT.name == "examples":
+        PROJECT_ROOT = PROJECT_ROOT.parent.parent
+    elif (PROJECT_ROOT / "learn" / "examples").exists():
+        pass
+    else:
+        raise RuntimeError(
+            "Could not determine project root. "
+            "Please run from project root or examples directory."
+        )
+
+BASIS_DIR: Path = (
+    PROJECT_ROOT
+    / "compute"
+    / "environment"
+    / "constants"
+    / "numerical"
+    / "basis_set"
+    / "pople"
+)
+
 # ══════════════════════════════════════════════════════════════════════════════
 # 1. LOAD BASIS SET
 # ══════════════════════════════════════════════════════════════════════════════
 # Pople-style basis sets are stored in Gaussian format (.gbs files).
 # The 6-31G basis is a split-valence double-zeta basis set.
 
-basis = Pople(
-    filepath="compute/environment/constants/numerical/basis_set/pople/6-31G.gbs"
-)
+basis = Pople(filepath=str(BASIS_DIR / "6-31G.gbs"))
 logger.info("Loaded 6-31G basis set\n")
 
 
