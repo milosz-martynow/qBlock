@@ -22,6 +22,23 @@ elements.  This tolerance catches implementation bugs (wrong sign, wrong
 units, wrong orbital index) while remaining robust to basis-set effects.
 """
 
+DFT_ABS_TOL_EV: float = 5.0
+"""Absolute tolerance (eV) for DFT Koopmans IE comparison against experiment.
+
+DFT (Kohn-Sham) HOMO eigenvalues are compared against experimental
+ionisation energies via Janak's theorem:  IE ≈ −ε_HOMO.  With approximate
+functionals and small basis sets, deviations of 2–4 eV are common:
+
+  - LDA/GGA functionals systematically underestimate the HOMO depth
+    (IE too low).
+  - Hybrid functionals partially correct this via exact exchange.
+  - Basis-set incompleteness adds further error.
+
+A 5 eV tolerance catches implementation bugs (wrong sign, units, or
+orbital index) while accommodating functional- and basis-set-level
+errors.
+"""
+
 _BASIS_CACHE: Dict[str, Pople] = {}
 
 
