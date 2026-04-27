@@ -50,8 +50,8 @@ from tests.validation.templates import (
 )
 from tests.validation.utils import _build_from_geometry
 from tests.validation.validation_data import (
-    ATOMS_HOMO_ENERGIES,
-    MOLECULES_HOMO_ENERGIES,
+    ATOMS,
+    MOLECULES,
 )
 
 # ---------------------------------------------------------------------------
@@ -61,15 +61,15 @@ from tests.validation.validation_data import (
 # Open-shell atoms: multiplicity > 1 → UHF
 _uhf_atom_entries = [
     (f"Z{z}_{entry['symbol']}", entry)
-    for z, entry in ATOMS_HOMO_ENERGIES.items()
-    if "UHF" in entry["proposed_hartree_fock_approach"]
+    for z, entry in ATOMS.items()
+    if "UHF" in entry["proposed_approach"]
 ]
 
 # UHF molecules
 _uhf_mol_entries = [
     (key, entry)
-    for key, entry in MOLECULES_HOMO_ENERGIES.items()
-    if "UHF" in entry["proposed_hartree_fock_approach"]
+    for key, entry in MOLECULES.items()
+    if "UHF" in entry["proposed_approach"]
 ]
 
 # ---------------------------------------------------------------------------

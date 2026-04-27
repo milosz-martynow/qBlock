@@ -33,10 +33,6 @@ functionals and small basis sets, deviations of 2–4 eV are common:
     (IE too low).
   - Hybrid functionals partially correct this via exact exchange.
   - Basis-set incompleteness adds further error.
-
-A 5 eV tolerance catches implementation bugs (wrong sign, units, or
-orbital index) while accommodating functional- and basis-set-level
-errors.
 """
 
 _BASIS_CACHE: Dict[str, Pople] = {}

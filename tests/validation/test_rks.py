@@ -54,26 +54,26 @@ from tests.validation.templates import (
 )
 from tests.validation.utils import _build_from_geometry
 from tests.validation.validation_data import (
-    ATOMS_HOMO_ENERGIES,
-    MOLECULES_HOMO_ENERGIES,
+    ATOMS,
+    MOLECULES,
 )
 
 # ---------------------------------------------------------------------------
 # Test data selection
 # ---------------------------------------------------------------------------
 
-# Closed-shell atoms: proposed_dft_approach contains "RKS"
+# Closed-shell atoms: proposed_approach contains "RKS"
 _rks_atom_entries = [
     (f"Z{z}_{entry['symbol']}", entry)
-    for z, entry in ATOMS_HOMO_ENERGIES.items()
-    if "RKS" in entry["proposed_dft_approach"]
+    for z, entry in ATOMS.items()
+    if "RKS" in entry["proposed_approach"]
 ]
 
-# RKS molecules: proposed_dft_approach contains "RKS"
+# RKS molecules: proposed_approach contains "RKS"
 _rks_mol_entries: List[Tuple[str, Dict[str, Any]]] = [
     (key, entry)
-    for key, entry in MOLECULES_HOMO_ENERGIES.items()
-    if "RKS" in entry["proposed_dft_approach"]
+    for key, entry in MOLECULES.items()
+    if "RKS" in entry["proposed_approach"]
 ]
 
 # Functionals to test
@@ -225,7 +225,7 @@ def test_rks_atom_homo_ie_positive(rks_atom_result) -> None:
 
 
 def test_rks_atom_koopmans_ie_vs_experiment(rks_atom_result) -> None:
-    """Koopmans IE from the RKS HOMO agrees with ``experimental_ie_eV``.
+    """Koopmans IE from the RKS HOMO agrees with ``energies['experiment'][0]['value']``.
 
     Uses Janak's theorem (IE ≈ −ε_HOMO) to compare the DFT HOMO
     eigenvalue against the experimental ionisation energy.
@@ -287,7 +287,7 @@ def test_rks_molecule_homo_ie_positive(rks_molecule_result) -> None:
 
 
 def test_rks_molecule_koopmans_ie_vs_experiment(rks_molecule_result) -> None:
-    """Koopmans IE from the RKS HOMO agrees with ``experimental_ie_eV``.
+    """Koopmans IE from the RKS HOMO agrees with ``energies['experiment'][0]['value']``.
 
     Uses Janak's theorem (IE ≈ −ε_HOMO) to compare the DFT HOMO
     eigenvalue against the experimental ionisation energy.

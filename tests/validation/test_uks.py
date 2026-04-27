@@ -54,26 +54,26 @@ from tests.validation.templates import (
 )
 from tests.validation.utils import _build_from_geometry
 from tests.validation.validation_data import (
-    ATOMS_HOMO_ENERGIES,
-    MOLECULES_HOMO_ENERGIES,
+    ATOMS,
+    MOLECULES,
 )
 
 # ---------------------------------------------------------------------------
 # Test data selection
 # ---------------------------------------------------------------------------
 
-# Open-shell atoms: proposed_dft_approach contains "UKS"
+# Open-shell atoms: proposed_approach contains "UKS"
 _uks_atom_entries = [
     (f"Z{z}_{entry['symbol']}", entry)
-    for z, entry in ATOMS_HOMO_ENERGIES.items()
-    if "UKS" in entry["proposed_dft_approach"]
+    for z, entry in ATOMS.items()
+    if "UKS" in entry["proposed_approach"]
 ]
 
-# UKS molecules: proposed_dft_approach contains "UKS"
+# UKS molecules: proposed_approach contains "UKS"
 _uks_mol_entries: List[Tuple[str, Dict[str, Any]]] = [
     (key, entry)
-    for key, entry in MOLECULES_HOMO_ENERGIES.items()
-    if "UKS" in entry["proposed_dft_approach"]
+    for key, entry in MOLECULES.items()
+    if "UKS" in entry["proposed_approach"]
 ]
 
 # Functionals to test
@@ -227,7 +227,7 @@ def test_uks_atom_alpha_homo_ie_positive(uks_atom_result) -> None:
 
 
 def test_uks_atom_koopmans_ie_vs_experiment(uks_atom_result) -> None:
-    """Koopmans IE from the UKS alpha HOMO agrees with ``experimental_ie_eV``.
+    """Koopmans IE from the UKS alpha HOMO agrees with ``energies['experiment'][0]['value']``.
 
     Uses Janak's theorem (IE ≈ −ε_HOMO) to compare the DFT alpha HOMO
     eigenvalue against the experimental ionisation energy.
@@ -290,7 +290,7 @@ def test_uks_molecule_alpha_homo_ie_positive(uks_molecule_result) -> None:
 
 
 def test_uks_molecule_koopmans_ie_vs_experiment(uks_molecule_result) -> None:
-    """Koopmans IE from the UKS alpha HOMO agrees with ``experimental_ie_eV``.
+    """Koopmans IE from the UKS alpha HOMO agrees with ``energies['experiment'][0]['value']``.
 
     Uses Janak's theorem (IE ≈ −ε_HOMO) to compare the DFT alpha HOMO
     eigenvalue against the experimental ionisation energy.

@@ -1,7 +1,5 @@
 # TO DO: FIX TESTS THAT ARE FAILING. PROBABLY NEED TO USE BIGGER BASIS SETS IN SOME OF EXAMPLES.
-# TO DO: UKS is not for 1> multiplicity > 1 but for 0.5 multiplicity odd-electron systems.  Need to check that all proposed_dft_approach values are correct.
-# TO DO: Add keys with Kohn Sham links and values for DFT comparison tests.
-# To DO: Rename Existing links and values with "HF" prefix to distinguish from DFT keys and values. 
+# TO DO: UKS is not for 1> multiplicity > 1 but for 0.5 multiplicity odd-electron systems.  Need to check that all proposed_approach values are correct.
 
 # ---------------------------------------------------------------------------
 # Running tests for specific records
@@ -24,78 +22,66 @@
 # To see all available test IDs without running:
 #     pytest .\tests\validation\test_rhf.py --collect-only
 #
-# ---------------------------------------------------------------------------
-
-
-# ---------------------------------------------------------------------------
-# Reference data: Atomic ionization energies for Koopmans' theorem testing
-# ---------------------------------------------------------------------------
 #
-# Dictionary mapping atomic number Z (1–54) to reference data for testing
-# Hartree-Fock orbital energies via Koopmans' theorem:  IE ≈ −ε_HOMO.
+# ATOMS_HOMO_ENERGIES  (int key = Z) and MOLECULES_HOMO_ENERGIES  (str key)
+# store reference ionization energies (IE) used to validate Hartree-Fock and
+# DFT orbital energies via Koopmans' theorem:  IE ≈ −ε_HOMO.
 #
-# Fields per entry:
-#   symbol              – Element symbol
-#   config              – Ground-state electronic configuration
-#   multiplicity        – Spin multiplicity 2S+1
-#   n_electrons         – Total electron count (= Z for neutral atoms)
-#   n_alpha, n_beta     – UHF spin-channel occupations
-#   n_closed, n_open    – ROHF doubly / singly occupied spatial orbital counts
-#   proposed_hartree_fock_approach
-#                       – List of applicable HF methods: ["RHF"] for closed-shell,
-#                         ["ROHF", "UHF"] for open-shell atoms (ROHF systems can
-#                         also be calculated via UHF)
-#   proposed_dft_approach
-#                       – List of applicable DFT (Kohn-Sham) methods:
-#                         ["RKS"] for closed-shell (multiplicity == 1),
-#                         ["UKS"] for open-shell (multiplicity > 1)
-#   experimental_ie_eV  – Experimental first ionization energy in eV
-#   hf_ie_eV            – Approximate Koopmans' theorem IE at
-#                         the numerical Hartree-Fock limit in eV
-#   proposed_basis_set  – Full path to the best available Gaussian basis set
-#                         for this element, chosen as the largest basis that includes it:
-#                         compute/environment/constants/numerical/basis_set/pople/6-311++Gss.gbs (H, Li–Ca),
-#                         compute/environment/constants/numerical/basis_set/pople/6-311G.gbs (He, Ga–Kr, I),
-#                         compute/environment/constants/numerical/basis_set/pople/6-31G.gbs (Sc–Zn),
-#                         compute/environment/constants/numerical/basis_set/pople/3-21G.gbs (Rb–Xe except I)
-#   max_iterations      – Maximum number of SCF iterations
-#   experimental_reference_url
-#                       – Direct reference URL for experimental IE data
-#   theoretical_reference_url
-#                       – Direct reference URL for theoretical HF IE data
+# Shared entry schema:
+#   "multiplicity":       int         – spin multiplicity 2S+1
+#   "n_electrons":        int         – total electron count
+#   "n_alpha", "n_beta":  int         – alpha / beta spin-orbital occupations
+#   "n_closed", "n_open": int         – ROHF doubly / singly occupied spatial orbitals
+#   "proposed_approach":  List[str]   – applicable methods; any subset of
+#                                       ["RHF", "ROHF", "UHF", "RKS", "UKS"]
+#   "energies": {
+#       "experiment": List[{"value": float, "reference": str,
+#                           "note": str, "level": int}],
+#       "hf":         List[{"value": float, "reference": str,
+#                           "note": str, "level": int}],
+#       "dft":        List[{"value": float, "reference": str,
+#                           "note": str, "level": int}],
+#   }
+#   "proposed_basis_set": str  – path to the Gaussian basis set file
+#   "max_iterations":     int  – maximum SCF iterations
 #
-# Sources (openly accessible):
-#   Experimental IE:
-#       Kramida, A., Ralchenko, Yu., Reader, J., and NIST ASD Team (2023).
-#       NIST Atomic Spectra Database (ver. 5.11).
-#       National Institute of Standards and Technology, Gaithersburg, MD.
+# energies sub-fields:
+#   "value"     – IE in eV
+#   "reference" – source URL
+#   "note"      – free-text annotation ("" if none)
+#   "level"     – orbital level relative to HOMO: 0 = HOMO, −n = n below,
+#                 +n = n above
+#
+# energies["experiment"] – experimental IE (NIST ASD for atoms;
+#                          NIST WebBook for molecules)
+# energies["hf"]         – HF Koopmans' IE (−ε_HOMO); for UHF: −ε_α_HOMO
+# energies["dft"]        – B3LYP/3-21G adiabatic IE (delta-SCF, NIST CCCBDB);
+#                          empty list when no CCCBDB value is available
+#
+# Sources:
+#   Atoms – experimental IE:
+#       NIST Atomic Spectra Database (ASD), ver. 5.11.
 #       https://physics.nist.gov/asd
-#   HF theoretical IE reference:
-#       Krishnamohan G P, Thomas Mathew, Simi Saju, James T. Joseph (2017).
-#       "Modeling of Ionization Energy of Elements Using Hartree-Fock Method:
-#       An Introduction to Computational Quantum Chemistry for Undergraduate Students."
-#       World Journal of Chemical Education, 5(3), 112-119.
+#   Atoms – HF IE:
+#       Krishnamohan G P et al. (2017), World J. Chem. Educ. 5(3), 112–119.
 #       DOI: 10.12691/wjce-5-3-6
-#       https://pubs.sciepub.com/wjce/5/3/6/
-#
-#   Alternative reference (note: CCCBDB website may have stability issues):
-#       NIST Computational Chemistry Comparison and Benchmark Database,
-#       NIST Standard Reference Database Number 101, Release 22, May 2022,
-#       Editor: Russell D. Johnson III.
+#   Molecules – experimental IE:
+#       NIST Chemistry WebBook, SRD 69.  https://webbook.nist.gov/
+#   Molecules – geometries:
+#       NIST CCCBDB experimental geometries.  https://cccbdb.nist.gov/
+#   DFT IE (atoms and molecules):
+#       NIST CCCBDB, SRD 101, Release 22 (May 2022).
 #       https://cccbdb.nist.gov/   DOI:10.18434/T47C7Z
+#   HF IE (molecules):
+#       NIST CCCBDB (same reference as above).
 #
 # Notes:
-#   - HF IE values are approximate.  Actual computed values depend on
-#     the basis set used.  The values below correspond to UHF/3-21G
-#     calculations from the primary reference (Krishnamohan et al., 2017).
-#   - For closed-shell atoms (multiplicity == 1), proposed_hartree_fock_approach = ["RHF"].
-#   - For open-shell atoms  (multiplicity >  1), proposed_hartree_fock_approach = ["ROHF", "UHF"].
-#   - For closed-shell atoms (multiplicity == 1), proposed_dft_approach = ["RKS"].
-#   - For open-shell atoms  (multiplicity >  1), proposed_dft_approach = ["UKS"].
+#   - HF IE values are basis-set-dependent approximations.
+#   - DFT IE values are adiabatic (delta-SCF), not Koopmans'.
 #   - Conversion factor: 1 Hartree = 27.211386 eV.
 # ---------------------------------------------------------------------------
 
-ATOMS_HOMO_ENERGIES: dict = {
+ATOMS: dict = {
     # ---- Period 1 --------------------------------------------------------
     1: {
         "symbol": "H",
@@ -106,14 +92,20 @@ ATOMS_HOMO_ENERGIES: dict = {
         "n_beta": 0,
         "n_closed": 0,
         "n_open": 1,
-        "proposed_hartree_fock_approach": ["ROHF", "UHF"],
-        "proposed_dft_approach": ["UKS"],
-        "experimental_ie_eV": 13.5984,
-        "hf_ie_eV": 13.61,
+        "proposed_approach": ["ROHF", "UHF", "UKS"],
+        "energies": {
+            "experiment": [
+                {"value": 13.5984, "reference": 'https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=H&units=1', "note": "", "level": 0},
+            ],
+            "hf": [
+                {"value": 13.61, "reference": 'https://doi.org/10.12691/wjce-5-3-6', "note": "", "level": 0},
+            ],
+            "dft": [
+                {"value": 13.533, "reference": 'https://cccbdb.nist.gov/ie2x.asp?casno=12385-13-6', "note": "", "level": 0},
+            ],
+        },
         "proposed_basis_set": "compute/environment/constants/numerical/basis_set/pople/3-21G.gbs",
         "max_iterations": 200,
-        "experimental_reference_url": "https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=H&units=1",
-        "theoretical_reference_url": "https://doi.org/10.12691/wjce-5-3-6",
     },
     2: {
         "symbol": "He",
@@ -124,14 +116,20 @@ ATOMS_HOMO_ENERGIES: dict = {
         "n_beta": 1,
         "n_closed": 1,
         "n_open": 0,
-        "proposed_hartree_fock_approach": ["RHF"],
-        "proposed_dft_approach": ["RKS"],
-        "experimental_ie_eV": 24.5874,
-        "hf_ie_eV": 24.98,
+        "proposed_approach": ["RHF", "RKS"],
+        "energies": {
+            "experiment": [
+                {"value": 24.5874, "reference": 'https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=He&units=1', "note": "", "level": 0},
+            ],
+            "hf": [
+                {"value": 24.98, "reference": 'https://doi.org/10.12691/wjce-5-3-6', "note": "", "level": 0},
+            ],
+            "dft": [
+                {"value": 24.746, "reference": 'https://cccbdb.nist.gov/ie2x.asp?casno=7440-59-7', "note": "", "level": 0},
+            ],
+        },
         "proposed_basis_set": "compute/environment/constants/numerical/basis_set/pople/3-21G.gbs",
         "max_iterations": 200,
-        "experimental_reference_url": "https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=He&units=1",
-        "theoretical_reference_url": "https://doi.org/10.12691/wjce-5-3-6",
     },
     # ---- Period 2 --------------------------------------------------------
     3: {
@@ -143,14 +141,20 @@ ATOMS_HOMO_ENERGIES: dict = {
         "n_beta": 1,
         "n_closed": 1,
         "n_open": 1,
-        "proposed_hartree_fock_approach": ["ROHF", "UHF"],
-        "proposed_dft_approach": ["UKS"],
-        "experimental_ie_eV": 5.3917,
-        "hf_ie_eV": 5.34,
+        "proposed_approach": ["ROHF", "UHF", "UKS"],
+        "energies": {
+            "experiment": [
+                {"value": 5.3917, "reference": 'https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=Li&units=1', "note": "", "level": 0},
+            ],
+            "hf": [
+                {"value": 5.34, "reference": 'https://doi.org/10.12691/wjce-5-3-6', "note": "", "level": 0},
+            ],
+            "dft": [
+                {"value": 5.587, "reference": 'https://cccbdb.nist.gov/ie2x.asp?casno=7439-93-2', "note": "", "level": 0},
+            ],
+        },
         "proposed_basis_set": "compute/environment/constants/numerical/basis_set/pople/3-21G.gbs",
         "max_iterations": 200,
-        "experimental_reference_url": "https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=Li&units=1",
-        "theoretical_reference_url": "https://doi.org/10.12691/wjce-5-3-6",
     },
     4: {
         "symbol": "Be",
@@ -161,14 +165,20 @@ ATOMS_HOMO_ENERGIES: dict = {
         "n_beta": 2,
         "n_closed": 2,
         "n_open": 0,
-        "proposed_hartree_fock_approach": ["RHF"],
-        "proposed_dft_approach": ["RKS"],
-        "experimental_ie_eV": 9.3227,
-        "hf_ie_eV": 8.42,
+        "proposed_approach": ["RHF", "RKS"],
+        "energies": {
+            "experiment": [
+                {"value": 9.3227, "reference": 'https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=Be&units=1', "note": "", "level": 0},
+            ],
+            "hf": [
+                {"value": 8.42, "reference": 'https://doi.org/10.12691/wjce-5-3-6', "note": "", "level": 0},
+            ],
+            "dft": [
+                {"value": 9.179, "reference": 'https://cccbdb.nist.gov/ie2x.asp?casno=7440-41-7', "note": "", "level": 0},
+            ],
+        },
         "proposed_basis_set": "compute/environment/constants/numerical/basis_set/pople/3-21G.gbs",
         "max_iterations": 200,
-        "experimental_reference_url": "https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=Be&units=1",
-        "theoretical_reference_url": "https://doi.org/10.12691/wjce-5-3-6",
     },
     5: {
         "symbol": "B",
@@ -179,14 +189,20 @@ ATOMS_HOMO_ENERGIES: dict = {
         "n_beta": 2,
         "n_closed": 2,
         "n_open": 1,
-        "proposed_hartree_fock_approach": ["ROHF", "UHF"],
-        "proposed_dft_approach": ["UKS"],
-        "experimental_ie_eV": 8.2980,
-        "hf_ie_eV": 8.43,
+        "proposed_approach": ["ROHF", "UHF", "UKS"],
+        "energies": {
+            "experiment": [
+                {"value": 8.298, "reference": 'https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=B&units=1', "note": "", "level": 0},
+            ],
+            "hf": [
+                {"value": 8.43, "reference": 'https://doi.org/10.12691/wjce-5-3-6', "note": "", "level": 0},
+            ],
+            "dft": [
+                {"value": 8.74, "reference": 'https://cccbdb.nist.gov/ie2x.asp?casno=7440-42-8', "note": "", "level": 0},
+            ],
+        },
         "proposed_basis_set": "compute/environment/constants/numerical/basis_set/pople/3-21G.gbs",
         "max_iterations": 200,
-        "experimental_reference_url": "https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=B&units=1",
-        "theoretical_reference_url": "https://doi.org/10.12691/wjce-5-3-6",
     },
     6: {
         "symbol": "C",
@@ -197,14 +213,20 @@ ATOMS_HOMO_ENERGIES: dict = {
         "n_beta": 2,
         "n_closed": 2,
         "n_open": 2,
-        "proposed_hartree_fock_approach": ["ROHF", "UHF"],
-        "proposed_dft_approach": ["UKS"],
-        "experimental_ie_eV": 11.2603,
-        "hf_ie_eV": 11.79,
+        "proposed_approach": ["ROHF", "UHF", "UKS"],
+        "energies": {
+            "experiment": [
+                {"value": 11.2603, "reference": 'https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=C&units=1', "note": "", "level": 0},
+            ],
+            "hf": [
+                {"value": 11.79, "reference": 'https://doi.org/10.12691/wjce-5-3-6', "note": "", "level": 0},
+            ],
+            "dft": [
+                {"value": 11.509, "reference": 'https://cccbdb.nist.gov/ie2x.asp?casno=7440-44-0', "note": "", "level": 0},
+            ],
+        },
         "proposed_basis_set": "compute/environment/constants/numerical/basis_set/pople/3-21G.gbs",
         "max_iterations": 200,
-        "experimental_reference_url": "https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=C&units=1",
-        "theoretical_reference_url": "https://doi.org/10.12691/wjce-5-3-6",
     },
     7: {
         "symbol": "N",
@@ -215,14 +237,20 @@ ATOMS_HOMO_ENERGIES: dict = {
         "n_beta": 2,
         "n_closed": 2,
         "n_open": 3,
-        "proposed_hartree_fock_approach": ["ROHF", "UHF"],
-        "proposed_dft_approach": ["UKS"],
-        "experimental_ie_eV": 14.5341,
-        "hf_ie_eV": 15.44,
+        "proposed_approach": ["ROHF", "UHF", "UKS"],
+        "energies": {
+            "experiment": [
+                {"value": 14.5341, "reference": 'https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=N&units=1', "note": "", "level": 0},
+            ],
+            "hf": [
+                {"value": 15.44, "reference": 'https://doi.org/10.12691/wjce-5-3-6', "note": "", "level": 0},
+            ],
+            "dft": [
+                {"value": 14.507, "reference": 'https://cccbdb.nist.gov/ie2x.asp?casno=17778-88-0', "note": "", "level": 0},
+            ],
+        },
         "proposed_basis_set": "compute/environment/constants/numerical/basis_set/pople/3-21G.gbs",
         "max_iterations": 200,
-        "experimental_reference_url": "https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=N&units=1",
-        "theoretical_reference_url": "https://doi.org/10.12691/wjce-5-3-6",
     },
     8: {
         "symbol": "O",
@@ -233,14 +261,20 @@ ATOMS_HOMO_ENERGIES: dict = {
         "n_beta": 3,
         "n_closed": 3,
         "n_open": 2,
-        "proposed_hartree_fock_approach": ["ROHF", "UHF"],
-        "proposed_dft_approach": ["UKS"],
-        "experimental_ie_eV": 13.6181,
-        "hf_ie_eV": 12.440,
+        "proposed_approach": ["ROHF", "UHF", "UKS"],
+        "energies": {
+            "experiment": [
+                {"value": 13.6181, "reference": 'https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=O&units=1', "note": "", "level": 0},
+            ],
+            "hf": [
+                {"value": 12.44, "reference": 'https://doi.org/10.12691/wjce-5-3-6', "note": "", "level": 0},
+            ],
+            "dft": [
+                {"value": 13.622, "reference": 'https://cccbdb.nist.gov/ie2x.asp?casno=17778-80-2', "note": "", "level": 0},
+            ],
+        },
         "proposed_basis_set": "compute/environment/constants/numerical/basis_set/pople/STO-3G.gbs",
         "max_iterations": 200,
-        "experimental_reference_url": "https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=O&units=1",
-        "theoretical_reference_url": "https://doi.org/10.12691/wjce-5-3-6",
     },
     9: {
         "symbol": "F",
@@ -251,14 +285,20 @@ ATOMS_HOMO_ENERGIES: dict = {
         "n_beta": 4,
         "n_closed": 4,
         "n_open": 1,
-        "proposed_hartree_fock_approach": ["UHF"],
-        "proposed_dft_approach": ["UKS"],
-        "experimental_ie_eV": 17.4228,
-        "hf_ie_eV": 16.220,
+        "proposed_approach": ["UHF", "UKS"],
+        "energies": {
+            "experiment": [
+                {"value": 17.4228, "reference": 'https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=F&units=1', "note": "", "level": 0},
+            ],
+            "hf": [
+                {"value": 16.22, "reference": 'https://doi.org/10.12691/wjce-5-3-6', "note": "", "level": 0},
+            ],
+            "dft": [
+                {"value": 16.935, "reference": 'https://cccbdb.nist.gov/ie2x.asp?casno=14762-94-8', "note": "", "level": 0},
+            ],
+        },
         "proposed_basis_set": "compute/environment/constants/numerical/basis_set/pople/3-21G.gbs",
         "max_iterations": 200,
-        "experimental_reference_url": "https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=F&units=1",
-        "theoretical_reference_url": "https://doi.org/10.12691/wjce-5-3-6",
     },
     10: {
         "symbol": "Ne",
@@ -269,14 +309,20 @@ ATOMS_HOMO_ENERGIES: dict = {
         "n_beta": 5,
         "n_closed": 5,
         "n_open": 0,
-        "proposed_hartree_fock_approach": ["RHF"],
-        "proposed_dft_approach": ["RKS"],
-        "experimental_ie_eV": 21.5645,
-        "hf_ie_eV": 23.14,
+        "proposed_approach": ["RHF", "RKS"],
+        "energies": {
+            "experiment": [
+                {"value": 21.5645, "reference": 'https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=Ne&units=1', "note": "", "level": 0},
+            ],
+            "hf": [
+                {"value": 23.14, "reference": 'https://doi.org/10.12691/wjce-5-3-6', "note": "", "level": 0},
+            ],
+            "dft": [
+                {"value": 20.552, "reference": 'https://cccbdb.nist.gov/ie2x.asp?casno=7440-01-9', "note": "", "level": 0},
+            ],
+        },
         "proposed_basis_set": "compute/environment/constants/numerical/basis_set/pople/3-21G.gbs",
         "max_iterations": 200,
-        "experimental_reference_url": "https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=Ne&units=1",
-        "theoretical_reference_url": "https://doi.org/10.12691/wjce-5-3-6",
     },
     # ---- Period 3 --------------------------------------------------------
     11: {
@@ -288,14 +334,20 @@ ATOMS_HOMO_ENERGIES: dict = {
         "n_beta": 5,
         "n_closed": 5,
         "n_open": 1,
-        "proposed_hartree_fock_approach": ["ROHF", "UHF"],
-        "proposed_dft_approach": ["UKS"],
-        "experimental_ie_eV": 5.1391,
-        "hf_ie_eV": 5.02,
+        "proposed_approach": ["ROHF", "UHF", "UKS"],
+        "energies": {
+            "experiment": [
+                {"value": 5.1391, "reference": 'https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=Na&units=1', "note": "", "level": 0},
+            ],
+            "hf": [
+                {"value": 5.02, "reference": 'https://doi.org/10.12691/wjce-5-3-6', "note": "", "level": 0},
+            ],
+            "dft": [
+                {"value": 5.359, "reference": 'https://cccbdb.nist.gov/ie2x.asp?casno=7440-23-5', "note": "", "level": 0},
+            ],
+        },
         "proposed_basis_set": "compute/environment/constants/numerical/basis_set/pople/3-21G.gbs",
         "max_iterations": 200,
-        "experimental_reference_url": "https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=Na&units=1",
-        "theoretical_reference_url": "https://doi.org/10.12691/wjce-5-3-6",
     },
     12: {
         "symbol": "Mg",
@@ -306,14 +358,20 @@ ATOMS_HOMO_ENERGIES: dict = {
         "n_beta": 6,
         "n_closed": 6,
         "n_open": 0,
-        "proposed_hartree_fock_approach": ["RHF"],
-        "proposed_dft_approach": ["RKS"],
-        "experimental_ie_eV": 7.6462,
-        "hf_ie_eV": 6.89,
+        "proposed_approach": ["RHF", "RKS"],
+        "energies": {
+            "experiment": [
+                {"value": 7.6462, "reference": 'https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=Mg&units=1', "note": "", "level": 0},
+            ],
+            "hf": [
+                {"value": 6.89, "reference": 'https://doi.org/10.12691/wjce-5-3-6', "note": "", "level": 0},
+            ],
+            "dft": [
+                {"value": 7.745, "reference": 'https://cccbdb.nist.gov/ie2x.asp?casno=7439-95-4', "note": "", "level": 0},
+            ],
+        },
         "proposed_basis_set": "compute/environment/constants/numerical/basis_set/pople/3-21G.gbs",
         "max_iterations": 200,
-        "experimental_reference_url": "https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=Mg&units=1",
-        "theoretical_reference_url": "https://doi.org/10.12691/wjce-5-3-6",
     },
     13: {
         "symbol": "Al",
@@ -324,14 +382,20 @@ ATOMS_HOMO_ENERGIES: dict = {
         "n_beta": 6,
         "n_closed": 6,
         "n_open": 1,
-        "proposed_hartree_fock_approach": ["ROHF", "UHF"],
-        "proposed_dft_approach": ["UKS"],
-        "experimental_ie_eV": 5.9858,
-        "hf_ie_eV": 5.71,
+        "proposed_approach": ["ROHF", "UHF", "UKS"],
+        "energies": {
+            "experiment": [
+                {"value": 5.9858, "reference": 'https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=Al&units=1', "note": "", "level": 0},
+            ],
+            "hf": [
+                {"value": 5.71, "reference": 'https://doi.org/10.12691/wjce-5-3-6', "note": "", "level": 0},
+            ],
+            "dft": [
+                {"value": 6.022, "reference": 'https://cccbdb.nist.gov/ie2x.asp?casno=7429-90-5', "note": "", "level": 0},
+            ],
+        },
         "proposed_basis_set": "compute/environment/constants/numerical/basis_set/pople/3-21G.gbs",
         "max_iterations": 200,
-        "experimental_reference_url": "https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=Al&units=1",
-        "theoretical_reference_url": "https://doi.org/10.12691/wjce-5-3-6",
     },
     14: {
         "symbol": "Si",
@@ -342,14 +406,20 @@ ATOMS_HOMO_ENERGIES: dict = {
         "n_beta": 6,
         "n_closed": 6,
         "n_open": 2,
-        "proposed_hartree_fock_approach": ["ROHF", "UHF"],
-        "proposed_dft_approach": ["UKS"],
-        "experimental_ie_eV": 8.1517,
-        "hf_ie_eV": 8.14,
+        "proposed_approach": ["ROHF", "UHF", "UKS"],
+        "energies": {
+            "experiment": [
+                {"value": 8.1517, "reference": 'https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=Si&units=1', "note": "", "level": 0},
+            ],
+            "hf": [
+                {"value": 8.14, "reference": 'https://doi.org/10.12691/wjce-5-3-6', "note": "", "level": 0},
+            ],
+            "dft": [
+                {"value": 8.141, "reference": 'https://cccbdb.nist.gov/ie2x.asp?casno=7440-21-3', "note": "", "level": 0},
+            ],
+        },
         "proposed_basis_set": "compute/environment/constants/numerical/basis_set/pople/3-21G.gbs",
         "max_iterations": 200,
-        "experimental_reference_url": "https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=Si&units=1",
-        "theoretical_reference_url": "https://doi.org/10.12691/wjce-5-3-6",
     },
     15: {
         "symbol": "P",
@@ -360,14 +430,20 @@ ATOMS_HOMO_ENERGIES: dict = {
         "n_beta": 6,
         "n_closed": 6,
         "n_open": 3,
-        "proposed_hartree_fock_approach": ["ROHF", "UHF"],
-        "proposed_dft_approach": ["UKS"],
-        "experimental_ie_eV": 10.4867,
-        "hf_ie_eV": 10.67,
+        "proposed_approach": ["ROHF", "UHF", "UKS"],
+        "energies": {
+            "experiment": [
+                {"value": 10.4867, "reference": 'https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=P&units=1', "note": "", "level": 0},
+            ],
+            "hf": [
+                {"value": 10.67, "reference": 'https://doi.org/10.12691/wjce-5-3-6', "note": "", "level": 0},
+            ],
+            "dft": [
+                {"value": 10.432, "reference": 'https://cccbdb.nist.gov/ie2x.asp?casno=7723-14-0', "note": "", "level": 0},
+            ],
+        },
         "proposed_basis_set": "compute/environment/constants/numerical/basis_set/pople/3-21G.gbs",
         "max_iterations": 200,
-        "experimental_reference_url": "https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=P&units=1",
-        "theoretical_reference_url": "https://doi.org/10.12691/wjce-5-3-6",
     },
     16: {
         "symbol": "S",
@@ -378,14 +454,20 @@ ATOMS_HOMO_ENERGIES: dict = {
         "n_beta": 7,
         "n_closed": 7,
         "n_open": 2,
-        "proposed_hartree_fock_approach": ["UHF"],
-        "proposed_dft_approach": ["UKS"],
-        "experimental_ie_eV": 10.3600,
-        "hf_ie_eV": 9.63,
+        "proposed_approach": ["UHF", "UKS"],
+        "energies": {
+            "experiment": [
+                {"value": 10.36, "reference": 'https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=S&units=1', "note": "", "level": 0},
+            ],
+            "hf": [
+                {"value": 9.63, "reference": 'https://doi.org/10.12691/wjce-5-3-6', "note": "", "level": 0},
+            ],
+            "dft": [
+                {"value": 10.483, "reference": 'https://cccbdb.nist.gov/ie2x.asp?casno=7704-34-9', "note": "", "level": 0},
+            ],
+        },
         "proposed_basis_set": "compute/environment/constants/numerical/basis_set/pople/6-31G.gbs",
         "max_iterations": 200,
-        "experimental_reference_url": "https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=S&units=1",
-        "theoretical_reference_url": "https://doi.org/10.12691/wjce-5-3-6",
     },
     17: {
         "symbol": "Cl",
@@ -396,14 +478,20 @@ ATOMS_HOMO_ENERGIES: dict = {
         "n_beta": 8,
         "n_closed": 8,
         "n_open": 1,
-        "proposed_hartree_fock_approach": ["UHF"],
-        "proposed_dft_approach": ["UKS"],
-        "experimental_ie_eV": 12.9676,
-        "hf_ie_eV": 12.42,
+        "proposed_approach": ["UHF", "UKS"],
+        "energies": {
+            "experiment": [
+                {"value": 12.9676, "reference": 'https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=Cl&units=1', "note": "", "level": 0},
+            ],
+            "hf": [
+                {"value": 12.42, "reference": 'https://doi.org/10.12691/wjce-5-3-6', "note": "", "level": 0},
+            ],
+            "dft": [
+                {"value": 13.059, "reference": 'https://cccbdb.nist.gov/ie2x.asp?casno=22537-15-1', "note": "", "level": 0},
+            ],
+        },
         "proposed_basis_set": "compute/environment/constants/numerical/basis_set/pople/6-31G.gbs",
         "max_iterations": 200,
-        "experimental_reference_url": "https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=Cl&units=1",
-        "theoretical_reference_url": "https://doi.org/10.12691/wjce-5-3-6",
     },
     18: {
         "symbol": "Ar",
@@ -414,14 +502,20 @@ ATOMS_HOMO_ENERGIES: dict = {
         "n_beta": 9,
         "n_closed": 9,
         "n_open": 0,
-        "proposed_hartree_fock_approach": ["RHF"],
-        "proposed_dft_approach": ["RKS"],
-        "experimental_ie_eV": 15.7596,
-        "hf_ie_eV": 16.08,
+        "proposed_approach": ["RHF", "RKS"],
+        "energies": {
+            "experiment": [
+                {"value": 15.7596, "reference": 'https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=Ar&units=1', "note": "", "level": 0},
+            ],
+            "hf": [
+                {"value": 16.08, "reference": 'https://doi.org/10.12691/wjce-5-3-6', "note": "", "level": 0},
+            ],
+            "dft": [
+                {"value": 15.856, "reference": 'https://cccbdb.nist.gov/ie2x.asp?casno=7440-37-1', "note": "", "level": 0},
+            ],
+        },
         "proposed_basis_set": "compute/environment/constants/numerical/basis_set/pople/3-21G.gbs",
         "max_iterations": 200,
-        "experimental_reference_url": "https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=Ar&units=1",
-        "theoretical_reference_url": "https://doi.org/10.12691/wjce-5-3-6",
     },
     # ---- Period 4 --------------------------------------------------------
     19: {
@@ -433,14 +527,20 @@ ATOMS_HOMO_ENERGIES: dict = {
         "n_beta": 9,
         "n_closed": 9,
         "n_open": 1,
-        "proposed_hartree_fock_approach": ["ROHF", "UHF"],
-        "proposed_dft_approach": ["UKS"],
-        "experimental_ie_eV": 4.3407,
-        "hf_ie_eV": 4.19,
+        "proposed_approach": ["ROHF", "UHF", "UKS"],
+        "energies": {
+            "experiment": [
+                {"value": 4.3407, "reference": 'https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=K&units=1', "note": "", "level": 0},
+            ],
+            "hf": [
+                {"value": 4.19, "reference": 'https://doi.org/10.12691/wjce-5-3-6', "note": "", "level": 0},
+            ],
+            "dft": [
+                {"value": 4.452, "reference": 'https://cccbdb.nist.gov/ie2x.asp?casno=7440-09-7', "note": "", "level": 0},
+            ],
+        },
         "proposed_basis_set": "compute/environment/constants/numerical/basis_set/pople/3-21G.gbs",
         "max_iterations": 200,
-        "experimental_reference_url": "https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=K&units=1",
-        "theoretical_reference_url": "https://doi.org/10.12691/wjce-5-3-6",
     },
     20: {
         "symbol": "Ca",
@@ -451,14 +551,18 @@ ATOMS_HOMO_ENERGIES: dict = {
         "n_beta": 10,
         "n_closed": 10,
         "n_open": 0,
-        "proposed_hartree_fock_approach": ["RHF"],
-        "proposed_dft_approach": ["RKS"],
-        "experimental_ie_eV": 6.1132,
-        "hf_ie_eV": 5.49,
+        "proposed_approach": ["RHF", "RKS"],
+        "energies": {
+            "experiment": [
+                {"value": 6.1132, "reference": 'https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=Ca&units=1', "note": "", "level": 0},
+            ],
+            "hf": [
+                {"value": 5.49, "reference": 'https://doi.org/10.12691/wjce-5-3-6', "note": "", "level": 0},
+            ],
+            "dft": [],
+        },
         "proposed_basis_set": "compute/environment/constants/numerical/basis_set/pople/3-21G.gbs",
         "max_iterations": 200,
-        "experimental_reference_url": "https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=Ca&units=1",
-        "theoretical_reference_url": "https://doi.org/10.12691/wjce-5-3-6",
     },
     21: {
         "symbol": "Sc",
@@ -469,14 +573,20 @@ ATOMS_HOMO_ENERGIES: dict = {
         "n_beta": 10,
         "n_closed": 10,
         "n_open": 1,
-        "proposed_hartree_fock_approach": ["UHF"],
-        "proposed_dft_approach": ["UKS"],
-        "experimental_ie_eV": 6.5615,
-        "hf_ie_eV": 5.67,
+        "proposed_approach": ["UHF", "UKS"],
+        "energies": {
+            "experiment": [
+                {"value": 6.5615, "reference": 'https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=Sc&units=1', "note": "", "level": 0},
+            ],
+            "hf": [
+                {"value": 5.67, "reference": 'https://doi.org/10.12691/wjce-5-3-6', "note": "", "level": 0},
+            ],
+            "dft": [
+                {"value": 6.447, "reference": 'https://cccbdb.nist.gov/ie2x.asp?casno=7440-20-2', "note": "", "level": 0},
+            ],
+        },
         "proposed_basis_set": "compute/environment/constants/numerical/basis_set/pople/3-21G.gbs",
         "max_iterations": 200,
-        "experimental_reference_url": "https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=Sc&units=1",
-        "theoretical_reference_url": "https://doi.org/10.12691/wjce-5-3-6",
     },
     22: {
         "symbol": "Ti",
@@ -487,14 +597,18 @@ ATOMS_HOMO_ENERGIES: dict = {
         "n_beta": 10,
         "n_closed": 10,
         "n_open": 2,
-        "proposed_hartree_fock_approach": ["UHF"],
-        "proposed_dft_approach": ["UKS"],
-        "experimental_ie_eV": 6.8281,
-        "hf_ie_eV": 5.98,
+        "proposed_approach": ["UHF", "UKS"],
+        "energies": {
+            "experiment": [
+                {"value": 6.8281, "reference": 'https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=Ti&units=1', "note": "", "level": 0},
+            ],
+            "hf": [
+                {"value": 5.98, "reference": 'https://doi.org/10.12691/wjce-5-3-6', "note": "", "level": 0},
+            ],
+            "dft": [],
+        },
         "proposed_basis_set": "compute/environment/constants/numerical/basis_set/pople/6-31G.gbs",
         "max_iterations": 200,
-        "experimental_reference_url": "https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=Ti&units=1",
-        "theoretical_reference_url": "https://doi.org/10.12691/wjce-5-3-6",
     },
     23: {
         "symbol": "V",
@@ -505,14 +619,20 @@ ATOMS_HOMO_ENERGIES: dict = {
         "n_beta": 10,
         "n_closed": 10,
         "n_open": 3,
-        "proposed_hartree_fock_approach": ["UHF"],
-        "proposed_dft_approach": ["UKS"],
-        "experimental_ie_eV": 6.7462,
-        "hf_ie_eV": 5.92,
+        "proposed_approach": ["UHF", "UKS"],
+        "energies": {
+            "experiment": [
+                {"value": 6.7462, "reference": 'https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=V&units=1', "note": "", "level": 0},
+            ],
+            "hf": [
+                {"value": 5.92, "reference": 'https://doi.org/10.12691/wjce-5-3-6', "note": "", "level": 0},
+            ],
+            "dft": [
+                {"value": 6.866, "reference": 'https://cccbdb.nist.gov/ie2x.asp?casno=7440-62-2', "note": "", "level": 0},
+            ],
+        },
         "proposed_basis_set": "compute/environment/constants/numerical/basis_set/pople/6-31G.gbs",
         "max_iterations": 200,
-        "experimental_reference_url": "https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=V&units=1",
-        "theoretical_reference_url": "https://doi.org/10.12691/wjce-5-3-6",
     },
     24: {
         "symbol": "Cr",
@@ -523,14 +643,18 @@ ATOMS_HOMO_ENERGIES: dict = {
         "n_beta": 9,
         "n_closed": 9,
         "n_open": 6,
-        "proposed_hartree_fock_approach": ["ROHF", "UHF"],
-        "proposed_dft_approach": ["UKS"],
-        "experimental_ie_eV": 6.7665,
-        "hf_ie_eV": 5.79,
+        "proposed_approach": ["ROHF", "UHF", "UKS"],
+        "energies": {
+            "experiment": [
+                {"value": 6.7665, "reference": 'https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=Cr&units=1', "note": "", "level": 0},
+            ],
+            "hf": [
+                {"value": 5.79, "reference": 'https://doi.org/10.12691/wjce-5-3-6', "note": "", "level": 0},
+            ],
+            "dft": [],
+        },
         "proposed_basis_set": "compute/environment/constants/numerical/basis_set/pople/3-21G.gbs",
         "max_iterations": 200,
-        "experimental_reference_url": "https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=Cr&units=1",
-        "theoretical_reference_url": "https://doi.org/10.12691/wjce-5-3-6",
     },
     25: {
         "symbol": "Mn",
@@ -541,14 +665,18 @@ ATOMS_HOMO_ENERGIES: dict = {
         "n_beta": 10,
         "n_closed": 10,
         "n_open": 5,
-        "proposed_hartree_fock_approach": ["UHF"],
-        "proposed_dft_approach": ["UKS"],
-        "experimental_ie_eV": 7.4340,
-        "hf_ie_eV": 6.66,
+        "proposed_approach": ["UHF", "UKS"],
+        "energies": {
+            "experiment": [
+                {"value": 7.434, "reference": 'https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=Mn&units=1', "note": "", "level": 0},
+            ],
+            "hf": [
+                {"value": 6.66, "reference": 'https://doi.org/10.12691/wjce-5-3-6', "note": "", "level": 0},
+            ],
+            "dft": [],
+        },
         "proposed_basis_set": "compute/environment/constants/numerical/basis_set/pople/3-21G.gbs",
         "max_iterations": 200,
-        "experimental_reference_url": "https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=Mn&units=1",
-        "theoretical_reference_url": "https://doi.org/10.12691/wjce-5-3-6",
     },
     26: {
         "symbol": "Fe",
@@ -559,14 +687,18 @@ ATOMS_HOMO_ENERGIES: dict = {
         "n_beta": 11,
         "n_closed": 11,
         "n_open": 4,
-        "proposed_hartree_fock_approach": ["UHF"],
-        "proposed_dft_approach": ["UKS"],
-        "experimental_ie_eV": 7.9024,
-        "hf_ie_eV": 6.65,
+        "proposed_approach": ["UHF", "UKS"],
+        "energies": {
+            "experiment": [
+                {"value": 7.9024, "reference": 'https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=Fe&units=1', "note": "", "level": 0},
+            ],
+            "hf": [
+                {"value": 6.65, "reference": 'https://doi.org/10.12691/wjce-5-3-6', "note": "", "level": 0},
+            ],
+            "dft": [],
+        },
         "proposed_basis_set": "compute/environment/constants/numerical/basis_set/pople/3-21G.gbs",
         "max_iterations": 200,
-        "experimental_reference_url": "https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=Fe&units=1",
-        "theoretical_reference_url": "https://doi.org/10.12691/wjce-5-3-6",
     },
     27: {
         "symbol": "Co",
@@ -577,14 +709,18 @@ ATOMS_HOMO_ENERGIES: dict = {
         "n_beta": 12,
         "n_closed": 12,
         "n_open": 3,
-        "proposed_hartree_fock_approach": ["ROHF", "UHF"],
-        "proposed_dft_approach": ["UKS"],
-        "experimental_ie_eV": 7.8810,
-        "hf_ie_eV": 6.50,
+        "proposed_approach": ["ROHF", "UHF", "UKS"],
+        "energies": {
+            "experiment": [
+                {"value": 7.881, "reference": 'https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=Co&units=1', "note": "", "level": 0},
+            ],
+            "hf": [
+                {"value": 6.5, "reference": 'https://doi.org/10.12691/wjce-5-3-6', "note": "", "level": 0},
+            ],
+            "dft": [],
+        },
         "proposed_basis_set": "compute/environment/constants/numerical/basis_set/pople/3-21G.gbs",
         "max_iterations": 200,
-        "experimental_reference_url": "https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=Co&units=1",
-        "theoretical_reference_url": "https://doi.org/10.12691/wjce-5-3-6",
     },
     28: {
         "symbol": "Ni",
@@ -595,14 +731,18 @@ ATOMS_HOMO_ENERGIES: dict = {
         "n_beta": 13,
         "n_closed": 13,
         "n_open": 2,
-        "proposed_hartree_fock_approach": ["ROHF", "UHF"],
-        "proposed_dft_approach": ["UKS"],
-        "experimental_ie_eV": 7.6398,
-        "hf_ie_eV": 6.42,
+        "proposed_approach": ["ROHF", "UHF", "UKS"],
+        "energies": {
+            "experiment": [
+                {"value": 7.6398, "reference": 'https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=Ni&units=1', "note": "", "level": 0},
+            ],
+            "hf": [
+                {"value": 6.42, "reference": 'https://doi.org/10.12691/wjce-5-3-6', "note": "", "level": 0},
+            ],
+            "dft": [],
+        },
         "proposed_basis_set": "compute/environment/constants/numerical/basis_set/pople/3-21G.gbs",
         "max_iterations": 200,
-        "experimental_reference_url": "https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=Ni&units=1",
-        "theoretical_reference_url": "https://doi.org/10.12691/wjce-5-3-6",
     },
     29: {
         "symbol": "Cu",
@@ -613,14 +753,20 @@ ATOMS_HOMO_ENERGIES: dict = {
         "n_beta": 14,
         "n_closed": 14,
         "n_open": 1,
-        "proposed_hartree_fock_approach": ["ROHF", "UHF"],
-        "proposed_dft_approach": ["UKS"],
-        "experimental_ie_eV": 7.7264,
-        "hf_ie_eV": 6.49,
+        "proposed_approach": ["ROHF", "UHF", "UKS"],
+        "energies": {
+            "experiment": [
+                {"value": 7.7264, "reference": 'https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=Cu&units=1', "note": "", "level": 0},
+            ],
+            "hf": [
+                {"value": 6.49, "reference": 'https://doi.org/10.12691/wjce-5-3-6', "note": "", "level": 0},
+            ],
+            "dft": [
+                {"value": 9.918, "reference": 'https://cccbdb.nist.gov/ie2x.asp?casno=7440-50-8', "note": "", "level": 0},
+            ],
+        },
         "proposed_basis_set": "compute/environment/constants/numerical/basis_set/pople/3-21G.gbs",
         "max_iterations": 200,
-        "experimental_reference_url": "https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=Cu&units=1",
-        "theoretical_reference_url": "https://doi.org/10.12691/wjce-5-3-6",
     },
     30: {
         "symbol": "Zn",
@@ -631,14 +777,18 @@ ATOMS_HOMO_ENERGIES: dict = {
         "n_beta": 15,
         "n_closed": 15,
         "n_open": 0,
-        "proposed_hartree_fock_approach": ["RHF"],
-        "proposed_dft_approach": ["RKS"],
-        "experimental_ie_eV": 9.3942,
-        "hf_ie_eV": 8.61,
+        "proposed_approach": ["RHF", "RKS"],
+        "energies": {
+            "experiment": [
+                {"value": 9.3942, "reference": 'https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=Zn&units=1', "note": "", "level": 0},
+            ],
+            "hf": [
+                {"value": 8.61, "reference": 'https://doi.org/10.12691/wjce-5-3-6', "note": "", "level": 0},
+            ],
+            "dft": [],
+        },
         "proposed_basis_set": "compute/environment/constants/numerical/basis_set/pople/3-21G.gbs",
         "max_iterations": 200,
-        "experimental_reference_url": "https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=Zn&units=1",
-        "theoretical_reference_url": "https://doi.org/10.12691/wjce-5-3-6",
     },
     31: {
         "symbol": "Ga",
@@ -649,14 +799,20 @@ ATOMS_HOMO_ENERGIES: dict = {
         "n_beta": 15,
         "n_closed": 15,
         "n_open": 1,
-        "proposed_hartree_fock_approach": ["ROHF", "UHF"],
-        "proposed_dft_approach": ["UKS"],
-        "experimental_ie_eV": 5.9993,
-        "hf_ie_eV": 5.59,
+        "proposed_approach": ["ROHF", "UHF", "UKS"],
+        "energies": {
+            "experiment": [
+                {"value": 5.9993, "reference": 'https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=Ga&units=1', "note": "", "level": 0},
+            ],
+            "hf": [
+                {"value": 5.59, "reference": 'https://doi.org/10.12691/wjce-5-3-6', "note": "", "level": 0},
+            ],
+            "dft": [
+                {"value": 5.731, "reference": 'https://cccbdb.nist.gov/ie2x.asp?casno=7440-55-3', "note": "", "level": 0},
+            ],
+        },
         "proposed_basis_set": "compute/environment/constants/numerical/basis_set/pople/3-21G.gbs",
         "max_iterations": 200,
-        "experimental_reference_url": "https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=Ga&units=1",
-        "theoretical_reference_url": "https://doi.org/10.12691/wjce-5-3-6",
     },
     32: {
         "symbol": "Ge",
@@ -667,14 +823,20 @@ ATOMS_HOMO_ENERGIES: dict = {
         "n_beta": 15,
         "n_closed": 15,
         "n_open": 2,
-        "proposed_hartree_fock_approach": ["ROHF", "UHF"],
-        "proposed_dft_approach": ["UKS"],
-        "experimental_ie_eV": 7.8994,
-        "hf_ie_eV": 7.76,
+        "proposed_approach": ["ROHF", "UHF", "UKS"],
+        "energies": {
+            "experiment": [
+                {"value": 7.8994, "reference": 'https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=Ge&units=1', "note": "", "level": 0},
+            ],
+            "hf": [
+                {"value": 7.76, "reference": 'https://doi.org/10.12691/wjce-5-3-6', "note": "", "level": 0},
+            ],
+            "dft": [
+                {"value": 7.642, "reference": 'https://cccbdb.nist.gov/ie2x.asp?casno=7440-56-4', "note": "", "level": 0},
+            ],
+        },
         "proposed_basis_set": "compute/environment/constants/numerical/basis_set/pople/3-21G.gbs",
         "max_iterations": 200,
-        "experimental_reference_url": "https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=Ge&units=1",
-        "theoretical_reference_url": "https://doi.org/10.12691/wjce-5-3-6",
     },
     33: {
         "symbol": "As",
@@ -685,14 +847,20 @@ ATOMS_HOMO_ENERGIES: dict = {
         "n_beta": 15,
         "n_closed": 15,
         "n_open": 3,
-        "proposed_hartree_fock_approach": ["ROHF", "UHF"],
-        "proposed_dft_approach": ["UKS"],
-        "experimental_ie_eV": 9.7886,
-        "hf_ie_eV": 9.95,
+        "proposed_approach": ["ROHF", "UHF", "UKS"],
+        "energies": {
+            "experiment": [
+                {"value": 9.7886, "reference": 'https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=As&units=1', "note": "", "level": 0},
+            ],
+            "hf": [
+                {"value": 9.95, "reference": 'https://doi.org/10.12691/wjce-5-3-6', "note": "", "level": 0},
+            ],
+            "dft": [
+                {"value": 9.6, "reference": 'https://cccbdb.nist.gov/ie2x.asp?casno=7440-38-2', "note": "", "level": 0},
+            ],
+        },
         "proposed_basis_set": "compute/environment/constants/numerical/basis_set/pople/3-21G.gbs",
         "max_iterations": 200,
-        "experimental_reference_url": "https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=As&units=1",
-        "theoretical_reference_url": "https://doi.org/10.12691/wjce-5-3-6",
     },
     34: {
         "symbol": "Se",
@@ -703,14 +871,20 @@ ATOMS_HOMO_ENERGIES: dict = {
         "n_beta": 16,
         "n_closed": 16,
         "n_open": 2,
-        "proposed_hartree_fock_approach": ["UHF"],
-        "proposed_dft_approach": ["UKS"],
-        "experimental_ie_eV": 9.7524,
-        "hf_ie_eV": 8.99,
+        "proposed_approach": ["UHF", "UKS"],
+        "energies": {
+            "experiment": [
+                {"value": 9.7524, "reference": 'https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=Se&units=1', "note": "", "level": 0},
+            ],
+            "hf": [
+                {"value": 8.99, "reference": 'https://doi.org/10.12691/wjce-5-3-6', "note": "", "level": 0},
+            ],
+            "dft": [
+                {"value": 9.469, "reference": 'https://cccbdb.nist.gov/ie2x.asp?casno=7782-49-2', "note": "", "level": 0},
+            ],
+        },
         "proposed_basis_set": "compute/environment/constants/numerical/basis_set/pople/6-31G.gbs",
         "max_iterations": 200,
-        "experimental_reference_url": "https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=Se&units=1",
-        "theoretical_reference_url": "https://doi.org/10.12691/wjce-5-3-6",
     },
     35: {
         "symbol": "Br",
@@ -721,14 +895,20 @@ ATOMS_HOMO_ENERGIES: dict = {
         "n_beta": 17,
         "n_closed": 17,
         "n_open": 1,
-        "proposed_hartree_fock_approach": ["ROHF", "UHF"],
-        "proposed_dft_approach": ["UKS"],
-        "experimental_ie_eV": 11.8138,
-        "hf_ie_eV": 11.23,
+        "proposed_approach": ["ROHF", "UHF", "UKS"],
+        "energies": {
+            "experiment": [
+                {"value": 11.8138, "reference": 'https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=Br&units=1', "note": "", "level": 0},
+            ],
+            "hf": [
+                {"value": 11.23, "reference": 'https://doi.org/10.12691/wjce-5-3-6', "note": "", "level": 0},
+            ],
+            "dft": [
+                {"value": 11.547, "reference": 'https://cccbdb.nist.gov/ie2x.asp?casno=10097-32-2', "note": "", "level": 0},
+            ],
+        },
         "proposed_basis_set": "compute/environment/constants/numerical/basis_set/pople/3-21G.gbs",
         "max_iterations": 200,
-        "experimental_reference_url": "https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=Br&units=1",
-        "theoretical_reference_url": "https://doi.org/10.12691/wjce-5-3-6",
     },
     36: {
         "symbol": "Kr",
@@ -739,14 +919,20 @@ ATOMS_HOMO_ENERGIES: dict = {
         "n_beta": 18,
         "n_closed": 18,
         "n_open": 0,
-        "proposed_hartree_fock_approach": ["RHF"],
-        "proposed_dft_approach": ["RKS"],
-        "experimental_ie_eV": 13.9996,
-        "hf_ie_eV": 14.26,
+        "proposed_approach": ["RHF", "RKS"],
+        "energies": {
+            "experiment": [
+                {"value": 13.9996, "reference": 'https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=Kr&units=1', "note": "", "level": 0},
+            ],
+            "hf": [
+                {"value": 14.26, "reference": 'https://doi.org/10.12691/wjce-5-3-6', "note": "", "level": 0},
+            ],
+            "dft": [
+                {"value": 13.752, "reference": 'https://cccbdb.nist.gov/ie2x.asp?casno=7439-90-9', "note": "", "level": 0},
+            ],
+        },
         "proposed_basis_set": "compute/environment/constants/numerical/basis_set/pople/6-31G.gbs",
         "max_iterations": 200,
-        "experimental_reference_url": "https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=Kr&units=1",
-        "theoretical_reference_url": "https://doi.org/10.12691/wjce-5-3-6",
     },
     # ---- Period 5 --------------------------------------------------------
     37: {
@@ -758,14 +944,18 @@ ATOMS_HOMO_ENERGIES: dict = {
         "n_beta": 18,
         "n_closed": 18,
         "n_open": 1,
-        "proposed_hartree_fock_approach": ["ROHF", "UHF"],
-        "proposed_dft_approach": ["UKS"],
-        "experimental_ie_eV": 4.1771,
-        "hf_ie_eV": 3.98,
+        "proposed_approach": ["ROHF", "UHF", "UKS"],
+        "energies": {
+            "experiment": [
+                {"value": 4.1771, "reference": 'https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=Rb&units=1', "note": "", "level": 0},
+            ],
+            "hf": [
+                {"value": 3.98, "reference": 'https://doi.org/10.12691/wjce-5-3-6', "note": "", "level": 0},
+            ],
+            "dft": [],
+        },
         "proposed_basis_set": "compute/environment/constants/numerical/basis_set/pople/3-21G.gbs",
         "max_iterations": 200,
-        "experimental_reference_url": "https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=Rb&units=1",
-        "theoretical_reference_url": "https://doi.org/10.12691/wjce-5-3-6",
     },
     38: {
         "symbol": "Sr",
@@ -776,38 +966,42 @@ ATOMS_HOMO_ENERGIES: dict = {
         "n_beta": 19,
         "n_closed": 19,
         "n_open": 0,
-        "proposed_hartree_fock_approach": ["RHF"],
-        "proposed_dft_approach": ["RKS"],
-        "experimental_ie_eV": 5.6949,
-        "hf_ie_eV": 5.03,
+        "proposed_approach": ["RHF", "RKS"],
+        "energies": {
+            "experiment": [
+                {"value": 5.6949, "reference": 'https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=Sr&units=1', "note": "", "level": 0},
+            ],
+            "hf": [
+                {"value": 5.03, "reference": 'https://doi.org/10.12691/wjce-5-3-6', "note": "", "level": 0},
+            ],
+            "dft": [],
+        },
         "proposed_basis_set": "compute/environment/constants/numerical/basis_set/pople/3-21G.gbs",
         "max_iterations": 200,
-        "experimental_reference_url": "https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=Sr&units=1",
-        "theoretical_reference_url": "https://doi.org/10.12691/wjce-5-3-6",
     },
     # Y not converging for ROHF.
     # 39: {
     #    "symbol": "Y", "config": "[Kr] 4d1 5s2", "multiplicity": 2,
     #    "n_electrons": 39, "n_alpha": 20, "n_beta": 19,
     #    "n_closed": 19, "n_open": 1,
-    #    "proposed_hartree_fock_approach": ["UHF"],
-    #    "experimental_ie_eV": 6.2173, "hf_ie_eV": 5.39,
+    #    "proposed_hf_approach": ["UHF"],
+    #    "ionization_energies_experiment_eV": 6.2173, "ionization_energies_hf_eV": 5.39,
     #    "proposed_basis_set": "compute/environment/constants/numerical/basis_set/pople/3-21G.gbs",
     #    "max_iterations": 200,
     #    "experimental_reference_url": "https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=Y&units=1",
-    #    "theoretical_reference_url": "https://doi.org/10.12691/wjce-5-3-6",
+    #    "hf_reference_url": "https://doi.org/10.12691/wjce-5-3-6",
     # },
     # ZR problem in both: ROHF and UHF.
     # 40: {
     #    "symbol": "Zr", "config": "[Kr] 4d2 5s2", "multiplicity": 3,
     #    "n_electrons": 40, "n_alpha": 21, "n_beta": 19,
     #    "n_closed": 19, "n_open": 2,
-    #    "proposed_hartree_fock_approach": ["ROHF", "UHF"],
-    #    "experimental_ie_eV": 6.6339, "hf_ie_eV": 5.70,
+    #    "proposed_hf_approach": ["ROHF", "UHF"],
+    #    "ionization_energies_experiment_eV": 6.6339, "ionization_energies_hf_eV": 5.70,
     #    "proposed_basis_set": "compute/environment/constants/numerical/basis_set/pople/3-21G.gbs",
     #    "max_iterations": 200,
     #    "experimental_reference_url": "https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=Zr&units=1",
-    #    "theoretical_reference_url": "https://doi.org/10.12691/wjce-5-3-6",
+    #    "hf_reference_url": "https://doi.org/10.12691/wjce-5-3-6",
     # },
     41: {
         "symbol": "Nb",
@@ -818,14 +1012,18 @@ ATOMS_HOMO_ENERGIES: dict = {
         "n_beta": 18,
         "n_closed": 18,
         "n_open": 5,
-        "proposed_hartree_fock_approach": ["ROHF", "UHF"],
-        "proposed_dft_approach": ["UKS"],
-        "experimental_ie_eV": 6.7589,
-        "hf_ie_eV": 5.82,
+        "proposed_approach": ["ROHF", "UHF", "UKS"],
+        "energies": {
+            "experiment": [
+                {"value": 6.7589, "reference": 'https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=Nb&units=1', "note": "", "level": 0},
+            ],
+            "hf": [
+                {"value": 5.82, "reference": 'https://doi.org/10.12691/wjce-5-3-6', "note": "", "level": 0},
+            ],
+            "dft": [],
+        },
         "proposed_basis_set": "compute/environment/constants/numerical/basis_set/pople/3-21G.gbs",
         "max_iterations": 200,
-        "experimental_reference_url": "https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=Nb&units=1",
-        "theoretical_reference_url": "https://doi.org/10.12691/wjce-5-3-6",
     },
     42: {
         "symbol": "Mo",
@@ -836,14 +1034,18 @@ ATOMS_HOMO_ENERGIES: dict = {
         "n_beta": 18,
         "n_closed": 18,
         "n_open": 6,
-        "proposed_hartree_fock_approach": ["ROHF", "UHF"],
-        "proposed_dft_approach": ["UKS"],
-        "experimental_ie_eV": 7.0924,
-        "hf_ie_eV": 6.02,
+        "proposed_approach": ["ROHF", "UHF", "UKS"],
+        "energies": {
+            "experiment": [
+                {"value": 7.0924, "reference": 'https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=Mo&units=1', "note": "", "level": 0},
+            ],
+            "hf": [
+                {"value": 6.02, "reference": 'https://doi.org/10.12691/wjce-5-3-6', "note": "", "level": 0},
+            ],
+            "dft": [],
+        },
         "proposed_basis_set": "compute/environment/constants/numerical/basis_set/pople/3-21G.gbs",
         "max_iterations": 200,
-        "experimental_reference_url": "https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=Mo&units=1",
-        "theoretical_reference_url": "https://doi.org/10.12691/wjce-5-3-6",
     },
     43: {
         "symbol": "Tc",
@@ -854,14 +1056,18 @@ ATOMS_HOMO_ENERGIES: dict = {
         "n_beta": 19,
         "n_closed": 19,
         "n_open": 5,
-        "proposed_hartree_fock_approach": ["UHF"],
-        "proposed_dft_approach": ["UKS"],
-        "experimental_ie_eV": 7.1190,
-        "hf_ie_eV": 6.37,
+        "proposed_approach": ["UHF", "UKS"],
+        "energies": {
+            "experiment": [
+                {"value": 7.119, "reference": 'https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=Tc&units=1', "note": "", "level": 0},
+            ],
+            "hf": [
+                {"value": 6.37, "reference": 'https://doi.org/10.12691/wjce-5-3-6', "note": "", "level": 0},
+            ],
+            "dft": [],
+        },
         "proposed_basis_set": "compute/environment/constants/numerical/basis_set/pople/3-21G.gbs",
         "max_iterations": 200,
-        "experimental_reference_url": "https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=Tc&units=1",
-        "theoretical_reference_url": "https://doi.org/10.12691/wjce-5-3-6",
     },
     44: {
         "symbol": "Ru",
@@ -872,14 +1078,18 @@ ATOMS_HOMO_ENERGIES: dict = {
         "n_beta": 20,
         "n_closed": 20,
         "n_open": 4,
-        "proposed_hartree_fock_approach": ["UHF"],
-        "proposed_dft_approach": ["UKS"],
-        "experimental_ie_eV": 7.3605,
-        "hf_ie_eV": 6.33,
+        "proposed_approach": ["UHF", "UKS"],
+        "energies": {
+            "experiment": [
+                {"value": 7.3605, "reference": 'https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=Ru&units=1', "note": "", "level": 0},
+            ],
+            "hf": [
+                {"value": 6.33, "reference": 'https://doi.org/10.12691/wjce-5-3-6', "note": "", "level": 0},
+            ],
+            "dft": [],
+        },
         "proposed_basis_set": "compute/environment/constants/numerical/basis_set/pople/3-21G.gbs",
         "max_iterations": 200,
-        "experimental_reference_url": "https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=Ru&units=1",
-        "theoretical_reference_url": "https://doi.org/10.12691/wjce-5-3-6",
     },
     45: {
         "symbol": "Rh",
@@ -890,14 +1100,18 @@ ATOMS_HOMO_ENERGIES: dict = {
         "n_beta": 21,
         "n_closed": 21,
         "n_open": 3,
-        "proposed_hartree_fock_approach": ["UHF"],
-        "proposed_dft_approach": ["UKS"],
-        "experimental_ie_eV": 7.4589,
-        "hf_ie_eV": 6.30,
+        "proposed_approach": ["UHF", "UKS"],
+        "energies": {
+            "experiment": [
+                {"value": 7.4589, "reference": 'https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=Rh&units=1', "note": "", "level": 0},
+            ],
+            "hf": [
+                {"value": 6.3, "reference": 'https://doi.org/10.12691/wjce-5-3-6', "note": "", "level": 0},
+            ],
+            "dft": [],
+        },
         "proposed_basis_set": "compute/environment/constants/numerical/basis_set/pople/3-21G.gbs",
         "max_iterations": 200,
-        "experimental_reference_url": "https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=Rh&units=1",
-        "theoretical_reference_url": "https://doi.org/10.12691/wjce-5-3-6",
     },
     46: {
         "symbol": "Pd",
@@ -908,14 +1122,18 @@ ATOMS_HOMO_ENERGIES: dict = {
         "n_beta": 23,
         "n_closed": 23,
         "n_open": 0,
-        "proposed_hartree_fock_approach": ["RHF"],
-        "proposed_dft_approach": ["RKS"],
-        "experimental_ie_eV": 8.3369,
-        "hf_ie_eV": 7.40,
+        "proposed_approach": ["RHF", "RKS"],
+        "energies": {
+            "experiment": [
+                {"value": 8.3369, "reference": 'https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=Pd&units=1', "note": "", "level": 0},
+            ],
+            "hf": [
+                {"value": 7.4, "reference": 'https://doi.org/10.12691/wjce-5-3-6', "note": "", "level": 0},
+            ],
+            "dft": [],
+        },
         "proposed_basis_set": "compute/environment/constants/numerical/basis_set/pople/3-21G.gbs",
         "max_iterations": 200,
-        "experimental_reference_url": "https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=Pd&units=1",
-        "theoretical_reference_url": "https://doi.org/10.12691/wjce-5-3-6",
     },
     # Ag works for ROHF in 200 SCF iterations.
     # But it is not elegant solution.
@@ -923,12 +1141,12 @@ ATOMS_HOMO_ENERGIES: dict = {
     #    "symbol": "Ag", "config": "[Kr] 4d10 5s1", "multiplicity": 2,
     #    "n_electrons": 47, "n_alpha": 24, "n_beta": 23,
     #    "n_closed": 23, "n_open": 1,
-    #    "proposed_hartree_fock_approach": ["ROHF", "UHF"],
-    #    "experimental_ie_eV": 7.5762, "hf_ie_eV": 6.25,
+    #    "proposed_hf_approach": ["ROHF", "UHF"],
+    #    "ionization_energies_experiment_eV": 7.5762, "ionization_energies_hf_eV": 6.25,
     #    "proposed_basis_set": "compute/environment/constants/numerical/basis_set/pople/3-21G.gbs",
     #    "max_iterations": 200,
     #    "experimental_reference_url": "https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=Ag&units=1",
-    #    "theoretical_reference_url": "https://doi.org/10.12691/wjce-5-3-6",
+    #    "hf_reference_url": "https://doi.org/10.12691/wjce-5-3-6",
     # },
     48: {
         "symbol": "Cd",
@@ -939,14 +1157,18 @@ ATOMS_HOMO_ENERGIES: dict = {
         "n_beta": 24,
         "n_closed": 24,
         "n_open": 0,
-        "proposed_hartree_fock_approach": ["RHF"],
-        "proposed_dft_approach": ["RKS"],
-        "experimental_ie_eV": 8.9938,
-        "hf_ie_eV": 8.15,
+        "proposed_approach": ["RHF", "RKS"],
+        "energies": {
+            "experiment": [
+                {"value": 8.9938, "reference": 'https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=Cd&units=1', "note": "", "level": 0},
+            ],
+            "hf": [
+                {"value": 8.15, "reference": 'https://doi.org/10.12691/wjce-5-3-6', "note": "", "level": 0},
+            ],
+            "dft": [],
+        },
         "proposed_basis_set": "compute/environment/constants/numerical/basis_set/pople/3-21G.gbs",
         "max_iterations": 200,
-        "experimental_reference_url": "https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=Cd&units=1",
-        "theoretical_reference_url": "https://doi.org/10.12691/wjce-5-3-6",
     },
     49: {
         "symbol": "In",
@@ -957,14 +1179,18 @@ ATOMS_HOMO_ENERGIES: dict = {
         "n_beta": 24,
         "n_closed": 24,
         "n_open": 1,
-        "proposed_hartree_fock_approach": ["UHF"],
-        "proposed_dft_approach": ["UKS"],
-        "experimental_ie_eV": 5.7864,
-        "hf_ie_eV": 5.27,
+        "proposed_approach": ["UHF", "UKS"],
+        "energies": {
+            "experiment": [
+                {"value": 5.7864, "reference": 'https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=In&units=1', "note": "", "level": 0},
+            ],
+            "hf": [
+                {"value": 5.27, "reference": 'https://doi.org/10.12691/wjce-5-3-6', "note": "", "level": 0},
+            ],
+            "dft": [],
+        },
         "proposed_basis_set": "compute/environment/constants/numerical/basis_set/pople/3-21G.gbs",
         "max_iterations": 200,
-        "experimental_reference_url": "https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=In&units=1",
-        "theoretical_reference_url": "https://doi.org/10.12691/wjce-5-3-6",
     },
     50: {
         "symbol": "Sn",
@@ -975,14 +1201,20 @@ ATOMS_HOMO_ENERGIES: dict = {
         "n_beta": 24,
         "n_closed": 24,
         "n_open": 2,
-        "proposed_hartree_fock_approach": ["UHF"],
-        "proposed_dft_approach": ["UKS"],
-        "experimental_ie_eV": 7.3439,
-        "hf_ie_eV": 7.16,
+        "proposed_approach": ["UHF", "UKS"],
+        "energies": {
+            "experiment": [
+                {"value": 7.3439, "reference": 'https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=Sn&units=1', "note": "", "level": 0},
+            ],
+            "hf": [
+                {"value": 7.16, "reference": 'https://doi.org/10.12691/wjce-5-3-6', "note": "", "level": 0},
+            ],
+            "dft": [
+                {"value": 7.122, "reference": 'https://cccbdb.nist.gov/ie2x.asp?casno=7440-31-5', "note": "", "level": 0},
+            ],
+        },
         "proposed_basis_set": "compute/environment/constants/numerical/basis_set/pople/3-21G.gbs",
         "max_iterations": 200,
-        "experimental_reference_url": "https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=Sn&units=1",
-        "theoretical_reference_url": "https://doi.org/10.12691/wjce-5-3-6",
     },
     # Sb works for ROHF in 200 SCF iterations.
     # But it is not elegant solution.
@@ -990,24 +1222,24 @@ ATOMS_HOMO_ENERGIES: dict = {
     #    "symbol": "Sb", "config": "[Kr] 4d10 5s2 5p3", "multiplicity": 4,
     #    "n_electrons": 51, "n_alpha": 27, "n_beta": 24,
     #    "n_closed": 24, "n_open": 3,
-    #    "proposed_hartree_fock_approach": ["ROHF", "UHF"],
-    #    "experimental_ie_eV": 8.6084, "hf_ie_eV": 8.76,
+    #    "proposed_hf_approach": ["ROHF", "UHF"],
+    #    "ionization_energies_experiment_eV": 8.6084, "ionization_energies_hf_eV": 8.76,
     #    "proposed_basis_set": "compute/environment/constants/numerical/basis_set/pople/3-21G.gbs",
     #    "max_iterations": 200,
     #    "experimental_reference_url": "https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=Sb&units=1",
-    #    "theoretical_reference_url": "https://doi.org/10.12691/wjce-5-3-6",
+    #    "hf_reference_url": "https://doi.org/10.12691/wjce-5-3-6",
     # },
     # Te problem in both: ROHF and UHF.
     # 52: {
     #    "symbol": "Te", "config": "[Kr] 4d10 5s2 5p4", "multiplicity": 3,
     #    "n_electrons": 52, "n_alpha": 27, "n_beta": 25,
     #    "n_closed": 25, "n_open": 2,
-    #    "proposed_hartree_fock_approach": ["ROHF", "UHF"],
-    #    "experimental_ie_eV": 9.0096, "hf_ie_eV": 8.24,
+    #    "proposed_hf_approach": ["ROHF", "UHF"],
+    #    "ionization_energies_experiment_eV": 9.0096, "ionization_energies_hf_eV": 8.24,
     #    "proposed_basis_set": "compute/environment/constants/numerical/basis_set/pople/3-21G.gbs",
     #    "max_iterations": 200,
     #    "experimental_reference_url": "https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=Te&units=1",
-    #    "theoretical_reference_url": "https://doi.org/10.12691/wjce-5-3-6",
+    #    "hf_reference_url": "https://doi.org/10.12691/wjce-5-3-6",
     # },
     # I works for ROHF in 200 SCF iterations.
     # But it is not elegant solution.
@@ -1015,12 +1247,12 @@ ATOMS_HOMO_ENERGIES: dict = {
     #    "symbol": "I", "config": "[Kr] 4d10 5s2 5p5", "multiplicity": 2,
     #    "n_electrons": 53, "n_alpha": 27, "n_beta": 26,
     #    "n_closed": 26, "n_open": 1,
-    #    "proposed_hartree_fock_approach": ["ROHF", "UHF"],
-    #    "experimental_ie_eV": 10.4513, "hf_ie_eV": 10.07,
+    #    "proposed_hf_approach": ["ROHF", "UHF"],
+    #    "ionization_energies_experiment_eV": 10.4513, "ionization_energies_hf_eV": 10.07,
     #    "proposed_basis_set": "compute/environment/constants/numerical/basis_set/pople/3-21G.gbs",
     #    "max_iterations": 200,
     #    "experimental_reference_url": "https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=I&units=1",
-    #    "theoretical_reference_url": "https://doi.org/10.12691/wjce-5-3-6",
+    #    "hf_reference_url": "https://doi.org/10.12691/wjce-5-3-6",
     # },
     # TO DO: 3-21G does not work for Xe.
     # Other Gaussian basis sets, does not contain Xe data.
@@ -1030,82 +1262,27 @@ ATOMS_HOMO_ENERGIES: dict = {
     #    "symbol": "Xe", "config": "[Kr] 4d10 5s2 5p6", "multiplicity": 1,
     #    "n_electrons": 54, "n_alpha": 27, "n_beta": 27,
     #    "n_closed": 27, "n_open": 0,
-    #    "proposed_hartree_fock_approach": ["RHF"],
-    #    "experimental_ie_eV": 12.1298, "hf_ie_eV": 12.44,
+    #    "proposed_hf_approach": ["RHF"],
+    #    "ionization_energies_experiment_eV": 12.1298, "ionization_energies_hf_eV": 12.44,
     #    "proposed_basis_set": "compute/environment/constants/numerical/basis_set/pople/3-21G.gbs",
     #    "max_iterations": 200,
     #    "experimental_reference_url": "https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=Xe&units=1",
-    #    "theoretical_reference_url": "https://doi.org/10.12691/wjce-5-3-6",
+    #    "hf_reference_url": "https://doi.org/10.12691/wjce-5-3-6",
     # },
 }
 
-# ---------------------------------------------------------------------------
-# Reference data: Molecular HOMO energies for Koopmans' theorem testing
-# ---------------------------------------------------------------------------
-#
-# Dictionary mapping molecule identifier to reference data for validating
-# Hartree-Fock orbital energies via Koopmans' theorem:  IE ≈ −ε_HOMO.
-#
-# Entries are grouped by the target HF method:
-#   RHF  – restricted HF for closed-shell singlets  (multiplicity == 1)
-#   ROHF – restricted open-shell HF                 (multiplicity >  1)
-#   UHF  – unrestricted HF for open-shell systems   (multiplicity >  1)
-#
-# Fields per entry:
-#   formula             – Molecular formula with Unicode superscripts
-#   name                – Common / popular name (empty string if none)
-#   technical_name      – SMILES (Simplified Molecular Input Line Entry System)
-#   geometry            – Equilibrium geometry as a list of
-#                         {"symbol": str, "x": float, "y": float, "z": float}
-#                         dicts; Cartesian coordinates in Ångström
-#                         (experimental Re values, z-axis along bond /
-#                         principal axis).  Source: NIST CCCBDB.
-#   proposed_hartree_fock_approach
-#                       – List of applicable HF methods: ["RHF"] for closed-shell,
-#                         ["ROHF", "UHF"] for open-shell, ["UHF"] for UHF-only
-#                         (ROHF systems can also be calculated via UHF)
-#   proposed_dft_approach
-#                       – List of applicable DFT (Kohn-Sham) methods:
-#                         ["RKS"] for closed-shell (multiplicity == 1),
-#                         ["UKS"] for open-shell (multiplicity > 1)
-#   multiplicity        – Spin multiplicity 2S+1
-#   n_electrons         – Total electron count
-#   n_alpha, n_beta     – Alpha / beta spin-orbital occupations
-#   n_closed, n_open    – ROHF doubly / singly occupied spatial orbital counts
-#   experimental_ie_eV  – Experimental vertical first ionization energy in eV
-#   hf_ie_eV            – Approximate Koopmans' theorem IE at the near-basis-
-#                         set-limit for the given method, in eV
-#   proposed_hartree_fock_approach
-#                       – List of applicable HF methods: ["RHF"] for closed-shell,
-#                         ["ROHF", "UHF"] for open-shell, ["UHF"] for UHF-only
-#                         (ROHF systems can also be calculated via UHF)
-#   proposed_basis_set  – Full path to the best available Gaussian basis set
-#                         for all atoms in the molecule.  Uses the largest basis whose
-#                         element coverage includes every constituent atom.
-#   max_iterations      – Maximum number of SCF iterations
-#   experimental_reference_url
-#                       – Direct reference URL for experimental IE data
-#   theoretical_reference_url
-#                       – Direct reference URL for theoretical HF IE data
-#
-# Sources:
-#   Experimental IE:
-#       NIST Chemistry WebBook, NIST Standard Reference Database Number 69.
-#       https://webbook.nist.gov/
-#   Geometries:
-#       NIST CCCBDB experimental geometries.
-#       https://cccbdb.nist.gov/
-#   HF theoretical IE:
-#       NIST Computational Chemistry Comparison and Benchmark Database,
-#       NIST Standard Reference Database Number 101, Release 22, May 2022.
-#       https://cccbdb.nist.gov/   DOI:10.18434/T47C7Z
-#
-# Notes:
-#   - For UHF the reported hf_ie_eV corresponds to −ε_α_HOMO (alpha-spin HOMO).
-#   - Conversion factor: 1 Hartree = 27.211386 eV.
-# ---------------------------------------------------------------------------
-
-MOLECULES_HOMO_ENERGIES: dict = {
+# MOLECULES_HOMO_ENERGIES  –  keyed by molecule identifier (str, e.g. "H2O").
+# Entries are grouped by primary method: RHF (singlets), ROHF (open-shell
+# where it converges), UHF (all open-shell systems).
+# Molecule-specific fields:
+#   "formula"        – molecular formula with Unicode superscripts
+#   "name"           – common name ("" if none)
+#   "technical_name" – SMILES string
+#   "geometry"       – List[{"symbol": str, "x": float, "y": float, "z": float}]
+#                      Cartesian coordinates in Å (experimental Re, z-axis
+#                      along bond/principal axis; source: NIST CCCBDB)
+# proposed_basis_set uses the largest Pople basis covering all constituent atoms.
+MOLECULES: dict = {
     # ---- RHF molecules (closed-shell, multiplicity == 1) -----------------
     # Hydrogen molecule: simplest two-electron system; HOMO = 1σg
     "H2": {
@@ -1116,20 +1293,26 @@ MOLECULES_HOMO_ENERGIES: dict = {
             {"symbol": "H", "x": 0.0000, "y": 0.0000, "z": 0.3707},
             {"symbol": "H", "x": 0.0000, "y": 0.0000, "z": -0.3707},
         ],
-        "proposed_hartree_fock_approach": ["RHF"],
-        "proposed_dft_approach": ["RKS"],
+        "proposed_approach": ["RHF", "RKS"],
         "multiplicity": 1,
         "n_electrons": 2,
         "n_alpha": 1,
         "n_beta": 1,
         "n_closed": 1,
         "n_open": 0,
-        "experimental_ie_eV": 15.4259,
-        "hf_ie_eV": 16.17,
+        "energies": {
+            "experiment": [
+                {"value": 15.4259, "reference": 'https://webbook.nist.gov/cgi/cbook.cgi?ID=C1333740', "note": "", "level": 0},
+            ],
+            "hf": [
+                {"value": 16.17, "reference": 'https://cccbdb.nist.gov/', "note": "", "level": 0},
+            ],
+            "dft": [
+                {"value": 15.452, "reference": 'https://cccbdb.nist.gov/ie2x.asp?casno=1333-74-0', "note": "B3LYP/3-21G adiabatic IE (delta-SCF)", "level": 0},
+            ],
+        },
         "proposed_basis_set": "compute/environment/constants/numerical/basis_set/pople/3-21G.gbs",
         "max_iterations": 200,
-        "experimental_reference_url": "https://webbook.nist.gov/cgi/cbook.cgi?ID=C1333740",
-        "theoretical_reference_url": "https://cccbdb.nist.gov/",
     },
     # Water: HOMO = 1b₁ (lone pair on O perpendicular to molecular plane)
     "H2O": {
@@ -1141,20 +1324,26 @@ MOLECULES_HOMO_ENERGIES: dict = {
             {"symbol": "H", "x": 0.7572, "y": 0.0000, "z": 0.5860},
             {"symbol": "H", "x": -0.7572, "y": 0.0000, "z": 0.5860},
         ],
-        "proposed_hartree_fock_approach": ["RHF"],
-        "proposed_dft_approach": ["RKS"],
+        "proposed_approach": ["RHF", "RKS"],
         "multiplicity": 1,
         "n_electrons": 10,
         "n_alpha": 5,
         "n_beta": 5,
         "n_closed": 5,
         "n_open": 0,
-        "experimental_ie_eV": 12.621,
-        "hf_ie_eV": 13.79,
+        "energies": {
+            "experiment": [
+                {"value": 12.621, "reference": 'https://webbook.nist.gov/cgi/cbook.cgi?ID=C7732185', "note": "", "level": 0},
+            ],
+            "hf": [
+                {"value": 13.79, "reference": 'https://cccbdb.nist.gov/', "note": "", "level": 0},
+            ],
+            "dft": [
+                {"value": 11.524, "reference": 'https://cccbdb.nist.gov/ie2x.asp?casno=7732-18-5', "note": "B3LYP/3-21G adiabatic IE (delta-SCF)", "level": 0},
+            ],
+        },
         "proposed_basis_set": "compute/environment/constants/numerical/basis_set/pople/3-21G.gbs",
         "max_iterations": 200,
-        "experimental_reference_url": "https://webbook.nist.gov/cgi/cbook.cgi?ID=C7732185",
-        "theoretical_reference_url": "https://cccbdb.nist.gov/",
     },
     # Dinitrogen: HOMO = 3σg (note: 3σg lies above 1πu in HF ordering)
     "N2": {
@@ -1165,20 +1354,26 @@ MOLECULES_HOMO_ENERGIES: dict = {
             {"symbol": "N", "x": 0.0000, "y": 0.0000, "z": 0.5489},
             {"symbol": "N", "x": 0.0000, "y": 0.0000, "z": -0.5489},
         ],
-        "proposed_hartree_fock_approach": ["RHF"],
-        "proposed_dft_approach": ["RKS"],
+        "proposed_approach": ["RHF", "RKS"],
         "multiplicity": 1,
         "n_electrons": 14,
         "n_alpha": 7,
         "n_beta": 7,
         "n_closed": 7,
         "n_open": 0,
-        "experimental_ie_eV": 15.5808,
-        "hf_ie_eV": 16.71,
+        "energies": {
+            "experiment": [
+                {"value": 15.5808, "reference": 'https://webbook.nist.gov/cgi/cbook.cgi?ID=C7727379', "note": "", "level": 0},
+            ],
+            "hf": [
+                {"value": 16.71, "reference": 'https://cccbdb.nist.gov/', "note": "", "level": 0},
+            ],
+            "dft": [
+                {"value": 15.428, "reference": 'https://cccbdb.nist.gov/ie2x.asp?casno=7727-37-9', "note": "B3LYP/3-21G adiabatic IE (delta-SCF)", "level": 0},
+            ],
+        },
         "proposed_basis_set": "compute/environment/constants/numerical/basis_set/pople/3-21G.gbs",
         "max_iterations": 200,
-        "experimental_reference_url": "https://webbook.nist.gov/cgi/cbook.cgi?ID=C7727379",
-        "theoretical_reference_url": "https://cccbdb.nist.gov/",
     },
     # Carbon monoxide: HOMO = 5σ (weakly bonding, primarily C lone pair)
     "CO": {
@@ -1189,20 +1384,26 @@ MOLECULES_HOMO_ENERGIES: dict = {
             {"symbol": "C", "x": 0.0000, "y": 0.0000, "z": -0.5641},
             {"symbol": "O", "x": 0.0000, "y": 0.0000, "z": 0.5641},
         ],
-        "proposed_hartree_fock_approach": ["RHF"],
-        "proposed_dft_approach": ["RKS"],
+        "proposed_approach": ["RHF", "RKS"],
         "multiplicity": 1,
         "n_electrons": 14,
         "n_alpha": 7,
         "n_beta": 7,
         "n_closed": 7,
         "n_open": 0,
-        "experimental_ie_eV": 14.014,
-        "hf_ie_eV": 15.05,
+        "energies": {
+            "experiment": [
+                {"value": 14.014, "reference": 'https://webbook.nist.gov/cgi/cbook.cgi?ID=C630080', "note": "", "level": 0},
+            ],
+            "hf": [
+                {"value": 15.05, "reference": 'https://cccbdb.nist.gov/', "note": "", "level": 0},
+            ],
+            "dft": [
+                {"value": 14.029, "reference": 'https://cccbdb.nist.gov/ie2x.asp?casno=630-08-0', "note": "B3LYP/3-21G adiabatic IE (delta-SCF)", "level": 0},
+            ],
+        },
         "proposed_basis_set": "compute/environment/constants/numerical/basis_set/pople/3-21G.gbs",
         "max_iterations": 200,
-        "experimental_reference_url": "https://webbook.nist.gov/cgi/cbook.cgi?ID=C630080",
-        "theoretical_reference_url": "https://cccbdb.nist.gov/",
     },
     # ---- ROHF molecules (open-shell, fixed multiplicity) -----------------
     # Dioxygen: triplet ground state; HOMO = 1πg (degenerate, singly occupied)
@@ -1214,20 +1415,26 @@ MOLECULES_HOMO_ENERGIES: dict = {
             {"symbol": "O", "x": 0.0000, "y": 0.0000, "z": 0.6038},
             {"symbol": "O", "x": 0.0000, "y": 0.0000, "z": -0.6038},
         ],
-        "proposed_hartree_fock_approach": ["ROHF", "UHF"],
-        "proposed_dft_approach": ["UKS"],
+        "proposed_approach": ["ROHF", "UHF", "UKS"],
         "multiplicity": 3,
         "n_electrons": 16,
         "n_alpha": 9,
         "n_beta": 7,
         "n_closed": 7,
         "n_open": 2,
-        "experimental_ie_eV": 12.0697,
-        "hf_ie_eV": 15.84,
+        "energies": {
+            "experiment": [
+                {"value": 12.0697, "reference": 'https://webbook.nist.gov/cgi/cbook.cgi?ID=C7782447', "note": "", "level": 0},
+            ],
+            "hf": [
+                {"value": 15.84, "reference": 'https://cccbdb.nist.gov/', "note": "", "level": 0},
+            ],
+            "dft": [
+                {"value": 13.266, "reference": 'https://cccbdb.nist.gov/ie2x.asp?casno=7782-44-7', "note": "B3LYP/3-21G adiabatic IE (delta-SCF)", "level": 0},
+            ],
+        },
         "proposed_basis_set": "compute/environment/constants/numerical/basis_set/pople/3-21G.gbs",
         "max_iterations": 200,
-        "experimental_reference_url": "https://webbook.nist.gov/cgi/cbook.cgi?ID=C7782447",
-        "theoretical_reference_url": "https://cccbdb.nist.gov/",
     },
     # Nitric oxide: doublet; HOMO = 2π (one electron in antibonding π*)
     "NO": {
@@ -1238,20 +1445,26 @@ MOLECULES_HOMO_ENERGIES: dict = {
             {"symbol": "N", "x": 0.0000, "y": 0.0000, "z": -0.5754},
             {"symbol": "O", "x": 0.0000, "y": 0.0000, "z": 0.5754},
         ],
-        "proposed_hartree_fock_approach": ["ROHF", "UHF"],
-        "proposed_dft_approach": ["UKS"],
+        "proposed_approach": ["ROHF", "UHF", "UKS"],
         "multiplicity": 2,
         "n_electrons": 15,
         "n_alpha": 8,
         "n_beta": 7,
         "n_closed": 7,
         "n_open": 1,
-        "experimental_ie_eV": 9.2643,
-        "hf_ie_eV": 11.51,
+        "energies": {
+            "experiment": [
+                {"value": 9.2643, "reference": 'https://webbook.nist.gov/cgi/cbook.cgi?ID=C10102439', "note": "", "level": 0},
+            ],
+            "hf": [
+                {"value": 11.51, "reference": 'https://cccbdb.nist.gov/', "note": "", "level": 0},
+            ],
+            "dft": [
+                {"value": 10.121, "reference": 'https://cccbdb.nist.gov/ie2x.asp?casno=10102-43-9', "note": "B3LYP/3-21G adiabatic IE (delta-SCF)", "level": 0},
+            ],
+        },
         "proposed_basis_set": "compute/environment/constants/numerical/basis_set/pople/3-21G.gbs",
         "max_iterations": 200,
-        "experimental_reference_url": "https://webbook.nist.gov/cgi/cbook.cgi?ID=C10102439",
-        "theoretical_reference_url": "https://cccbdb.nist.gov/",
     },
     # Hydroxyl radical: doublet; HOMO = 1π (degenerate, one singly occupied)
     "OH": {
@@ -1262,23 +1475,29 @@ MOLECULES_HOMO_ENERGIES: dict = {
             {"symbol": "O", "x": 0.0000, "y": 0.0000, "z": -0.4849},
             {"symbol": "H", "x": 0.0000, "y": 0.0000, "z": 0.4849},
         ],
-        "proposed_hartree_fock_approach": ["UHF"],
-        "proposed_dft_approach": ["UKS"],
+        "proposed_approach": ["UHF", "UKS"],
         "multiplicity": 2,
         "n_electrons": 9,
         "n_alpha": 5,
         "n_beta": 4,
         "n_closed": 4,
         "n_open": 1,
-        "experimental_ie_eV": 13.017,
-        "hf_ie_eV": 13.02,
+        "energies": {
+            "experiment": [
+                {"value": 13.017, "reference": 'https://webbook.nist.gov/cgi/cbook.cgi?ID=C3352576', "note": "", "level": 0},
+            ],
+            "hf": [
+                {"value": 13.02, "reference": 'https://cccbdb.nist.gov/', "note": "", "level": 0},
+            ],
+            "dft": [
+                {"value": 12.354, "reference": 'https://cccbdb.nist.gov/ie2x.asp?casno=3352-57-6', "note": "B3LYP/3-21G adiabatic IE (delta-SCF)", "level": 0},
+            ],
+        },
         "proposed_basis_set": "compute/environment/constants/numerical/basis_set/pople/3-21G.gbs",
         "max_iterations": 200,
-        "experimental_reference_url": "https://webbook.nist.gov/cgi/cbook.cgi?ID=C3352576",
-        "theoretical_reference_url": "https://cccbdb.nist.gov/",
     },
     # ---- UHF molecules (open-shell, spin-unrestricted) -------------------
-    # hf_ie_eV = −ε_α_HOMO (alpha-spin HOMO energy).  UHF introduces spin
+    # ionization_energies_hf_eV = −ε_α_HOMO (alpha-spin HOMO energy).  UHF introduces spin
     # contamination; <S²> may deviate from the exact S(S+1) value.
     # Dioxygen (UHF): same geometry as ROHF reference above
     "O2": {
@@ -1289,20 +1508,26 @@ MOLECULES_HOMO_ENERGIES: dict = {
             {"symbol": "O", "x": 0.0000, "y": 0.0000, "z": 0.6038},
             {"symbol": "O", "x": 0.0000, "y": 0.0000, "z": -0.6038},
         ],
-        "proposed_hartree_fock_approach": ["UHF"],
-        "proposed_dft_approach": ["UKS"],
+        "proposed_approach": ["UHF", "UKS"],
         "multiplicity": 3,
         "n_electrons": 16,
         "n_alpha": 9,
         "n_beta": 7,
         "n_closed": 7,
         "n_open": 2,
-        "experimental_ie_eV": 12.0697,
-        "hf_ie_eV": 15.87,
+        "energies": {
+            "experiment": [
+                {"value": 12.0697, "reference": 'https://webbook.nist.gov/cgi/cbook.cgi?ID=C7782447', "note": "", "level": 0},
+            ],
+            "hf": [
+                {"value": 15.87, "reference": 'https://cccbdb.nist.gov/', "note": "", "level": 0},
+            ],
+            "dft": [
+                {"value": 13.266, "reference": 'https://cccbdb.nist.gov/ie2x.asp?casno=7782-44-7', "note": "B3LYP/3-21G adiabatic IE (delta-SCF)", "level": 0},
+            ],
+        },
         "proposed_basis_set": "compute/environment/constants/numerical/basis_set/pople/3-21G.gbs",
         "max_iterations": 200,
-        "experimental_reference_url": "https://webbook.nist.gov/cgi/cbook.cgi?ID=C7782447",
-        "theoretical_reference_url": "https://cccbdb.nist.gov/",
     },
     # Nitric oxide (UHF)
     "NO": {
@@ -1313,20 +1538,26 @@ MOLECULES_HOMO_ENERGIES: dict = {
             {"symbol": "N", "x": 0.0000, "y": 0.0000, "z": -0.5754},
             {"symbol": "O", "x": 0.0000, "y": 0.0000, "z": 0.5754},
         ],
-        "proposed_hartree_fock_approach": ["UHF"],
-        "proposed_dft_approach": ["UKS"],
+        "proposed_approach": ["UHF", "UKS"],
         "multiplicity": 2,
         "n_electrons": 15,
         "n_alpha": 8,
         "n_beta": 7,
         "n_closed": 7,
         "n_open": 1,
-        "experimental_ie_eV": 9.2643,
-        "hf_ie_eV": 11.54,
+        "energies": {
+            "experiment": [
+                {"value": 9.2643, "reference": 'https://webbook.nist.gov/cgi/cbook.cgi?ID=C10102439', "note": "", "level": 0},
+            ],
+            "hf": [
+                {"value": 11.54, "reference": 'https://cccbdb.nist.gov/', "note": "", "level": 0},
+            ],
+            "dft": [
+                {"value": 10.121, "reference": 'https://cccbdb.nist.gov/ie2x.asp?casno=10102-43-9', "note": "B3LYP/3-21G adiabatic IE (delta-SCF)", "level": 0},
+            ],
+        },
         "proposed_basis_set": "compute/environment/constants/numerical/basis_set/pople/3-21G.gbs",
         "max_iterations": 200,
-        "experimental_reference_url": "https://webbook.nist.gov/cgi/cbook.cgi?ID=C10102439",
-        "theoretical_reference_url": "https://cccbdb.nist.gov/",
     },
     # Methyl radical: doublet D₃h; HOMO = 2a₂'' (singly occupied, p_z on C)
     "CH3": {
@@ -1339,20 +1570,26 @@ MOLECULES_HOMO_ENERGIES: dict = {
             {"symbol": "H", "x": -0.5395, "y": 0.9344, "z": 0.0000},
             {"symbol": "H", "x": -0.5395, "y": -0.9344, "z": 0.0000},
         ],
-        "proposed_hartree_fock_approach": ["UHF"],
-        "proposed_dft_approach": ["UKS"],
+        "proposed_approach": ["UHF", "UKS"],
         "multiplicity": 2,
         "n_electrons": 9,
         "n_alpha": 5,
         "n_beta": 4,
         "n_closed": 4,
         "n_open": 1,
-        "experimental_ie_eV": 9.840,
-        "hf_ie_eV": 11.40,
+        "energies": {
+            "experiment": [
+                {"value": 9.84, "reference": 'https://webbook.nist.gov/cgi/cbook.cgi?ID=C2229078', "note": "", "level": 0},
+            ],
+            "hf": [
+                {"value": 11.4, "reference": 'https://cccbdb.nist.gov/', "note": "", "level": 0},
+            ],
+            "dft": [
+                {"value": 9.834, "reference": 'https://cccbdb.nist.gov/ie2x.asp?casno=2229-07-4', "note": "B3LYP/3-21G adiabatic IE (delta-SCF)", "level": 0},
+            ],
+        },
         "proposed_basis_set": "compute/environment/constants/numerical/basis_set/pople/3-21G.gbs",
         "max_iterations": 200,
-        "experimental_reference_url": "https://webbook.nist.gov/cgi/cbook.cgi?ID=C2229078",
-        "theoretical_reference_url": "https://cccbdb.nist.gov/",
     },
     # ---- Molecules containing elements with empirical electron-configuration exceptions ------
     #
@@ -1379,14 +1616,14 @@ MOLECULES_HOMO_ENERGIES: dict = {
     #        {"symbol": "Cr", "x": 0.0000, "y": 0.0000, "z": -0.8075},
     #        {"symbol": "O",  "x": 0.0000, "y": 0.0000, "z":  0.8075},
     #    ],
-    #    "proposed_hartree_fock_approach": ["ROHF", "UHF"],
+    #    "proposed_hf_approach": ["ROHF", "UHF"],
     #    "multiplicity": 5,
     #    "n_electrons": 32, "n_alpha": 18, "n_beta": 14,
     #    "n_closed": 14, "n_open": 4,
-    #    "experimental_ie_eV": 8.16, "hf_ie_eV": 10.19,
+    #    "ionization_energies_experiment_eV": 8.16, "ionization_energies_hf_eV": 10.19,
     #    "proposed_basis_set": "compute/environment/constants/numerical/basis_set/pople/6-31G.gbs",
     #    "max_iterations": 200,
     #    "experimental_reference_url": "https://doi.org/10.1039/F29837902083",
-    #    "theoretical_reference_url": "https://cccbdb.nist.gov/",
+    #    "hf_reference_url": "https://cccbdb.nist.gov/",
     # }
 }

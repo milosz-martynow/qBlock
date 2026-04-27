@@ -66,14 +66,16 @@ def make_atom_koopmans_ie_test(
         entry, hf = result
         homo_idx = homo_idx_func(entry)
         homo_ev = -epsilon_func(hf)[homo_idx] * HARTREE_TO_EV
-        assert homo_ev == pytest.approx(entry["hf_ie_eV"], abs=ABS_TOL_EV), (
+        ref = entry["energies"]["hf"][0]["value"]
+        assert homo_ev == pytest.approx(ref, abs=ABS_TOL_EV), (
             f"Atom {entry['symbol']}: {method_name} Koopmans IE {homo_ev:.3f} eV, "
-            f"reference {entry['hf_ie_eV']:.3f} eV "
-            f"(diff {abs(homo_ev - entry['hf_ie_eV']):.3f} eV, tolerance {ABS_TOL_EV} eV)."
+            f"reference {ref:.3f} eV "
+            f"(diff {abs(homo_ev - ref):.3f} eV, tolerance {ABS_TOL_EV} eV)."
         )
 
     test_func.__doc__ = (
-        f"Koopmans IE from the {method_name} HOMO agrees with ``hf_ie_eV``."
+        f"Koopmans IE from the {method_name} HOMO agrees with "
+        f"``energies['hf'][0]['value']``."
     )
     return test_func
 
@@ -183,13 +185,14 @@ def make_molecule_koopmans_ie_test(
         entry, hf = result
         homo_idx = homo_idx_func(entry)
         homo_ev = -epsilon_func(hf)[homo_idx] * HARTREE_TO_EV
-        assert homo_ev == pytest.approx(entry["hf_ie_eV"], abs=ABS_TOL_EV), (
+        ref = entry["energies"]["hf"][0]["value"]
+        assert homo_ev == pytest.approx(ref, abs=ABS_TOL_EV), (
             f"{entry['formula']}: {method_name} Koopmans IE {homo_ev:.3f} eV, "
-            f"reference {entry['hf_ie_eV']:.3f} eV "
-            f"(diff {abs(homo_ev - entry['hf_ie_eV']):.3f} eV, tolerance {ABS_TOL_EV} eV)."
+            f"reference {ref:.3f} eV "
+            f"(diff {abs(homo_ev - ref):.3f} eV, tolerance {ABS_TOL_EV} eV)."
         )
 
-    test_func.__doc__ = f"Koopmans IE from the {method_name} HOMO agrees with ``hf_ie_eV`` within ABS_TOL_EV."
+    test_func.__doc__ = f"Koopmans IE from the {method_name} HOMO agrees with ``energies['hf'][0]['value']`` within ABS_TOL_EV."
     return test_func
 
 
@@ -421,7 +424,7 @@ def make_dft_atom_koopmans_ie_test(
 ) -> Callable[[Tuple[Dict[str, Any], str, Any]], None]:
     """Create a test that checks DFT Koopmans IE vs experimental IE for atoms.
 
-    Compares the DFT HOMO eigenvalue against ``experimental_ie_eV``
+    Compares the DFT HOMO eigenvalue against ``energies['experiment'][0]['value']``
     using the ``DFT_ABS_TOL_EV`` tolerance.
 
     :param method_name: Name of the method (e.g., "RKS", "UKS").
@@ -439,7 +442,7 @@ def make_dft_atom_koopmans_ie_test(
         entry, func_name, ks = result
         homo_idx = homo_idx_func(entry)
         homo_ev = -epsilon_func(ks)[homo_idx] * HARTREE_TO_EV
-        ref = entry["experimental_ie_eV"]
+        ref = entry["energies"]["experiment"][0]["value"]
         assert homo_ev == pytest.approx(ref, abs=DFT_ABS_TOL_EV), (
             f"Atom {entry['symbol']}: {method_name}-{func_name} Koopmans IE "
             f"{homo_ev:.3f} eV, experimental {ref:.3f} eV "
@@ -448,7 +451,7 @@ def make_dft_atom_koopmans_ie_test(
 
     test_func.__doc__ = (
         f"Koopmans IE from the {method_name} HOMO agrees with "
-        f"``experimental_ie_eV`` within DFT_ABS_TOL_EV."
+        f"``energies['experiment'][0]['value']`` within DFT_ABS_TOL_EV."
     )
     return test_func
 
@@ -460,7 +463,7 @@ def make_dft_molecule_koopmans_ie_test(
 ) -> Callable[[Tuple[Dict[str, Any], str, Any]], None]:
     """Create a test that checks DFT Koopmans IE vs experimental IE for molecules.
 
-    Compares the DFT HOMO eigenvalue against ``experimental_ie_eV``
+    Compares the DFT HOMO eigenvalue against ``energies['experiment'][0]['value']``
     using the ``DFT_ABS_TOL_EV`` tolerance.
 
     :param method_name: Name of the method (e.g., "RKS", "UKS").
@@ -478,7 +481,7 @@ def make_dft_molecule_koopmans_ie_test(
         entry, func_name, ks = result
         homo_idx = homo_idx_func(entry)
         homo_ev = -epsilon_func(ks)[homo_idx] * HARTREE_TO_EV
-        ref = entry["experimental_ie_eV"]
+        ref = entry["energies"]["experiment"][0]["value"]
         assert homo_ev == pytest.approx(ref, abs=DFT_ABS_TOL_EV), (
             f"{entry['formula']}: {method_name}-{func_name} Koopmans IE "
             f"{homo_ev:.3f} eV, experimental {ref:.3f} eV "
@@ -487,6 +490,6 @@ def make_dft_molecule_koopmans_ie_test(
 
     test_func.__doc__ = (
         f"Koopmans IE from the {method_name} HOMO agrees with "
-        f"``experimental_ie_eV`` within DFT_ABS_TOL_EV."
+        f"``energies['experiment'][0]['value']`` within DFT_ABS_TOL_EV."
     )
     return test_func

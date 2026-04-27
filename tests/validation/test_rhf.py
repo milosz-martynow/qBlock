@@ -45,8 +45,8 @@ from tests.validation.templates import (
 )
 from tests.validation.utils import _build_from_geometry
 from tests.validation.validation_data import (
-    ATOMS_HOMO_ENERGIES,
-    MOLECULES_HOMO_ENERGIES,
+    ATOMS,
+    MOLECULES,
 )
 
 # ---------------------------------------------------------------------------
@@ -56,15 +56,15 @@ from tests.validation.validation_data import (
 # Closed-shell atoms: multiplicity == 1 → RHF
 _rhf_atom_entries = [
     (f"Z{z}_{entry['symbol']}", entry)
-    for z, entry in ATOMS_HOMO_ENERGIES.items()
-    if "RHF" in entry["proposed_hartree_fock_approach"]
+    for z, entry in ATOMS.items()
+    if "RHF" in entry["proposed_approach"]
 ]
 
 # RHF molecules
 _rhf_mol_entries = [
     (key, entry)
-    for key, entry in MOLECULES_HOMO_ENERGIES.items()
-    if "RHF" in entry["proposed_hartree_fock_approach"]
+    for key, entry in MOLECULES.items()
+    if "RHF" in entry["proposed_approach"]
 ]
 
 # ---------------------------------------------------------------------------
