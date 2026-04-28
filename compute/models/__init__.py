@@ -16,15 +16,12 @@ This package contains:
 
 from .atom import Atom
 
-# Composite systems (formerly compute.models)
 from .atomic_system import AtomicSystem
 
-# Basis functions (formerly compute.models.basis_functions)
 from .basis_functions import ContractedGaussianTypeOrbital
 from .crystal import Crystal
 from .electron import Orbital, Shell, SpinOrbital, SubShell
 
-# Initialization (formerly compute.models.initialization)
 from .initialization import (
     RHF,
     ROHF,
@@ -34,7 +31,6 @@ from .initialization import (
     QuantumCalculationContext,
 )
 
-# Integrals (formerly compute.models.integrals)
 from .integrals import (
     KineticEnergy,
     NuclearAttraction,

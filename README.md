@@ -83,7 +83,7 @@ project/
 │       ├── constants/       # Reference data: physical and numerical constants
 │       │   ├── natural/     # Nature based constants (e.g. physical and mathematical constants)
 │       │   └── numerical/   # Numerical parameters
-│       └── io/              # Interfaces for reading coordinates, basis sets, and data
+│       └── io/              # Interfaces for reading and writing data
 └── tests/                   # Correctness verification at unit and system level
     ├── verification/    # Fine-grained per-module tests
     └── validation/      # End-to-end tests verified against known reference data
