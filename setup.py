@@ -21,13 +21,16 @@ setup(
     author="Miłosz Martynow",
     author_email="miloszmartynow@gmail.com",
     description="Block architecture of software for quantum mechanics of matter.",
+    long_description=open("README.md", encoding="utf-8").read(),
+    long_description_content_type="text/markdown",
     python_requires="==3.12.*",
     packages=find_packages(),
-    install_requires=requires + test + extra,
+    install_requires=requires,
     extras_require={
         "test": test,
+        "format": ["black==25.12.0", "isort==7.0.0", "pylint==4.0.4"],
         "dev": extra,
-        "all": requires + test + extra,
+        "all": test + extra,
     },
     include_package_data=True,
 )
