@@ -17,7 +17,7 @@ extra: List[str] = ["pylint==4.0.4", "black==25.12.0", "isort==7.0.0"]
 
 setup(
     name="qBlock",
-    version="1.0.5",
+    version="1.0.6",
     author="Miłosz Martynow",
     author_email="miloszmartynow@gmail.com",
     description="Easy in maintenance software to study electronic structure of atomic systems via SCF process, including Hartree-Fock and Density Functional Theory.",
@@ -25,6 +25,10 @@ setup(
     long_description_content_type="text/markdown",
     python_requires="==3.12.*",
     packages=find_packages(),
+    package_data={
+        "q_block.compute.environment.constants.numerical": ["basis_set/pople/*.gbs"],
+        "q_block.learn.examples": [".qblock.config.example"],
+    },
     install_requires=requires,
     extras_require={
         "test": test,

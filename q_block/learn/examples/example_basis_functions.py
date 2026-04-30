@@ -20,6 +20,7 @@ Mathematical foundation:
         ψ_i(r) = Σ_μ C_μi * φ_μ(r)
 """
 
+import importlib.resources
 from pathlib import Path
 
 from q_block.compute import Atom, Molecule
@@ -31,27 +32,8 @@ from q_block.compute.utilities.mathematics import get_cartesian_components
 
 logger = setup_logging(__name__)
 
-try:
-    PROJECT_ROOT: Path = Path(__file__).resolve().parent.parent.parent.parent
-except NameError:
-    PROJECT_ROOT = Path.cwd()
-    if PROJECT_ROOT.name == "examples":
-        PROJECT_ROOT = PROJECT_ROOT.parent.parent.parent.parent
-    elif (PROJECT_ROOT / "q_block" / "q_block" / "q_block" / "learn" / "examples").exists():
-        pass
-    else:
-        raise RuntimeError(
-            "Could not determine project root. "
-            "Please run from project root or examples directory."
-        )
-
 BASIS_DIR: Path = (
-    PROJECT_ROOT
-    / "q_block"
-    / "compute"
-    / "environment"
-    / "constants"
-    / "numerical"
+    Path(str(importlib.resources.files("q_block.compute.environment.constants.numerical")))
     / "basis_set"
     / "pople"
 )
