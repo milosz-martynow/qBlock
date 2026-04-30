@@ -1,6 +1,8 @@
 ﻿# qBlock
 
-A Python library for quantum chemistry calculations. qBlock implements Hartree-Fock self-consistent field (SCF) methods - Restricted (RHF), Unrestricted (UHF), and Restricted Open-Shell (ROHF) - and Kohn-Sham Density Functional Theory (DFT) with LDA (SVWN), GGA (PBE), and hybrid (B3LYP) exchange-correlation functionals, built on Gaussian-type orbital (GTO) basis sets.
+A Python library for quantum chemistry calculations. qBlock implements Self-Consistent Field (SCF) methods for both Hartree-Fock (HF) — Restricted (RHF), Unrestricted (UHF), and Restricted Open-Shell (ROHF) — and Kohn-Sham Density Functional Theory (DFT) with LDA (SVWN), GGA (PBE), and hybrid (B3LYP) exchange-correlation functionals, built on Gaussian-type orbital (GTO) basis sets.
+
+The project is designed to be easy to understand, modify, and extend. The overall project follows the **LCT** (Learn-Compute-Tests) architecture, which organises the entire development workflow into three layers: `learn/` for requirements, documentation and examples, `compute/` for the core library, and `tests/` for correctness verification. The `compute/` layer internally follows the **MUSE** (Models-Utilities-Solvers-Environment) architecture, separating domain models, shared mathematics, numerical algorithms, and infrastructure concerns into distinct, independently navigable modules.
 
 ---
 
@@ -8,10 +10,30 @@ A Python library for quantum chemistry calculations. qBlock implements Hartree-F
 Software was developed and tested in below environment. 
 - Windows 11 Pro
 - Python 3.12
-It does not means that it doesn't work in other environment.
-### Setup
 
-Create and activate a virtual environment:
+But, it does not means that it doesn't work in other environment.
+
+## Installation
+
+### Via PyPI (recommended)
+
+The simplest way to install qBlock is directly from the Python Package Index (PyPI). This installs the package and all required runtime dependencies automatically.
+
+```
+pip install qBlock
+```
+
+To include optional extras:
+
+```
+pip install qBlock[test]      # adds pytest
+pip install qBlock[dev]       # adds pylint, black, isort
+pip install qBlock[all]       # adds all of the above
+```
+
+### Manual Installation
+
+For development or to install directly from the [source on GitHub](https://github.com/milosz-martynow/qBlock), clone the repository and set up a virtual environment. Note that the GitHub repository may contain commits not yet released to PyPI, so versions between the two sources can differ.
 
 ```
 python.exe -m venv .venv
@@ -92,7 +114,7 @@ It is worth to highlight that 0'th level `learn/`, `compute/`, and `tests/` are 
 
 **Verification vs Validation:** *Verification* answers "Are we building the product right?" (implementation correctness). *Validation* answers "Are we building the right product?" (external requirements).
 
-### `learn/`
+### Layer 1: `learn/`
 
 The `learn/` directory is the entry point for understanding the project. It contains:
 
@@ -103,7 +125,7 @@ The `learn/` directory is the entry point for understanding the project. It cont
 
 `learn/` does not contain executable library code - it is purely for comprehension and exploration.
 
-### `compute/`
+### Layer 2: `compute/`
 
 The `compute/` directory is the core library. It contain all scripts and programs needed to fulfill `learn/requirements.md` requirements. Its internal architecture follows `MUSE` four layers:
 
@@ -127,7 +149,7 @@ compute/
 - **`solvers/`** - Algorithm layer. Implements SCF loop variants using the Template Method pattern. Hartree-Fock solvers (`RestrictedHartreeFock`, `UnrestrictedHartreeFock`, `RestrictedOpenShellHartreeFock`) and Kohn-Sham DFT solvers (`RestrictedKohnSham`, `UnrestrictedKohnSham`) inherit from an abstract `SCF` base. Exchange-correlation functionals (`SVWN`, `PBE`, `B3LYP`) provide the DFT energy and potential. Includes DIIS convergence acceleration and Becke-partitioned numerical integration grids.
 - **`utilities/`** - Shared mathematical functions (Boys function, Hermite expansion, normalization, double factorial) used across models and solvers.
 
-### `tests/`
+### Layer 3: `tests/`
 
 The `tests/` directory is an place for storing all methods, proofs and checckers to test that software from `compute/` fulfils `lear/requirements.md` requirements. The `tests/` directory verifies correctness at two levels:
 
@@ -151,3 +173,10 @@ tests/
 
 - **`verification/`** - Tests individual classes and functions in isolation. Uses `@pytest.mark.parametrize` extensively; no test classes. References used for verification testing are stored as JSON in `verification_data/`.
 - **`validation/`** - End-to-end tests that run full SCF calculations (HF and DFT) on atoms and molecules and verify results against known ionization energies (Koopmans theorem) and physical bounds within a defined tolerance.
+
+---
+
+## Development Note
+
+This repository was developed with the assistance of Large Language Models (LLMs). However, every requirement, architectural decision, algorithm, and implementation detail was individually analysed, reviewed, and explicitly defined by the author. LLMs served as a productivity tool; all intellectual and domain-specific content reflects the author's own understanding and judgment.
+
