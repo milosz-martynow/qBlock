@@ -5,10 +5,10 @@ A Python library for quantum chemistry calculations. qBlock implements Hartree-F
 ---
 
 ## Requirements
-
-- Windows 11 Pro (Linux should work with minor command adjustments)
+Software was developed and tested in below environment. 
+- Windows 11 Pro
 - Python 3.12
-
+It does not means that it doesn't work in other environment.
 ### Setup
 
 Create and activate a virtual environment:
@@ -96,6 +96,7 @@ It is worth to highlight that 0'th level `learn/`, `compute/`, and `tests/` are 
 
 The `learn/` directory is the entry point for understanding the project. It contains:
 
+- **`requirements.md`** - Most important and "must have" file of this folder. Formal software requirements specification. Lists all numbered shall-statements that define what qBlock must implement, including supported theories, integrals, I/O formats, code style rules, and testing constraints. Also provides an acronym glossary.
 - **`architecture/`** - UML diagrams (component, block definition, activity, use case) describing the system structure and workflows.
 - **`examples/`** - Runnable Python scripts demonstrating how to use individual modules (integrals, SCF solvers, I/O, etc.).
 - *(Future)* Full API and mathematical documentation.
@@ -104,20 +105,21 @@ The `learn/` directory is the entry point for understanding the project. It cont
 
 ### `compute/`
 
-The `compute/` directory is the core library. Its internal architecture follows four layers:
+The `compute/` directory is the core library. It contain all scripts and programs needed to fulfill `learn/requirements.md` requirements. Its internal architecture follows `MUSE` four layers:
 
 ```
 compute/
-├── environment/     # External data, I/O, configuration
-│   ├── constants/
-│   │   ├── natural/     # Physical constants, atomic data
-│   │   └── numerical/   # Numerical parameters, basis set files
-│   └── io/              # Input/output interfaces
 ├── models/          # Physical models and quantum theory
 │   ├── integrals/       # Integral engines (overlap, kinetic, nuclear, ERI)
 │   └── initialization/  # Calculation context, nuclear repulsion energy
+├─ utilities/       # Shared mathematical utilities
 ├── solvers/         # SCF algorithms (RHF, UHF, ROHF, DIIS)
-└── utilities/       # Shared mathematical utilities
+└── environment/     # External data, I/O, configuration
+    ├── constants/
+    │   ├── natural/     # Physical constants, atomic data
+    │   └── numerical/   # Numerical parameters, basis set files
+    └── io/              # Input/output interfaces
+
 ```
 
 - **`environment/`** - Infrastructure layer. Provides physical constants (`natural/`), numerical data and basis set files (`numerical/`), and I/O interfaces for reading coordinates, basis sets, and structured input/output data. Also manages runtime configuration.
@@ -127,7 +129,7 @@ compute/
 
 ### `tests/`
 
-The `tests/` directory verifies correctness at two levels:
+The `tests/` directory is an place for storing all methods, proofs and checckers to test that software from `compute/` fulfils `lear/requirements.md` requirements. The `tests/` directory verifies correctness at two levels:
 
 ```
 tests/
