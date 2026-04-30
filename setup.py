@@ -17,7 +17,7 @@ extra: List[str] = ["pylint==4.0.4", "black==25.12.0", "isort==7.0.0"]
 
 setup(
     name="qBlock",
-    version="1.0",
+    version="1.1",
     author="Miłosz Martynow",
     author_email="miloszmartynow@gmail.com",
     description="Block architecture of software for quantum mechanics of matter.",
