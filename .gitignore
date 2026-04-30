@@ -5,4 +5,5 @@
 examples/output*
 __pycache__
 *.pyc
-*.pub
+*.pub.md
+.clayde
