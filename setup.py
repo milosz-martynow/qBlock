@@ -20,7 +20,7 @@ setup(
     version="1.0.1",
     author="Miłosz Martynow",
     author_email="miloszmartynow@gmail.com",
-    description="Block architecture of software for quantum mechanics of matter.",
+    description="Easy in maintenance software to study electronic structure of atomic systems via SCF process, including Hartree-Fock and Density Functional Theory.",
     long_description=open("README.md", encoding="utf-8").read(),
     long_description_content_type="text/markdown",
     python_requires="==3.12.*",
