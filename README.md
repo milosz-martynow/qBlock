@@ -78,6 +78,13 @@ pytest.exe tests/verification/
 pytest.exe tests/validation/
 ```
 
+Some validation tests are computationally heavy — they run full SCF calculations across many atoms and molecules. To run a specific validation file or a single record, use pytest's `-k` flag. Atom test IDs follow the pattern `Z{atomic_number}_{symbol}`; molecule test IDs are their dictionary keys from `validation_data.py`:
+
+```
+pytest .\tests\validation\test_rhf.py -k "Z2_He"   # Helium atom only
+pytest .\tests\validation\test_rhf.py -k "H2"      # H2 molecule only
+```
+
 ### Format and lint
 
 ```
@@ -121,7 +128,6 @@ The `learn/` directory is the entry point for understanding the project. It cont
 - **`requirements.md`** - Most important and "must have" file of this folder. Formal software requirements specification. Lists all numbered shall-statements that define what qBlock must implement, including supported theories, integrals, I/O formats, code style rules, and testing constraints. Also provides an acronym glossary.
 - **`architecture/`** - UML diagrams (component, block definition, activity, use case) describing the system structure and workflows.
 - **`examples/`** - Runnable Python scripts demonstrating how to use individual modules (integrals, SCF solvers, I/O, etc.).
-- *(Future)* Full API and mathematical documentation.
 
 `learn/` does not contain executable library code - it is purely for comprehension and exploration.
 
@@ -134,7 +140,7 @@ compute/
 ├── models/          # Physical models and quantum theory
 │   ├── integrals/       # Integral engines (overlap, kinetic, nuclear, ERI)
 │   └── initialization/  # Calculation context, nuclear repulsion energy
-├─ utilities/       # Shared mathematical utilities
+├── utilities/       # Shared mathematical utilities
 ├── solvers/         # SCF algorithms (RHF, UHF, ROHF, DIIS)
 └── environment/     # External data, I/O, configuration
     ├── constants/
