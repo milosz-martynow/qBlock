@@ -25,6 +25,9 @@ setup(
     long_description_content_type="text/markdown",
     python_requires="==3.12.*",
     packages=find_packages(),
+    package_data={
+        "learn.examples": ["example_*.py", ".qblock.config.example"],
+    },
     install_requires=requires,
     extras_require={
         "test": test,
