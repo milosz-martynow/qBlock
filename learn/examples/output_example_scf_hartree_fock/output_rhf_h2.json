@@ -1,0 +1,105 @@
+{
+  "method": "RHF",
+  "timestamp": "2026-04-19T21:20:10.774733",
+  "basis_set": "3-21G",
+  "molecular_formula": null,
+  "converged": true,
+  "n_iterations": 9,
+  "convergence_threshold": 1e-08,
+  "n_electrons": 2,
+  "n_basis": 4,
+  "charge": 0,
+  "multiplicity": 1,
+  "energies": {
+    "electronic": -1.8380446497703864,
+    "nuclear": 0.7151043905325648,
+    "total": -1.1229402592378217
+  },
+  "orbital_energies": [
+    -0.5926383194711786,
+    0.26418685854043455,
+    0.9202796233185455,
+    1.525623538770809
+  ],
+  "geometry": [
+    {
+      "symbol": "H",
+      "Z": 1,
+      "x": 0.0,
+      "y": 0.0,
+      "z": 0.0
+    },
+    {
+      "symbol": "H",
+      "Z": 1,
+      "x": 0.0,
+      "y": 0.0,
+      "z": 1.3983972315639999
+    }
+  ],
+  "iteration_history": [
+    {
+      "iteration": 1,
+      "e_electronic": -1.7880841737699917,
+      "energy_change": -1.7880841737699917,
+      "error": 0.07119475019998663,
+      "diis_active": false
+    },
+    {
+      "iteration": 2,
+      "e_electronic": -1.8369365264741089,
+      "energy_change": -0.04885235270411714,
+      "error": 0.010822169154066783,
+      "diis_active": true
+    },
+    {
+      "iteration": 3,
+      "e_electronic": -1.8380214366292233,
+      "energy_change": -0.0010849101551144713,
+      "error": 0.0015682869315526305,
+      "diis_active": true
+    },
+    {
+      "iteration": 4,
+      "e_electronic": -1.8380446497582659,
+      "energy_change": -2.321312904252082e-05,
+      "error": 1.1333989350676035e-06,
+      "diis_active": true
+    },
+    {
+      "iteration": 5,
+      "e_electronic": -1.8380446497583203,
+      "energy_change": -5.440092820663267e-14,
+      "error": 1.1308333112467154e-06,
+      "diis_active": true
+    },
+    {
+      "iteration": 6,
+      "e_electronic": -1.838044649770243,
+      "energy_change": -1.1922685061449556e-11,
+      "error": 1.2328588278293995e-07,
+      "diis_active": true
+    },
+    {
+      "iteration": 7,
+      "e_electronic": -1.83804464977009,
+      "energy_change": 1.5298873279334657e-13,
+      "error": 1.7716469301740212e-07,
+      "diis_active": true
+    },
+    {
+      "iteration": 8,
+      "e_electronic": -1.838044649770016,
+      "energy_change": 7.394085344003543e-14,
+      "error": 1.9785735337055402e-07,
+      "diis_active": true
+    },
+    {
+      "iteration": 9,
+      "e_electronic": -1.8380446497703864,
+      "energy_change": -3.703704010149522e-13,
+      "error": 5.943153275992082e-10,
+      "diis_active": true
+    }
+  ]
+}
