@@ -26,7 +26,7 @@
 - Private members: single `_` prefix.
 
 ## Imports
-- Absolute imports in source (`from compute.solvers.diis import DIIS`).
+- Absolute imports in source (`from q_block.compute.solvers.diis import DIIS`).
 - Imports should be defined on the top of the script.
 - Imports should not be defined inside class or function.
 - Relative imports only inside `__init__.py` re-exports.
@@ -43,12 +43,12 @@
 - Sphinx/reST style: `:param name:`, `:type name:`, `:returns:`, `:rtype:`, `:raises:`.
 - Use `r"""` raw strings for math blocks (`.. math::`).
 - Class docstrings: Sphinx params for `__init__`, NumPy-style `Attributes` section for class attrs.
-- Update compute.__init__.py file project structure in header docstring with every scrip added in compute.
+- Update compute.__init__.py file project structure in header docstring with every scrip added in q_block/compute.
 
 ## Tests
 - No test classes. 
 - Bare test functions with `@pytest.mark.parametrize`.
-- Verification tests mirror source tree: `tests/verification/io/test_coordinates.py` ↔ `compute/io/coordinates.py`.
+- Verification tests mirror source tree: `q_block/tests/verification/io/test_coordinates.py` ↔ `q_block/compute/io/coordinates.py`.
 - Validation tests use factory functions from `templates.py`.
 - Test IDs: `Z{atomic_number}_{symbol}` for atoms.
 - All verification tests should be run to test applied changes.

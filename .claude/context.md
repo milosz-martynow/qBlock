@@ -15,8 +15,8 @@
 - `README.md` — Setup instructions and project description.
 
 ## Other Directories
-- `compute/environment/constants/numerical/basis_set/pople/` — Gaussian basis set files like: `STO-3G`, `3-21G`.
-- `examples/` — runnable scripts demonstrating the API (molecule creation, integrals, SCF, GTO dataframe).
+- `q_block/compute/environment/constants/numerical/basis_set/pople/` — Gaussian basis set files like: `STO-3G`, `3-21G`.
+- `examples/` — runnable scripts demonstrating the API (molecule creation, integrals, SCF, GTO dataframe), located under `q_block/learn/examples/`.
 - `architecture/` — PlantUML diagrams: `scf_activity_diagram.puml`, `use_case_diagram.puml`, block definition diagrams for each sub-package (`io`, `methods`, `models`, `systems`, `theory`).
 
 ## Key Data Flow (SCF)
@@ -34,8 +34,8 @@ pip install -e .
 
 # Test & lint
 isort .
-black --config=.blackrc .\compute\ .\tests\ setup.py
-pylint --rcfile=.pylintrc .\compute\ .\tests\ setup.py
+black --config=.blackrc .\q_block\ setup.py
+pylint --rcfile=.pylintrc .\q_block\ setup.py
 pytest .
 ```
 
@@ -43,14 +43,14 @@ pytest .
 
 **Verification** ("Are we building the product right?") tests implementation correctness. **Validation** ("Are we building the right product?") tests against external requirements.
 
-### Verification Tests (`tests/verification/`)
+### Verification Tests (`q_block/tests/verification/`)
 Per-module, parametrized, no test classes — bare functions with `@pytest.mark.parametrize`.
 - `constants.py` — shared fixtures: pre-loaded basis sets (`BASIS_3_21G`, `BASIS_STO_3G`, …), path constants (`BASIS_ROOT`, `GOLDEN_ROOT`, `GEOMETRIES_DIR`), `ORIGIN` coordinate.
 - `utilities.py` — shared helpers: `ALL_ORBITAL_COMPONENTS`, `ORBITAL_LABELS`, `orbital_id()`, `get_orbital_ids()`.
 - `verification_data/` — golden reference files: `expected_atom_empirical.py`, `expected_atom_pure.py`, `gto_population/*.json`, `geometries/*.xyz` (H2, water, azobenzene, tetraethylammonium), `tools/` (generator scripts).
-- Mirror structure: `tests/verification/io/test_coordinates.py` ↔ `compute/io/coordinates.py`, etc.
+- Mirror structure: `q_block/tests/verification/io/test_coordinates.py` ↔ `q_block/compute/io/coordinates.py`, etc.
 
-### Validation Tests (`tests/validation/`)
+### Validation Tests (`q_block/tests/validation/`)
 End-to-end HF calculations verifying Koopmans' theorem ionization energies.
 - `validation_data.py` — reference dicts (`ATOMS_HOMO_ENERGIES`, `MOLECULES_HOMO_ENERGIES`) mapping Z (1–54) → `{symbol, config, multiplicity, n_electrons, n_alpha, n_beta, n_closed, n_open, hf_ie_eV}`.
 - `utils.py` — `HARTREE_TO_EV = 27.211386`, `ABS_TOL_EV = 3.0` eV, `_build_from_geometry()` (full molecule→SCF-inputs pipeline with basis caching).

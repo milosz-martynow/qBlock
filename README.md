@@ -2,7 +2,7 @@
 
 A Python library for quantum chemistry calculations. qBlock implements Self-Consistent Field (SCF) methods for both Hartree-Fock (HF) — Restricted (RHF), Unrestricted (UHF), and Restricted Open-Shell (ROHF) — and Kohn-Sham Density Functional Theory (DFT) with LDA (SVWN), GGA (PBE), and hybrid (B3LYP) exchange-correlation functionals, built on Gaussian-type orbital (GTO) basis sets.
 
-The project is designed to be easy to understand, modify, and extend. The overall project follows the **LCT** (Learn-Compute-Tests) architecture, which organises the entire development workflow into three layers: `learn/` for requirements, documentation and examples, `compute/` for the core library, and `tests/` for correctness verification. The `compute/` layer internally follows the **MUSE** (Models-Utilities-Solvers-Environment) architecture, separating domain models, shared mathematics, numerical algorithms, and infrastructure concerns into distinct, independently navigable modules.
+The project is designed to be easy to understand, modify, and extend. The overall project follows the **LCT** (Learn-Compute-Tests) architecture, which organises the entire development workflow into three layers: `q_block/learn/` for requirements, documentation and examples, `q_block/compute/` for the core library, and `q_block/tests/` for correctness verification. The `q_block/compute/` layer internally follows the **MUSE** (Models-Utilities-Solvers-Environment) architecture, separating domain models, shared mathematics, numerical algorithms, and infrastructure concerns into distinct, independently navigable modules.
 
 ---
 
@@ -58,11 +58,11 @@ pip.exe install setuptools==80.9.0
 
 ### Run an example
 
-Examples are standalone scripts located in `learn/examples/`:
+Examples are standalone scripts located in `q_block/learn/examples/`:
 
 ```
-python learn/examples/example_scf_hartree_fock.py
-python learn/examples/example_overlap_integral.py
+python q_block/learn/examples/example_scf_hartree_fock.py
+python q_block/learn/examples/example_overlap_integral.py
 ```
 
 ### Run tests
@@ -74,48 +74,49 @@ pytest.exe .
 Run only verification or validation tests:
 
 ```
-pytest.exe tests/verification/
-pytest.exe tests/validation/
+pytest.exe q_block/tests/verification/
+pytest.exe q_block/tests/validation/
 ```
 
 Some validation tests are computationally heavy — they run full SCF calculations across many atoms and molecules. To run a specific validation file or a single record, use pytest's `-k` flag. Atom test IDs follow the pattern `Z{atomic_number}_{symbol}`; molecule test IDs are their dictionary keys from `validation_data.py`:
 
 ```
-pytest .\tests\validation\test_rhf.py -k "Z2_He"   # Helium atom only
-pytest .\tests\validation\test_rhf.py -k "H2"      # H2 molecule only
+pytest .\q_block\tests\validation\test_rhf.py -k "Z2_He"   # Helium atom only
+pytest .\q_block\tests\validation\test_rhf.py -k "H2"      # H2 molecule only
 ```
 
 ### Format and lint
 
 ```
 isort.exe .
-black.exe --config=.blackrc .\compute\ .\tests\ setup.py
-pylint.exe --rcfile=.pylintrc .\compute\ .\tests\ setup.py
+black.exe --config=.blackrc .\q_block\ setup.py
+pylint.exe --rcfile=.pylintrc .\q_block\ setup.py
 ```
 
 ---
 
 ## Architecture
 
-The project - qBlock - is organized into three top-level directories: `learn/`, `compute/`, and `tests/`. This order reflects the intended workflow - understand, implement, verify and after expansion looks as follows:
+The project - qBlock - is organized under the `q_block/` package into three sub-directories: `learn/`, `compute/`, and `tests/`. This order reflects the intended workflow - understand, implement, verify and after expansion looks as follows:
 
 ```
 project/
-├── learn/                   # Documentation, diagrams, and examples - no library code
-│   ├── architecture/        # Diagrams (e.g. UML) describing system structure and workflows
-│   └── examples/            # Runnable scripts demonstrating individual modules
-├── compute/                 # Core library
-│   ├── models/              # Domain layer: physical models and data structures
-│   ├── utilities/           # Shared mathematical functions used across the library
-│   ├── solvers/             # Algorithm layer: numerical solvers and convergence methods
-│   └── environment/         # Infrastructure: external data, I/O - input/output , and configuration
-│       ├── constants/       # Reference data: physical and numerical constants
-│       │   ├── natural/     # Nature based constants (e.g. physical and mathematical constants)
-│       │   └── numerical/   # Numerical parameters
-│       └── io/              # Interfaces for reading and writing data
-└── tests/                   # Correctness verification at unit and system level
-    ├── verification/    # Fine-grained per-module tests
-    └── validation/      # End-to-end tests verified against known reference data
+└── q_block/                 # Top-level package
+    ├── learn/               # Documentation, diagrams, and examples - no library code
+    │   ├── architecture/    # Diagrams (e.g. UML) describing system structure and workflows
+    │   └── examples/        # Runnable scripts demonstrating individual modules
+    ├── compute/             # Core library
+    │   ├── models/          # Domain layer: physical models and data structures
+    │   ├── utilities/       # Shared mathematical functions used across the library
+    │   ├── solvers/         # Algorithm layer: numerical solvers and convergence methods
+    │   └── environment/     # Infrastructure: external data, I/O - input/output , and configuration
+    │       ├── constants/   # Reference data: physical and numerical constants
+    │       │   ├── natural/ # Nature based constants (e.g. physical and mathematical constants)
+    │       │   └── numerical/ # Numerical parameters
+    │       └── io/          # Interfaces for reading and writing data
+    └── tests/               # Correctness verification at unit and system level
+        ├── verification/    # Fine-grained per-module tests
+        └── validation/      # End-to-end tests verified against known reference data
 ```
 It is worth to highlight that 0'th level `learn/`, `compute/`, and `tests/` are verbs, whereas lower level elements are nouns. only environment/constants is divided into two two adjectives.
 
