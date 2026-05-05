@@ -7,6 +7,6 @@ Kohn-Sham DFT, which maps the interacting system onto a non-interacting
 reference system sharing the same ground-state density.
 
 Submodules:
-    kohn_sham: Kohn-Sham DFT methods (RKS, UKS)
+    kohn_sham: Kohn-Sham DFT methods (RKS, ROKS, UKS)
     functionals: Exchange-correlation functionals (LDA, GGA, hybrid)
 """

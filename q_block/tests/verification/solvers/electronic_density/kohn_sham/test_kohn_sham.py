@@ -30,6 +30,7 @@ from q_block.compute.solvers.electronic_density.functionals import (
 )
 from q_block.compute.solvers.electronic_density.kohn_sham import (
     RestrictedKohnSham,
+    RestrictedOpenShellKohnSham,
     UnrestrictedKohnSham,
 )
 from q_block.tests.verification.environment.constants import (
@@ -352,3 +353,196 @@ def test_rks_total_energy_finite() -> None:
         convergence_threshold=1e-5,
     ).run()
     assert np.isfinite(rks.e_total)
+
+
+# ======================================================================
+# ROKS helpers
+# ======================================================================
+
+
+def _li_inputs(
+    basis: Pople = BASIS_STO_3G,
+) -> Tuple[list, list, float]:
+    """Return (cgtos, nuclei, e_nuclear) for Li atom.
+
+    Li is a doublet with n_closed=1, n_open=1 — the simplest meaningful
+    ROKS test case.
+
+    :param basis: Basis set.
+    :type basis: Pople
+    :returns: CGTOs, nuclei, and nuclear repulsion energy (0 for atom).
+    :rtype: Tuple[list, list, float]
+    """
+    inp = InputData()
+    inp.from_script(
+        atom_data=[
+            ["Li", 0.0, 0.0, 0.0, basis],
+        ]
+    )
+    mol = Molecule(input_data=inp, multiplicity=2)
+    mol.to_bohr()
+    mol.make_contracted_gaussian_type_orbital()
+    cgtos = mol.contracted_gaussian_type_orbitals
+    nuclei = [
+        (
+            a.atomic_number,
+            (a.coordinates.x, a.coordinates.y, a.coordinates.z),
+        )
+        for a in mol.atoms
+    ]
+    e_nuclear = NuclearRepulsionEnergy(mol).energy
+    return cgtos, nuclei, e_nuclear
+
+
+# ======================================================================
+# ROKS construction
+# ======================================================================
+
+
+def test_roks_construction_svwn() -> None:
+    """ROKS initialises correctly with SVWN functional."""
+    cgtos, nuclei, e_nuc = _li_inputs()
+    roks = RestrictedOpenShellKohnSham(
+        cgtos=cgtos,
+        nuclei=nuclei,
+        e_nuclear=e_nuc,
+        functional=SVWN(),
+        n_closed=1,
+        n_open=1,
+        n_radial=20,
+        n_angular=6,
+    )
+    assert roks.n_closed == 1
+    assert roks.n_open == 1
+    assert roks.n_alpha == 2
+    assert roks.n_beta == 1
+    assert roks.n_electrons == 3
+    assert roks._shared_spin is False
+    assert roks.functional.name == "SVWN"
+
+
+def test_roks_negative_closed_raises() -> None:
+    """ROKS raises ValueError for negative n_closed."""
+    cgtos, nuclei, e_nuc = _li_inputs()
+    with pytest.raises(ValueError, match="non-negative"):
+        RestrictedOpenShellKohnSham(
+            cgtos=cgtos,
+            nuclei=nuclei,
+            e_nuclear=e_nuc,
+            functional=SVWN(),
+            n_closed=-1,
+            n_open=1,
+            n_radial=20,
+            n_angular=6,
+        )
+
+
+def test_roks_zero_open_raises() -> None:
+    """ROKS raises ValueError when n_open is zero."""
+    cgtos, nuclei, e_nuc = _li_inputs()
+    with pytest.raises(ValueError, match="open-shell orbital"):
+        RestrictedOpenShellKohnSham(
+            cgtos=cgtos,
+            nuclei=nuclei,
+            e_nuclear=e_nuc,
+            functional=SVWN(),
+            n_closed=1,
+            n_open=0,
+            n_radial=20,
+            n_angular=6,
+        )
+
+
+# ======================================================================
+# ROKS SCF convergence
+# ======================================================================
+
+
+def test_roks_svwn_li_converges() -> None:
+    """ROKS-SVWN converges for Li with STO-3G."""
+    cgtos, nuclei, e_nuc = _li_inputs()
+    roks = RestrictedOpenShellKohnSham(
+        cgtos=cgtos,
+        nuclei=nuclei,
+        e_nuclear=e_nuc,
+        functional=SVWN(),
+        n_closed=1,
+        n_open=1,
+        n_radial=30,
+        n_angular=6,
+        max_iterations=150,
+        convergence_threshold=1e-5,
+    ).run()
+    assert roks.converged
+    assert roks.e_total < 0.0
+    assert "C" in roks.matrices
+    assert "P" in roks.matrices
+    assert "F_eff" in roks.matrices
+    assert "F_alpha" in roks.matrices
+    assert "F_beta" in roks.matrices
+    assert "P_alpha" in roks.matrices
+    assert "P_beta" in roks.matrices
+    assert "epsilon" in roks.matrices
+
+
+def test_roks_pbe_li_converges() -> None:
+    """ROKS-PBE converges for Li with STO-3G."""
+    cgtos, nuclei, e_nuc = _li_inputs()
+    roks = RestrictedOpenShellKohnSham(
+        cgtos=cgtos,
+        nuclei=nuclei,
+        e_nuclear=e_nuc,
+        functional=PBE(),
+        n_closed=1,
+        n_open=1,
+        n_radial=30,
+        n_angular=6,
+        max_iterations=150,
+        convergence_threshold=1e-5,
+    ).run()
+    assert roks.converged
+    assert roks.e_total < 0.0
+
+
+def test_roks_b3lyp_li_converges() -> None:
+    """ROKS-B3LYP converges for Li with STO-3G."""
+    cgtos, nuclei, e_nuc = _li_inputs()
+    roks = RestrictedOpenShellKohnSham(
+        cgtos=cgtos,
+        nuclei=nuclei,
+        e_nuclear=e_nuc,
+        functional=B3LYP(),
+        n_closed=1,
+        n_open=1,
+        n_radial=30,
+        n_angular=6,
+        max_iterations=150,
+        convergence_threshold=1e-5,
+    ).run()
+    assert roks.converged
+    assert roks.e_total < 0.0
+
+
+def test_roks_density_matrices_consistent() -> None:
+    """ROKS: P_alpha contains open-shell electrons; P_beta is closed-shell only."""
+    cgtos, nuclei, e_nuc = _li_inputs()
+    roks = RestrictedOpenShellKohnSham(
+        cgtos=cgtos,
+        nuclei=nuclei,
+        e_nuclear=e_nuc,
+        functional=SVWN(),
+        n_closed=1,
+        n_open=1,
+        n_radial=30,
+        n_angular=6,
+        max_iterations=150,
+        convergence_threshold=1e-5,
+    ).run()
+    P_alpha = roks.matrices["P_alpha"]
+    P_beta = roks.matrices["P_beta"]
+    P_total = roks.matrices["P"]
+    # trace of P_alpha = n_alpha = 2, P_beta = n_beta = 1
+    assert abs(np.trace(P_alpha @ roks.matrices["S"]) - 2.0) < 0.05
+    assert abs(np.trace(P_beta @ roks.matrices["S"]) - 1.0) < 0.05
+    # P_total = P_alpha + P_beta
+    assert np.allclose(P_total, P_alpha + P_beta)

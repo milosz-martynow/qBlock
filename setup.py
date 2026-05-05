@@ -17,7 +17,7 @@ extra: List[str] = ["pylint==4.0.4", "black==25.12.0", "isort==7.0.0"]
 
 setup(
     name="qBlock",
-    version="1.0.6",
+    version="1.0.7",
     author="Miłosz Martynow",
     author_email="miloszmartynow@gmail.com",
     description="Easy in maintenance software to study electronic structure of atomic systems via SCF process, including Hartree-Fock and Density Functional Theory.",

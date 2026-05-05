@@ -92,7 +92,7 @@ ATOMS: dict = {
         "n_beta": 0,
         "n_closed": 0,
         "n_open": 1,
-        "proposed_approach": ["ROHF", "UHF", "UKS"],
+        "proposed_approach": ["ROHF", "UHF", "UKS", "ROKS"],
         "energies": {
             "experiment": [
                 {"value": 13.5984, "reference": 'https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=H&units=1', "note": "", "level": 0},
@@ -141,7 +141,7 @@ ATOMS: dict = {
         "n_beta": 1,
         "n_closed": 1,
         "n_open": 1,
-        "proposed_approach": ["ROHF", "UHF", "UKS"],
+        "proposed_approach": ["ROHF", "UHF", "UKS", "ROKS"],
         "energies": {
             "experiment": [
                 {"value": 5.3917, "reference": 'https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=Li&units=1', "note": "", "level": 0},
@@ -189,7 +189,7 @@ ATOMS: dict = {
         "n_beta": 2,
         "n_closed": 2,
         "n_open": 1,
-        "proposed_approach": ["ROHF", "UHF", "UKS"],
+        "proposed_approach": ["ROHF", "UHF", "UKS", "ROKS"],
         "energies": {
             "experiment": [
                 {"value": 8.298, "reference": 'https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=B&units=1', "note": "", "level": 0},
@@ -213,7 +213,7 @@ ATOMS: dict = {
         "n_beta": 2,
         "n_closed": 2,
         "n_open": 2,
-        "proposed_approach": ["ROHF", "UHF", "UKS"],
+        "proposed_approach": ["ROHF", "UHF", "UKS", "ROKS"],
         "energies": {
             "experiment": [
                 {"value": 11.2603, "reference": 'https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=C&units=1', "note": "", "level": 0},
@@ -237,7 +237,7 @@ ATOMS: dict = {
         "n_beta": 2,
         "n_closed": 2,
         "n_open": 3,
-        "proposed_approach": ["ROHF", "UHF", "UKS"],
+        "proposed_approach": ["ROHF", "UHF", "UKS", "ROKS"],
         "energies": {
             "experiment": [
                 {"value": 14.5341, "reference": 'https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=N&units=1', "note": "", "level": 0},
@@ -261,7 +261,7 @@ ATOMS: dict = {
         "n_beta": 3,
         "n_closed": 3,
         "n_open": 2,
-        "proposed_approach": ["ROHF", "UHF", "UKS"],
+        "proposed_approach": ["ROHF", "UHF", "UKS", "ROKS"],
         "energies": {
             "experiment": [
                 {"value": 13.6181, "reference": 'https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=O&units=1', "note": "", "level": 0},
@@ -334,7 +334,7 @@ ATOMS: dict = {
         "n_beta": 5,
         "n_closed": 5,
         "n_open": 1,
-        "proposed_approach": ["ROHF", "UHF", "UKS"],
+        "proposed_approach": ["ROHF", "UHF", "UKS", "ROKS"],
         "energies": {
             "experiment": [
                 {"value": 5.1391, "reference": 'https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=Na&units=1', "note": "", "level": 0},
@@ -382,7 +382,7 @@ ATOMS: dict = {
         "n_beta": 6,
         "n_closed": 6,
         "n_open": 1,
-        "proposed_approach": ["ROHF", "UHF", "UKS"],
+        "proposed_approach": ["ROHF", "UHF", "UKS", "ROKS"],
         "energies": {
             "experiment": [
                 {"value": 5.9858, "reference": 'https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=Al&units=1', "note": "", "level": 0},
@@ -406,7 +406,7 @@ ATOMS: dict = {
         "n_beta": 6,
         "n_closed": 6,
         "n_open": 2,
-        "proposed_approach": ["ROHF", "UHF", "UKS"],
+        "proposed_approach": ["ROHF", "UHF", "UKS", "ROKS"],
         "energies": {
             "experiment": [
                 {"value": 8.1517, "reference": 'https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=Si&units=1', "note": "", "level": 0},
@@ -430,7 +430,7 @@ ATOMS: dict = {
         "n_beta": 6,
         "n_closed": 6,
         "n_open": 3,
-        "proposed_approach": ["ROHF", "UHF", "UKS"],
+        "proposed_approach": ["ROHF", "UHF", "UKS", "ROKS"],
         "energies": {
             "experiment": [
                 {"value": 10.4867, "reference": 'https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=P&units=1', "note": "", "level": 0},
@@ -527,7 +527,7 @@ ATOMS: dict = {
         "n_beta": 9,
         "n_closed": 9,
         "n_open": 1,
-        "proposed_approach": ["ROHF", "UHF", "UKS"],
+        "proposed_approach": ["ROHF", "UHF", "UKS", "ROKS"],
         "energies": {
             "experiment": [
                 {"value": 4.3407, "reference": 'https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=K&units=1', "note": "", "level": 0},
@@ -643,7 +643,7 @@ ATOMS: dict = {
         "n_beta": 9,
         "n_closed": 9,
         "n_open": 6,
-        "proposed_approach": ["ROHF", "UHF", "UKS"],
+        "proposed_approach": ["ROHF", "UHF", "UKS", "ROKS"],
         "energies": {
             "experiment": [
                 {"value": 6.7665, "reference": 'https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=Cr&units=1', "note": "", "level": 0},
@@ -709,7 +709,7 @@ ATOMS: dict = {
         "n_beta": 12,
         "n_closed": 12,
         "n_open": 3,
-        "proposed_approach": ["ROHF", "UHF", "UKS"],
+        "proposed_approach": ["ROHF", "UHF", "UKS", "ROKS"],
         "energies": {
             "experiment": [
                 {"value": 7.881, "reference": 'https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=Co&units=1', "note": "", "level": 0},
@@ -731,7 +731,7 @@ ATOMS: dict = {
         "n_beta": 13,
         "n_closed": 13,
         "n_open": 2,
-        "proposed_approach": ["ROHF", "UHF", "UKS"],
+        "proposed_approach": ["ROHF", "UHF", "UKS", "ROKS"],
         "energies": {
             "experiment": [
                 {"value": 7.6398, "reference": 'https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=Ni&units=1', "note": "", "level": 0},
@@ -753,7 +753,7 @@ ATOMS: dict = {
         "n_beta": 14,
         "n_closed": 14,
         "n_open": 1,
-        "proposed_approach": ["ROHF", "UHF", "UKS"],
+        "proposed_approach": ["ROHF", "UHF", "UKS", "ROKS"],
         "energies": {
             "experiment": [
                 {"value": 7.7264, "reference": 'https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=Cu&units=1', "note": "", "level": 0},
@@ -799,7 +799,7 @@ ATOMS: dict = {
         "n_beta": 15,
         "n_closed": 15,
         "n_open": 1,
-        "proposed_approach": ["ROHF", "UHF", "UKS"],
+        "proposed_approach": ["ROHF", "UHF", "UKS", "ROKS"],
         "energies": {
             "experiment": [
                 {"value": 5.9993, "reference": 'https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=Ga&units=1', "note": "", "level": 0},
@@ -823,7 +823,7 @@ ATOMS: dict = {
         "n_beta": 15,
         "n_closed": 15,
         "n_open": 2,
-        "proposed_approach": ["ROHF", "UHF", "UKS"],
+        "proposed_approach": ["ROHF", "UHF", "UKS", "ROKS"],
         "energies": {
             "experiment": [
                 {"value": 7.8994, "reference": 'https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=Ge&units=1', "note": "", "level": 0},
@@ -847,7 +847,7 @@ ATOMS: dict = {
         "n_beta": 15,
         "n_closed": 15,
         "n_open": 3,
-        "proposed_approach": ["ROHF", "UHF", "UKS"],
+        "proposed_approach": ["ROHF", "UHF", "UKS", "ROKS"],
         "energies": {
             "experiment": [
                 {"value": 9.7886, "reference": 'https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=As&units=1', "note": "", "level": 0},
@@ -895,7 +895,7 @@ ATOMS: dict = {
         "n_beta": 17,
         "n_closed": 17,
         "n_open": 1,
-        "proposed_approach": ["ROHF", "UHF", "UKS"],
+        "proposed_approach": ["ROHF", "UHF", "UKS", "ROKS"],
         "energies": {
             "experiment": [
                 {"value": 11.8138, "reference": 'https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=Br&units=1', "note": "", "level": 0},
@@ -944,7 +944,7 @@ ATOMS: dict = {
         "n_beta": 18,
         "n_closed": 18,
         "n_open": 1,
-        "proposed_approach": ["ROHF", "UHF", "UKS"],
+        "proposed_approach": ["ROHF", "UHF", "UKS", "ROKS"],
         "energies": {
             "experiment": [
                 {"value": 4.1771, "reference": 'https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=Rb&units=1', "note": "", "level": 0},
@@ -1012,7 +1012,7 @@ ATOMS: dict = {
         "n_beta": 18,
         "n_closed": 18,
         "n_open": 5,
-        "proposed_approach": ["ROHF", "UHF", "UKS"],
+        "proposed_approach": ["ROHF", "UHF", "UKS", "ROKS"],
         "energies": {
             "experiment": [
                 {"value": 6.7589, "reference": 'https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=Nb&units=1', "note": "", "level": 0},
@@ -1034,7 +1034,7 @@ ATOMS: dict = {
         "n_beta": 18,
         "n_closed": 18,
         "n_open": 6,
-        "proposed_approach": ["ROHF", "UHF", "UKS"],
+        "proposed_approach": ["ROHF", "UHF", "UKS", "ROKS"],
         "energies": {
             "experiment": [
                 {"value": 7.0924, "reference": 'https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=Mo&units=1', "note": "", "level": 0},
@@ -1415,7 +1415,7 @@ MOLECULES: dict = {
             {"symbol": "O", "x": 0.0000, "y": 0.0000, "z": 0.6038},
             {"symbol": "O", "x": 0.0000, "y": 0.0000, "z": -0.6038},
         ],
-        "proposed_approach": ["ROHF", "UHF", "UKS"],
+        "proposed_approach": ["ROHF", "UHF", "UKS", "ROKS"],
         "multiplicity": 3,
         "n_electrons": 16,
         "n_alpha": 9,
@@ -1445,7 +1445,7 @@ MOLECULES: dict = {
             {"symbol": "N", "x": 0.0000, "y": 0.0000, "z": -0.5754},
             {"symbol": "O", "x": 0.0000, "y": 0.0000, "z": 0.5754},
         ],
-        "proposed_approach": ["ROHF", "UHF", "UKS"],
+        "proposed_approach": ["ROHF", "UHF", "UKS", "ROKS"],
         "multiplicity": 2,
         "n_electrons": 15,
         "n_alpha": 8,

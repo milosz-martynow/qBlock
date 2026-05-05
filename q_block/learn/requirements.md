@@ -8,7 +8,7 @@
 
 3. qBlock shall support Hartree-Fock theory in three variants: RHF, UHF, ROHF.
 
-3. qBlock shall support Kohn-Sham Density Functional Theory in two variants: RKS, UKS.
+3. qBlock shall support Kohn-Sham Density Functional Theory in three variants: RKS, ROKS, UKS.
 
 4. qBlock shall support DFT with at least one LDA functional, one GGA functional, and one hybrid functional. NOTE: examples of implementations are: LDA functional in SVMN implementation, GGA functional in PBE implementation, hybrid functional in B3LYP implementation.
 
@@ -82,6 +82,7 @@
 - UHF - Unrestricted Hartree-Fock
 - ROHF - Restricted Open Shell Hartree-Fock
 - RKS - Restricted Kohn-Sham
+- ROKS - Restricted Open Shell Kohn-Sham
 - UKS - Unretricted Kohn-Sham
 - LDA - Local Density Approximation
 - GGA - Generalised Gradient Approximation

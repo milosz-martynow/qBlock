@@ -62,7 +62,8 @@ q_block/compute/
 │                       eigensolvers, and concrete Hartree-Fock solvers
 │                       (RestrictedHartreeFock, UnrestrictedHartreeFock,
 │                       RestrictedOpenShellHartreeFock) and Kohn-Sham DFT
-│                       solvers (RestrictedKohnSham, UnrestrictedKohnSham)
+│                       solvers (RestrictedKohnSham, RestrictedOpenShellKohnSham,
+│                       UnrestrictedKohnSham)
 │                       with exchange-correlation functionals (SVWN, PBE,
 │                       B3LYP).
 │

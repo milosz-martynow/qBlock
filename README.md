@@ -1,6 +1,6 @@
 ﻿# qBlock
 
-A Python library for quantum chemistry calculations. qBlock implements Self-Consistent Field (SCF) methods for both Hartree-Fock (HF) — Restricted (RHF), Unrestricted (UHF), and Restricted Open-Shell (ROHF) — and Kohn-Sham Density Functional Theory (DFT) with LDA (SVWN), GGA (PBE), and hybrid (B3LYP) exchange-correlation functionals, built on Gaussian-type orbital (GTO) basis sets.
+A Python library for quantum chemistry calculations. qBlock implements SCF methods for both HF (RHF, UHF, ROHF) and DFT (RKS, UKS). Both methods are built on GTO basis sets. DFT supports exchange-correlation functionals like: LDA in SVWN implementation, GGA in PBE implementation, and hybrid in B3LYP implementation.
 
 The project is designed to be easy to understand, modify, and extend. The overall project follows the **LCT** (Learn-Compute-Tests) architecture, which organises the entire development workflow into three layers: `q_block/learn/` for requirements, documentation and examples, `q_block/compute/` for the core library, and `q_block/tests/` for correctness verification. The `q_block/compute/` layer internally follows the **MUSE** (Models-Utilities-Solvers-Environment) architecture, separating domain models, shared mathematics, numerical algorithms, and infrastructure concerns into distinct, independently navigable modules.
 
@@ -153,7 +153,7 @@ compute/
 
 - **`environment/`** - Infrastructure layer. Provides physical constants (`natural/`), numerical data and basis set files (`numerical/`), and I/O interfaces for reading coordinates, basis sets, and structured input/output data. Also manages runtime configuration.
 - **`models/`** - Domain layer. Defines atomic and molecular data structures, GTO basis functions, quantum mechanical integrals, numerical integration grids, and the Hartree-Fock and DFT calculation contexts.
-- **`solvers/`** - Algorithm layer. Implements SCF loop variants using the Template Method pattern. Hartree-Fock solvers (`RestrictedHartreeFock`, `UnrestrictedHartreeFock`, `RestrictedOpenShellHartreeFock`) and Kohn-Sham DFT solvers (`RestrictedKohnSham`, `UnrestrictedKohnSham`) inherit from an abstract `SCF` base. Exchange-correlation functionals (`SVWN`, `PBE`, `B3LYP`) provide the DFT energy and potential. Includes DIIS convergence acceleration and Becke-partitioned numerical integration grids.
+- **`solvers/`** - Algorithm layer. Implements SCF loop variants using the Template Method pattern. Hartree-Fock solvers (`RestrictedHartreeFock`, `UnrestrictedHartreeFock`, `RestrictedOpenShellHartreeFock`) and Kohn-Sham DFT solvers (`RestrictedKohnSham`, `RestrictedOpenShellKohnSham`, `UnrestrictedKohnSham`) inherit from an abstract `SCF` base. Exchange-correlation functionals (`SVWN`, `PBE`, `B3LYP`) provide the DFT energy and potential. Includes DIIS convergence acceleration and Becke-partitioned numerical integration grids.
 - **`utilities/`** - Shared mathematical functions (Boys function, Hermite expansion, normalization, double factorial) used across models and solvers.
 
 ### Layer 3: `tests/`
@@ -168,10 +168,13 @@ tests/
 │   ├── environment/
 │   ├── utilities/
 │   └── verification_data/   # Golden reference JSON files
-└── validation/    # End-to-end HF calculations
+└── validation/    # End-to-end HF and DFT calculations
     ├── test_rhf.py
     ├── test_uhf.py
     ├── test_rohf.py
+    ├── test_rks.py
+    ├── test_roks.py
+    ├── test_uks.py
     ├── validation_data.py   # Reference ionization energies
     └── templates.py         # Reusable test factories
 ```
@@ -180,8 +183,6 @@ tests/
 
 - **`verification/`** - Tests individual classes and functions in isolation. Uses `@pytest.mark.parametrize` extensively; no test classes. References used for verification testing are stored as JSON in `verification_data/`.
 - **`validation/`** - End-to-end tests that run full SCF calculations (HF and DFT) on atoms and molecules and verify results against known ionization energies (Koopmans theorem) and physical bounds within a defined tolerance.
-
----
 
 ## Development Note
 
