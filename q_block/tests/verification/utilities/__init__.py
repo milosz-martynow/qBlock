@@ -10,6 +10,7 @@ import numpy as np
 import pytest
 
 from q_block.compute import Molecule
+from q_block.compute.environment.io.basis_set import Pople
 from q_block.compute.environment.io.input_data import InputData
 from q_block.compute.models.initialization.nuclear_repulsion_energy import (
     NuclearRepulsionEnergy,
@@ -102,6 +103,84 @@ def extract_nuclei(
         )
         for atom in molecule.atoms
     ]
+
+
+def h2_inputs(
+    basis: Pople = BASIS_STO_3G,
+) -> Tuple[list, list, float]:
+    """Return (cgtos, nuclei, e_nuclear) for H₂ at 0.74 Å.
+
+    :param basis: Basis set (defaults to STO-3G).
+    :type basis: Pople
+    :returns: CGTOs, nuclei list, and nuclear repulsion energy.
+    :rtype: Tuple[list, list, float]
+    """
+    inp = InputData()
+    inp.from_script(
+        atom_data=[
+            ["H", 0.0, 0.0, 0.0, basis],
+            ["H", 0.0, 0.0, 0.74, basis],
+        ]
+    )
+    mol = Molecule(input_data=inp, multiplicity=1)
+    mol.to_bohr()
+    mol.make_contracted_gaussian_type_orbital()
+    cgtos = mol.contracted_gaussian_type_orbitals
+    nuclei = extract_nuclei(mol)
+    e_nuclear = NuclearRepulsionEnergy(mol).energy
+    return cgtos, nuclei, e_nuclear
+
+
+def h_atom_inputs(
+    basis: Pople = BASIS_STO_3G,
+) -> Tuple[list, list, float]:
+    """Return (cgtos, nuclei, e_nuclear) for an H atom (doublet, multiplicity=2).
+
+    :param basis: Basis set (defaults to STO-3G).
+    :type basis: Pople
+    :returns: CGTOs, nuclei list, and nuclear repulsion energy.
+    :rtype: Tuple[list, list, float]
+    """
+    inp = InputData()
+    inp.from_script(
+        atom_data=[
+            ["H", 0.0, 0.0, 0.0, basis],
+        ]
+    )
+    mol = Molecule(input_data=inp, multiplicity=2)
+    mol.to_bohr()
+    mol.make_contracted_gaussian_type_orbital()
+    cgtos = mol.contracted_gaussian_type_orbitals
+    nuclei = extract_nuclei(mol)
+    e_nuclear = NuclearRepulsionEnergy(mol).energy
+    return cgtos, nuclei, e_nuclear
+
+
+def li_inputs(
+    basis: Pople = BASIS_STO_3G,
+) -> Tuple[list, list, float]:
+    """Return (cgtos, nuclei, e_nuclear) for a Li atom (doublet, multiplicity=2).
+
+    Li has Z=3 (1s² 2s¹): suitable for ROKS with n_closed=1, n_open=1.
+
+    :param basis: Basis set (defaults to STO-3G).
+    :type basis: Pople
+    :returns: CGTOs, nuclei list, and nuclear repulsion energy.
+    :rtype: Tuple[list, list, float]
+    """
+    inp = InputData()
+    inp.from_script(
+        atom_data=[
+            ["Li", 0.0, 0.0, 0.0, basis],
+        ]
+    )
+    mol = Molecule(input_data=inp, multiplicity=2)
+    mol.to_bohr()
+    mol.make_contracted_gaussian_type_orbital()
+    cgtos = mol.contracted_gaussian_type_orbitals
+    nuclei = extract_nuclei(mol)
+    e_nuclear = NuclearRepulsionEnergy(mol).energy
+    return cgtos, nuclei, e_nuclear
 
 
 # ======================================================================

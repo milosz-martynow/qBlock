@@ -1,20 +1,14 @@
 # Changelog
 
-All notable changes to this project will be documented in this file.
-
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+All notable and major changes to this project will be documented in this file.
 
 ## [1.0.7] - 2026-05-05
 
 ### Added
-- ROKS - Restricted Open Shell Kohn Sham DFT and everything around it in the project
+- ROKS - Restricted Open Shell Kohn Sham DFT `q_block\compute\solvers\electronic_density\kohn_sham\restricted_open_shell_kohn_sham.py` with tests.
 
 ### Changed
 - ...
 
 ### Fixed
 - ...
-
-[1.0.7]: https://github.com/milosz-martynow/qBlock/releases/tag/v1.0.7
-[1.0.0]: https://github.com/milosz-martynow/qBlock/releases/tag/v1.0.0

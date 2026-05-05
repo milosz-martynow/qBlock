@@ -1,28 +1,22 @@
-﻿"""Verification tests for Kohn-Sham DFT solvers.
+"""Unit tests for compute.solvers.electronic_density.kohn_sham.kohn_sham module.
 
-Tests cover:
-- RestrictedKohnSham construction and properties
-- UnrestrictedKohnSham construction and properties
-- Basis function evaluation on grid
-- Density-on-grid computation
-- XC potential matrix construction
-- RKS and UKS matrix storage
-- Parameter validation
+Tests cover the :class:`KohnSham` abstract base class, exercising
+methods that are shared by all KS variants (RKS, UKS, ROKS):
 
-Uses minimal H₂ (STO-3G) to keep tests fast.
+- Basis function evaluation on the numerical grid (phi_grid, dphi_grid)
+- Density on grid (_density_on_grid)
+- Density gradient on grid (_gradient_on_grid)
+- Coulomb and exchange matrix construction (_build_coulomb, _build_exchange)
+- XC potential matrix construction (_build_vxc_matrix)
+- XC energy computation (_compute_xc_energy)
+
+Uses H2 / STO-3G (2 basis functions) to keep tests fast.  All base-class
+methods are exercised through RestrictedKohnSham as a concrete proxy.
 """
-
-from typing import List, Tuple
 
 import numpy as np
 import pytest
 
-from q_block.compute.environment.io.basis_set import Pople
-from q_block.compute.environment.io.input_data import InputData
-from q_block.compute.models.initialization.nuclear_repulsion_energy import (
-    NuclearRepulsionEnergy,
-)
-from q_block.compute.models.molecule import Molecule
 from q_block.compute.solvers.electronic_density.functionals import (
     B3LYP,
     PBE,
@@ -30,93 +24,22 @@ from q_block.compute.solvers.electronic_density.functionals import (
 )
 from q_block.compute.solvers.electronic_density.kohn_sham import (
     RestrictedKohnSham,
-    RestrictedOpenShellKohnSham,
-    UnrestrictedKohnSham,
 )
-from q_block.tests.verification.environment.constants import (
-    BASIS_STO_3G,
+from q_block.tests.verification.utilities import (
+    h2_inputs,
 )
 
 
-# ======================================================================
-# Fixtures
-# ======================================================================
-
-
-def _h2_inputs(
-    basis: Pople = BASIS_STO_3G,
-) -> Tuple[list, list, float]:
-    """Return (cgtos, nuclei, e_nuclear) for H₂ at 0.74 Å.
-
-    :param basis: Basis set.
-    :type basis: Pople
-    :returns: CGTOs, nuclei, and nuclear repulsion energy.
-    :rtype: Tuple[list, list, float]
-    """
-    inp = InputData()
-    inp.from_script(
-        atom_data=[
-            ["H", 0.0, 0.0, 0.0, basis],
-            ["H", 0.0, 0.0, 0.74, basis],
-        ]
-    )
-    mol = Molecule(input_data=inp, multiplicity=1)
-    mol.to_bohr()
-    mol.make_contracted_gaussian_type_orbital()
-    cgtos = mol.contracted_gaussian_type_orbitals
-    nuclei = [
-        (
-            a.atomic_number,
-            (a.coordinates.x, a.coordinates.y, a.coordinates.z),
-        )
-        for a in mol.atoms
-    ]
-    e_nuclear = NuclearRepulsionEnergy(mol).energy
-    return cgtos, nuclei, e_nuclear
 
 
 # ======================================================================
-# RKS construction
+# Basis function grid � phi_grid
 # ======================================================================
 
 
-def test_rks_construction_svwn() -> None:
-    """RKS initialises correctly with SVWN functional."""
-    cgtos, nuclei, e_nuc = _h2_inputs()
-    rks = RestrictedKohnSham(
-        cgtos=cgtos,
-        nuclei=nuclei,
-        e_nuclear=e_nuc,
-        functional=SVWN(),
-        n_electrons=2,
-        n_radial=20,
-        n_angular=6,
-    )
-    assert rks.n_alpha == 1
-    assert rks.n_beta == 1
-    assert rks.n_electrons == 2
-    assert rks._shared_spin is True
-    assert rks.functional.name == "SVWN"
-
-
-def test_rks_odd_electrons_raises() -> None:
-    """RKS raises ValueError for odd electron count."""
-    cgtos, nuclei, e_nuc = _h2_inputs()
-    with pytest.raises(ValueError, match="even number"):
-        RestrictedKohnSham(
-            cgtos=cgtos,
-            nuclei=nuclei,
-            e_nuclear=e_nuc,
-            functional=SVWN(),
-            n_electrons=1,
-            n_radial=20,
-            n_angular=6,
-        )
-
-
-def test_rks_phi_grid_shape() -> None:
-    """Basis function values on grid have correct shape."""
-    cgtos, nuclei, e_nuc = _h2_inputs()
+def test_phi_grid_shape() -> None:
+    """phi_grid has shape (n_basis, n_points) and all entries are finite."""
+    cgtos, nuclei, e_nuc = h2_inputs()
     rks = RestrictedKohnSham(
         cgtos=cgtos,
         nuclei=nuclei,
@@ -130,9 +53,9 @@ def test_rks_phi_grid_shape() -> None:
     assert np.all(np.isfinite(rks.phi_grid))
 
 
-def test_rks_dphi_grid_none_for_lda() -> None:
-    """Gradient grid is None for LDA functionals."""
-    cgtos, nuclei, e_nuc = _h2_inputs()
+def test_dphi_grid_none_for_lda() -> None:
+    """dphi_grid is None for LDA functionals (no gradient needed)."""
+    cgtos, nuclei, e_nuc = h2_inputs()
     rks = RestrictedKohnSham(
         cgtos=cgtos,
         nuclei=nuclei,
@@ -145,9 +68,9 @@ def test_rks_dphi_grid_none_for_lda() -> None:
     assert rks.dphi_grid is None
 
 
-def test_rks_dphi_grid_computed_for_gga() -> None:
-    """Gradient grid is computed for GGA functionals."""
-    cgtos, nuclei, e_nuc = _h2_inputs()
+def test_dphi_grid_computed_for_gga() -> None:
+    """dphi_grid has shape (3, n_basis, n_points) for GGA functionals."""
+    cgtos, nuclei, e_nuc = h2_inputs()
     rks = RestrictedKohnSham(
         cgtos=cgtos,
         nuclei=nuclei,
@@ -158,17 +81,13 @@ def test_rks_dphi_grid_computed_for_gga() -> None:
         n_angular=6,
     )
     assert rks.dphi_grid is not None
-    assert rks.dphi_grid.shape == (
-        3,
-        rks.n_basis,
-        rks.grid.n_points,
-    )
+    assert rks.dphi_grid.shape == (3, rks.n_basis, rks.grid.n_points)
     assert np.all(np.isfinite(rks.dphi_grid))
 
 
-def test_rks_dphi_grid_computed_for_hybrid() -> None:
-    """Gradient grid is computed for hybrid functionals."""
-    cgtos, nuclei, e_nuc = _h2_inputs()
+def test_dphi_grid_computed_for_hybrid() -> None:
+    """dphi_grid is computed for hybrid functionals."""
+    cgtos, nuclei, e_nuc = h2_inputs()
     rks = RestrictedKohnSham(
         cgtos=cgtos,
         nuclei=nuclei,
@@ -182,13 +101,100 @@ def test_rks_dphi_grid_computed_for_hybrid() -> None:
 
 
 # ======================================================================
-# RKS density on grid
+# _density_on_grid
 # ======================================================================
 
 
-def test_rks_density_on_grid_non_negative() -> None:
-    """Density on grid is non-negative."""
-    cgtos, nuclei, e_nuc = _h2_inputs()
+def test_density_on_grid_shape_and_non_negative() -> None:
+    """_density_on_grid returns (n_points,) array with rho >= 0."""
+    cgtos, nuclei, e_nuc = h2_inputs()
+    rks = RestrictedKohnSham(
+        cgtos=cgtos,
+        nuclei=nuclei,
+        e_nuclear=e_nuc,
+        functional=SVWN(),
+        n_electrons=2,
+        n_radial=20,
+        n_angular=6,
+    )
+    P = np.eye(rks.n_basis) * 0.5
+    rho = rks._density_on_grid(P)
+    assert rho.shape == (rks.grid.n_points,)
+    assert np.all(rho >= 0.0)
+
+
+# ======================================================================
+# _gradient_on_grid
+# ======================================================================
+
+
+def test_gradient_on_grid_shape_and_finite() -> None:
+    """_gradient_on_grid returns (3, n_points) finite array for GGA."""
+    cgtos, nuclei, e_nuc = h2_inputs()
+    rks = RestrictedKohnSham(
+        cgtos=cgtos,
+        nuclei=nuclei,
+        e_nuclear=e_nuc,
+        functional=PBE(),
+        n_electrons=2,
+        n_radial=20,
+        n_angular=6,
+    )
+    P = np.eye(rks.n_basis) * 0.5
+    grad = rks._gradient_on_grid(P)
+    assert grad.shape == (3, rks.grid.n_points)
+    assert np.all(np.isfinite(grad))
+
+
+# ======================================================================
+# _build_coulomb / _build_exchange
+# ======================================================================
+
+
+def test_coulomb_matrix_square_and_symmetric() -> None:
+    """_build_coulomb returns a square symmetric matrix."""
+    cgtos, nuclei, e_nuc = h2_inputs()
+    rks = RestrictedKohnSham(
+        cgtos=cgtos,
+        nuclei=nuclei,
+        e_nuclear=e_nuc,
+        functional=SVWN(),
+        n_electrons=2,
+        n_radial=20,
+        n_angular=6,
+    )
+    n = rks.n_basis
+    J = rks._build_coulomb(np.eye(n) * 0.5)
+    assert J.shape == (n, n)
+    assert np.allclose(J, J.T)
+
+
+def test_exchange_matrix_square_and_symmetric() -> None:
+    """_build_exchange returns a square symmetric matrix."""
+    cgtos, nuclei, e_nuc = h2_inputs()
+    rks = RestrictedKohnSham(
+        cgtos=cgtos,
+        nuclei=nuclei,
+        e_nuclear=e_nuc,
+        functional=SVWN(),
+        n_electrons=2,
+        n_radial=20,
+        n_angular=6,
+    )
+    n = rks.n_basis
+    K = rks._build_exchange(np.eye(n) * 0.5)
+    assert K.shape == (n, n)
+    assert np.allclose(K, K.T)
+
+
+# ======================================================================
+# _build_vxc_matrix
+# ======================================================================
+
+
+def test_vxc_matrix_shape_and_symmetry_lda() -> None:
+    """_build_vxc_matrix returns a square symmetric matrix for LDA."""
+    cgtos, nuclei, e_nuc = h2_inputs()
     rks = RestrictedKohnSham(
         cgtos=cgtos,
         nuclei=nuclei,
@@ -200,349 +206,69 @@ def test_rks_density_on_grid_non_negative() -> None:
     )
     n = rks.n_basis
     P = np.eye(n) * 0.5
-    rho = rks._density_on_grid(P)
-    assert rho.shape == (rks.grid.n_points,)
-    assert np.all(rho >= 0.0)
+    rho_a = rks._density_on_grid(P)
+    rho_b = rks._density_on_grid(P)
+    _, vxc_a, vxc_b = rks.functional.compute_exc_vxc(rho_a, rho_b)
+    Vxc = rks._build_vxc_matrix(rho_a, rho_b, vxc_a, vxc_b)
+    assert Vxc.alpha.shape == (n, n)
+    assert np.allclose(Vxc.alpha, Vxc.alpha.T)
 
 
-# ======================================================================
-# UKS construction
-# ======================================================================
-
-
-def test_uks_construction_svwn() -> None:
-    """UKS initialises correctly with SVWN functional."""
-    cgtos, nuclei, e_nuc = _h2_inputs()
-    uks = UnrestrictedKohnSham(
-        cgtos=cgtos,
-        nuclei=nuclei,
-        e_nuclear=e_nuc,
-        functional=SVWN(),
-        n_alpha=1,
-        n_beta=1,
-        n_radial=20,
-        n_angular=6,
-    )
-    assert uks.n_alpha == 1
-    assert uks.n_beta == 1
-    assert uks.n_electrons == 2
-    assert uks._shared_spin is False
-    assert uks.functional.name == "SVWN"
-
-
-def test_uks_negative_electrons_raises() -> None:
-    """UKS raises ValueError for negative electron count."""
-    cgtos, nuclei, e_nuc = _h2_inputs()
-    with pytest.raises(ValueError, match="non-negative"):
-        UnrestrictedKohnSham(
-            cgtos=cgtos,
-            nuclei=nuclei,
-            e_nuclear=e_nuc,
-            functional=SVWN(),
-            n_alpha=-1,
-            n_beta=0,
-            n_radial=20,
-            n_angular=6,
-        )
-
-
-# ======================================================================
-# RKS SCF convergence (small system, fast test)
-# ======================================================================
-
-
-def test_rks_svwn_h2_converges() -> None:
-    """RKS-SVWN converges for H₂ with STO-3G."""
-    cgtos, nuclei, e_nuc = _h2_inputs()
-    rks = RestrictedKohnSham(
-        cgtos=cgtos,
-        nuclei=nuclei,
-        e_nuclear=e_nuc,
-        functional=SVWN(),
-        n_electrons=2,
-        n_radial=30,
-        n_angular=6,
-        max_iterations=100,
-        convergence_threshold=1e-5,
-    ).run()
-    assert rks.converged
-    assert rks.e_total < 0.0
-    assert "C" in rks.matrices
-    assert "P" in rks.matrices
-
-
-def test_rks_pbe_h2_converges() -> None:
-    """RKS-PBE converges for H₂ with STO-3G."""
-    cgtos, nuclei, e_nuc = _h2_inputs()
+def test_vxc_matrix_shape_gga() -> None:
+    """_build_vxc_matrix has correct shape for GGA functionals."""
+    cgtos, nuclei, e_nuc = h2_inputs()
     rks = RestrictedKohnSham(
         cgtos=cgtos,
         nuclei=nuclei,
         e_nuclear=e_nuc,
         functional=PBE(),
         n_electrons=2,
-        n_radial=30,
-        n_angular=6,
-        max_iterations=100,
-        convergence_threshold=1e-5,
-    ).run()
-    assert rks.converged
-    assert rks.e_total < 0.0
-
-
-def test_rks_b3lyp_h2_converges() -> None:
-    """RKS-B3LYP converges for H₂ with STO-3G."""
-    cgtos, nuclei, e_nuc = _h2_inputs()
-    rks = RestrictedKohnSham(
-        cgtos=cgtos,
-        nuclei=nuclei,
-        e_nuclear=e_nuc,
-        functional=B3LYP(),
-        n_electrons=2,
-        n_radial=30,
-        n_angular=6,
-        max_iterations=100,
-        convergence_threshold=1e-5,
-    ).run()
-    assert rks.converged
-    assert rks.e_total < 0.0
-
-
-# ======================================================================
-# UKS SCF convergence
-# ======================================================================
-
-
-def test_uks_svwn_h2_converges() -> None:
-    """UKS-SVWN converges for H₂ with STO-3G."""
-    cgtos, nuclei, e_nuc = _h2_inputs()
-    uks = UnrestrictedKohnSham(
-        cgtos=cgtos,
-        nuclei=nuclei,
-        e_nuclear=e_nuc,
-        functional=SVWN(),
-        n_alpha=1,
-        n_beta=1,
-        n_radial=30,
-        n_angular=6,
-        max_iterations=100,
-        convergence_threshold=1e-5,
-    ).run()
-    assert uks.converged
-    assert uks.e_total < 0.0
-    assert "C_alpha" in uks.matrices
-    assert "C_beta" in uks.matrices
-
-
-# ======================================================================
-# Energy ordering (SVWN < PBE < B3LYP typical for H₂)
-# ======================================================================
-
-
-def test_rks_total_energy_finite() -> None:
-    """RKS-SVWN produces finite total energy for H₂."""
-    cgtos, nuclei, e_nuc = _h2_inputs()
-    rks = RestrictedKohnSham(
-        cgtos=cgtos,
-        nuclei=nuclei,
-        e_nuclear=e_nuc,
-        functional=SVWN(),
-        n_electrons=2,
-        n_radial=30,
-        n_angular=6,
-        max_iterations=100,
-        convergence_threshold=1e-5,
-    ).run()
-    assert np.isfinite(rks.e_total)
-
-
-# ======================================================================
-# ROKS helpers
-# ======================================================================
-
-
-def _li_inputs(
-    basis: Pople = BASIS_STO_3G,
-) -> Tuple[list, list, float]:
-    """Return (cgtos, nuclei, e_nuclear) for Li atom.
-
-    Li is a doublet with n_closed=1, n_open=1 — the simplest meaningful
-    ROKS test case.
-
-    :param basis: Basis set.
-    :type basis: Pople
-    :returns: CGTOs, nuclei, and nuclear repulsion energy (0 for atom).
-    :rtype: Tuple[list, list, float]
-    """
-    inp = InputData()
-    inp.from_script(
-        atom_data=[
-            ["Li", 0.0, 0.0, 0.0, basis],
-        ]
-    )
-    mol = Molecule(input_data=inp, multiplicity=2)
-    mol.to_bohr()
-    mol.make_contracted_gaussian_type_orbital()
-    cgtos = mol.contracted_gaussian_type_orbitals
-    nuclei = [
-        (
-            a.atomic_number,
-            (a.coordinates.x, a.coordinates.y, a.coordinates.z),
-        )
-        for a in mol.atoms
-    ]
-    e_nuclear = NuclearRepulsionEnergy(mol).energy
-    return cgtos, nuclei, e_nuclear
-
-
-# ======================================================================
-# ROKS construction
-# ======================================================================
-
-
-def test_roks_construction_svwn() -> None:
-    """ROKS initialises correctly with SVWN functional."""
-    cgtos, nuclei, e_nuc = _li_inputs()
-    roks = RestrictedOpenShellKohnSham(
-        cgtos=cgtos,
-        nuclei=nuclei,
-        e_nuclear=e_nuc,
-        functional=SVWN(),
-        n_closed=1,
-        n_open=1,
         n_radial=20,
         n_angular=6,
     )
-    assert roks.n_closed == 1
-    assert roks.n_open == 1
-    assert roks.n_alpha == 2
-    assert roks.n_beta == 1
-    assert roks.n_electrons == 3
-    assert roks._shared_spin is False
-    assert roks.functional.name == "SVWN"
-
-
-def test_roks_negative_closed_raises() -> None:
-    """ROKS raises ValueError for negative n_closed."""
-    cgtos, nuclei, e_nuc = _li_inputs()
-    with pytest.raises(ValueError, match="non-negative"):
-        RestrictedOpenShellKohnSham(
-            cgtos=cgtos,
-            nuclei=nuclei,
-            e_nuclear=e_nuc,
-            functional=SVWN(),
-            n_closed=-1,
-            n_open=1,
-            n_radial=20,
-            n_angular=6,
-        )
-
-
-def test_roks_zero_open_raises() -> None:
-    """ROKS raises ValueError when n_open is zero."""
-    cgtos, nuclei, e_nuc = _li_inputs()
-    with pytest.raises(ValueError, match="open-shell orbital"):
-        RestrictedOpenShellKohnSham(
-            cgtos=cgtos,
-            nuclei=nuclei,
-            e_nuclear=e_nuc,
-            functional=SVWN(),
-            n_closed=1,
-            n_open=0,
-            n_radial=20,
-            n_angular=6,
-        )
+    n = rks.n_basis
+    P = np.eye(n) * 0.5
+    rho_a = rks._density_on_grid(P)
+    rho_b = rks._density_on_grid(P)
+    grad_a = rks._gradient_on_grid(P)
+    gamma_aa = np.sum(grad_a * grad_a, axis=0)
+    gamma_ab = gamma_aa
+    gamma_bb = gamma_aa
+    _, vxc_a, vxc_b = rks.functional.compute_exc_vxc(
+        rho_a,
+        rho_b,
+        gamma_aa=gamma_aa,
+        gamma_ab=gamma_ab,
+        gamma_bb=gamma_bb,
+    )
+    Vxc = rks._build_vxc_matrix(rho_a, rho_b, vxc_a, vxc_b)
+    assert Vxc.alpha.shape == (n, n)
 
 
 # ======================================================================
-# ROKS SCF convergence
+# _compute_xc_energy
 # ======================================================================
 
 
-def test_roks_svwn_li_converges() -> None:
-    """ROKS-SVWN converges for Li with STO-3G."""
-    cgtos, nuclei, e_nuc = _li_inputs()
-    roks = RestrictedOpenShellKohnSham(
+def test_xc_energy_is_finite_float() -> None:
+    """_compute_xc_energy returns a finite float for SVWN."""
+    cgtos, nuclei, e_nuc = h2_inputs()
+    rks = RestrictedKohnSham(
         cgtos=cgtos,
         nuclei=nuclei,
         e_nuclear=e_nuc,
         functional=SVWN(),
-        n_closed=1,
-        n_open=1,
-        n_radial=30,
+        n_electrons=2,
+        n_radial=20,
         n_angular=6,
-        max_iterations=150,
-        convergence_threshold=1e-5,
-    ).run()
-    assert roks.converged
-    assert roks.e_total < 0.0
-    assert "C" in roks.matrices
-    assert "P" in roks.matrices
-    assert "F_eff" in roks.matrices
-    assert "F_alpha" in roks.matrices
-    assert "F_beta" in roks.matrices
-    assert "P_alpha" in roks.matrices
-    assert "P_beta" in roks.matrices
-    assert "epsilon" in roks.matrices
+    )
+    P = np.eye(rks.n_basis) * 0.5
+    rho_a = rks._density_on_grid(P)
+    rho_b = rks._density_on_grid(P)
+    rho = rho_a + rho_b
+    exc, _, _ = rks.functional.compute_exc_vxc(rho_a, rho_b)
+    e_xc = rks._compute_xc_energy(exc, rho)
+    assert isinstance(e_xc, float)
+    assert np.isfinite(e_xc)
 
 
-def test_roks_pbe_li_converges() -> None:
-    """ROKS-PBE converges for Li with STO-3G."""
-    cgtos, nuclei, e_nuc = _li_inputs()
-    roks = RestrictedOpenShellKohnSham(
-        cgtos=cgtos,
-        nuclei=nuclei,
-        e_nuclear=e_nuc,
-        functional=PBE(),
-        n_closed=1,
-        n_open=1,
-        n_radial=30,
-        n_angular=6,
-        max_iterations=150,
-        convergence_threshold=1e-5,
-    ).run()
-    assert roks.converged
-    assert roks.e_total < 0.0
-
-
-def test_roks_b3lyp_li_converges() -> None:
-    """ROKS-B3LYP converges for Li with STO-3G."""
-    cgtos, nuclei, e_nuc = _li_inputs()
-    roks = RestrictedOpenShellKohnSham(
-        cgtos=cgtos,
-        nuclei=nuclei,
-        e_nuclear=e_nuc,
-        functional=B3LYP(),
-        n_closed=1,
-        n_open=1,
-        n_radial=30,
-        n_angular=6,
-        max_iterations=150,
-        convergence_threshold=1e-5,
-    ).run()
-    assert roks.converged
-    assert roks.e_total < 0.0
-
-
-def test_roks_density_matrices_consistent() -> None:
-    """ROKS: P_alpha contains open-shell electrons; P_beta is closed-shell only."""
-    cgtos, nuclei, e_nuc = _li_inputs()
-    roks = RestrictedOpenShellKohnSham(
-        cgtos=cgtos,
-        nuclei=nuclei,
-        e_nuclear=e_nuc,
-        functional=SVWN(),
-        n_closed=1,
-        n_open=1,
-        n_radial=30,
-        n_angular=6,
-        max_iterations=150,
-        convergence_threshold=1e-5,
-    ).run()
-    P_alpha = roks.matrices["P_alpha"]
-    P_beta = roks.matrices["P_beta"]
-    P_total = roks.matrices["P"]
-    # trace of P_alpha = n_alpha = 2, P_beta = n_beta = 1
-    assert abs(np.trace(P_alpha @ roks.matrices["S"]) - 2.0) < 0.05
-    assert abs(np.trace(P_beta @ roks.matrices["S"]) - 1.0) < 0.05
-    # P_total = P_alpha + P_beta
-    assert np.allclose(P_total, P_alpha + P_beta)
