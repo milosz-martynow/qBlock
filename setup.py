@@ -2,6 +2,7 @@
 Build qBlock as a module.
 """
 
+from pathlib import Path
 from typing import List
 
 from setuptools import find_packages, setup
@@ -31,7 +32,7 @@ setup(
     author=PROJECT_AUTHOR,
     author_email=PROJECT_AUTHOR_EMAIL,
     description=PROJECT_DESCRIPTION,
-    long_description=open("README.md", encoding="utf-8").read(),
+    long_description=(Path(__file__).parent / "README.md").read_text(encoding="utf-8"),
     long_description_content_type="text/markdown",
     python_requires="==3.12.*",
     packages=find_packages(),
