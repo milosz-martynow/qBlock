@@ -34,6 +34,8 @@ autoapi_options: List[str] = [
     "undoc-members",
     "show-inheritance",
     "show-module-summary",
+    "subpackages",
+    "submodules",
 ]
 autoapi_python_class_content: str = "both"
 
