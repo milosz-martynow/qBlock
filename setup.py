@@ -6,6 +6,16 @@ from typing import List
 
 from setuptools import find_packages, setup
 
+PROJECT_NAME: str = "qBlock"
+PROJECT_VERSION: str = "1.0.7"
+PROJECT_AUTHOR: str = "Miłosz Martynow"
+PROJECT_AUTHOR_EMAIL: str = "miloszmartynow@gmail.com"
+PROJECT_DESCRIPTION: str = (
+    "Easy in maintenance software to study electronic structure of atomic "
+    "systems via SCF process, including Hartree-Fock and Density Functional "
+    "Theory."
+)
+
 requires: List[str] = [
     "setuptools==80.9.0",
     "pandas==2.3.3",
@@ -16,11 +26,11 @@ test: List[str] = ["pytest==9.0.2"]
 extra: List[str] = ["pylint==4.0.4", "black==25.12.0", "isort==7.0.0"]
 
 setup(
-    name="qBlock",
-    version="1.0.7",
-    author="Miłosz Martynow",
-    author_email="miloszmartynow@gmail.com",
-    description="Easy in maintenance software to study electronic structure of atomic systems via SCF process, including Hartree-Fock and Density Functional Theory.",
+    name=PROJECT_NAME,
+    version=PROJECT_VERSION,
+    author=PROJECT_AUTHOR,
+    author_email=PROJECT_AUTHOR_EMAIL,
+    description=PROJECT_DESCRIPTION,
     long_description=open("README.md", encoding="utf-8").read(),
     long_description_content_type="text/markdown",
     python_requires="==3.12.*",

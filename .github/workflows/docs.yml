@@ -1,0 +1,42 @@
+name: Deploy Docs to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+
+# Allow only one concurrent deployment
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write  # needed to push to gh-pages branch
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          pip install sphinx sphinx-autoapi furo
+          pip install -e .
+
+      - name: Build documentation
+        run: |
+          sphinx-build -b html \
+            q_block/learn/documentation/web_page/ \
+            q_block/learn/documentation/web_page/_build/html
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: q_block/learn/documentation/web_page/_build/html
