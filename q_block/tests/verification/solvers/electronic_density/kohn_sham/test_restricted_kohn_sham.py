@@ -47,11 +47,9 @@ def test_rks_construction_all_functionals(
     :param functional: XC functional instance.
     :type functional: object
     """
-    cgtos, nuclei, e_nuc = h2_inputs()
+    cgtos = h2_inputs()
     rks = RestrictedKohnSham(
         cgtos=cgtos,
-        nuclei=nuclei,
-        e_nuclear=e_nuc,
         functional=functional,
         n_electrons=2,
         n_radial=20,
@@ -63,12 +61,10 @@ def test_rks_construction_all_functionals(
 
 def test_rks_odd_electrons_raises() -> None:
     """RKS raises ValueError when n_electrons is odd."""
-    cgtos, nuclei, e_nuc = h2_inputs()
+    cgtos = h2_inputs()
     with pytest.raises(ValueError, match="even number"):
         RestrictedKohnSham(
             cgtos=cgtos,
-            nuclei=nuclei,
-            e_nuclear=e_nuc,
             functional=SVWN(),
             n_electrons=1,
             n_radial=20,
@@ -83,11 +79,9 @@ def test_rks_odd_electrons_raises() -> None:
 
 def test_rks_n_electrons_property() -> None:
     """n_electrons equals the supplied electron count."""
-    cgtos, nuclei, e_nuc = h2_inputs()
+    cgtos = h2_inputs()
     rks = RestrictedKohnSham(
         cgtos=cgtos,
-        nuclei=nuclei,
-        e_nuclear=e_nuc,
         functional=SVWN(),
         n_electrons=2,
         n_radial=20,
@@ -98,11 +92,9 @@ def test_rks_n_electrons_property() -> None:
 
 def test_rks_n_occ_is_half_n_electrons() -> None:
     """n_occ equals n_electrons // 2."""
-    cgtos, nuclei, e_nuc = h2_inputs()
+    cgtos = h2_inputs()
     rks = RestrictedKohnSham(
         cgtos=cgtos,
-        nuclei=nuclei,
-        e_nuclear=e_nuc,
         functional=SVWN(),
         n_electrons=2,
         n_radial=20,
@@ -113,11 +105,9 @@ def test_rks_n_occ_is_half_n_electrons() -> None:
 
 def test_rks_alpha_beta_equal_n_occ() -> None:
     """n_alpha == n_beta == n_occ for a closed-shell system."""
-    cgtos, nuclei, e_nuc = h2_inputs()
+    cgtos = h2_inputs()
     rks = RestrictedKohnSham(
         cgtos=cgtos,
-        nuclei=nuclei,
-        e_nuclear=e_nuc,
         functional=SVWN(),
         n_electrons=2,
         n_radial=20,
@@ -129,11 +119,9 @@ def test_rks_alpha_beta_equal_n_occ() -> None:
 
 def test_rks_shared_spin_is_true() -> None:
     """_shared_spin is True for RKS (closed-shell)."""
-    cgtos, nuclei, e_nuc = h2_inputs()
+    cgtos = h2_inputs()
     rks = RestrictedKohnSham(
         cgtos=cgtos,
-        nuclei=nuclei,
-        e_nuclear=e_nuc,
         functional=SVWN(),
         n_electrons=2,
         n_radial=20,
@@ -149,11 +137,9 @@ def test_rks_shared_spin_is_true() -> None:
 
 def test_rks_svwn_h2_converges() -> None:
     """RKS-SVWN converges for H₂ / STO-3G."""
-    cgtos, nuclei, e_nuc = h2_inputs()
+    cgtos = h2_inputs()
     rks = RestrictedKohnSham(
         cgtos=cgtos,
-        nuclei=nuclei,
-        e_nuclear=e_nuc,
         functional=SVWN(),
         n_electrons=2,
         n_radial=30,
@@ -169,11 +155,9 @@ def test_rks_svwn_h2_converges() -> None:
 
 def test_rks_pbe_h2_converges() -> None:
     """RKS-PBE converges for H₂ / STO-3G."""
-    cgtos, nuclei, e_nuc = h2_inputs()
+    cgtos = h2_inputs()
     rks = RestrictedKohnSham(
         cgtos=cgtos,
-        nuclei=nuclei,
-        e_nuclear=e_nuc,
         functional=PBE(),
         n_electrons=2,
         n_radial=30,
@@ -187,11 +171,9 @@ def test_rks_pbe_h2_converges() -> None:
 
 def test_rks_b3lyp_h2_converges() -> None:
     """RKS-B3LYP converges for H₂ / STO-3G."""
-    cgtos, nuclei, e_nuc = h2_inputs()
+    cgtos = h2_inputs()
     rks = RestrictedKohnSham(
         cgtos=cgtos,
-        nuclei=nuclei,
-        e_nuclear=e_nuc,
         functional=B3LYP(),
         n_electrons=2,
         n_radial=30,
@@ -210,11 +192,9 @@ def test_rks_b3lyp_h2_converges() -> None:
 
 def test_rks_total_energy_finite() -> None:
     """RKS-SVWN produces a finite total energy for H₂."""
-    cgtos, nuclei, e_nuc = h2_inputs()
+    cgtos = h2_inputs()
     rks = RestrictedKohnSham(
         cgtos=cgtos,
-        nuclei=nuclei,
-        e_nuclear=e_nuc,
         functional=SVWN(),
         n_electrons=2,
         n_radial=30,
@@ -227,11 +207,9 @@ def test_rks_total_energy_finite() -> None:
 
 def test_rks_matrix_shapes_after_convergence() -> None:
     """All stored matrices have correct shapes after convergence."""
-    cgtos, nuclei, e_nuc = h2_inputs()
+    cgtos = h2_inputs()
     rks = RestrictedKohnSham(
         cgtos=cgtos,
-        nuclei=nuclei,
-        e_nuclear=e_nuc,
         functional=SVWN(),
         n_electrons=2,
         n_radial=30,
@@ -250,11 +228,9 @@ def test_rks_matrix_shapes_after_convergence() -> None:
 
 def test_rks_fock_symmetric_after_convergence() -> None:
     """Fock matrix F is symmetric after convergence."""
-    cgtos, nuclei, e_nuc = h2_inputs()
+    cgtos = h2_inputs()
     rks = RestrictedKohnSham(
         cgtos=cgtos,
-        nuclei=nuclei,
-        e_nuclear=e_nuc,
         functional=SVWN(),
         n_electrons=2,
         n_radial=30,
@@ -268,11 +244,9 @@ def test_rks_fock_symmetric_after_convergence() -> None:
 
 def test_rks_density_matrix_symmetric() -> None:
     """Density matrix P is symmetric after convergence."""
-    cgtos, nuclei, e_nuc = h2_inputs()
+    cgtos = h2_inputs()
     rks = RestrictedKohnSham(
         cgtos=cgtos,
-        nuclei=nuclei,
-        e_nuclear=e_nuc,
         functional=SVWN(),
         n_electrons=2,
         n_radial=30,
@@ -286,11 +260,9 @@ def test_rks_density_matrix_symmetric() -> None:
 
 def test_rks_density_matrix_positive_semidefinite() -> None:
     """Density matrix P has non-negative eigenvalues after convergence."""
-    cgtos, nuclei, e_nuc = h2_inputs()
+    cgtos = h2_inputs()
     rks = RestrictedKohnSham(
         cgtos=cgtos,
-        nuclei=nuclei,
-        e_nuclear=e_nuc,
         functional=SVWN(),
         n_electrons=2,
         n_radial=30,
@@ -304,11 +276,9 @@ def test_rks_density_matrix_positive_semidefinite() -> None:
 
 def test_rks_density_trace_equals_n_electrons() -> None:
     """tr(P @ S) equals n_electrons after convergence."""
-    cgtos, nuclei, e_nuc = h2_inputs()
+    cgtos = h2_inputs()
     rks = RestrictedKohnSham(
         cgtos=cgtos,
-        nuclei=nuclei,
-        e_nuclear=e_nuc,
         functional=SVWN(),
         n_electrons=2,
         n_radial=30,
@@ -327,11 +297,9 @@ def test_rks_density_trace_equals_n_electrons() -> None:
 
 def test_rks_orbital_energies_sorted() -> None:
     """Orbital energies are sorted in ascending order after convergence."""
-    cgtos, nuclei, e_nuc = h2_inputs()
+    cgtos = h2_inputs()
     rks = RestrictedKohnSham(
         cgtos=cgtos,
-        nuclei=nuclei,
-        e_nuclear=e_nuc,
         functional=SVWN(),
         n_electrons=2,
         n_radial=30,
@@ -345,11 +313,9 @@ def test_rks_orbital_energies_sorted() -> None:
 
 def test_rks_orbital_energies_finite() -> None:
     """All orbital energies are finite after convergence."""
-    cgtos, nuclei, e_nuc = h2_inputs()
+    cgtos = h2_inputs()
     rks = RestrictedKohnSham(
         cgtos=cgtos,
-        nuclei=nuclei,
-        e_nuclear=e_nuc,
         functional=SVWN(),
         n_electrons=2,
         n_radial=30,
@@ -362,11 +328,9 @@ def test_rks_orbital_energies_finite() -> None:
 
 def test_rks_homo_energy_negative() -> None:
     """HOMO orbital energy is negative (bound state)."""
-    cgtos, nuclei, e_nuc = h2_inputs()
+    cgtos = h2_inputs()
     rks = RestrictedKohnSham(
         cgtos=cgtos,
-        nuclei=nuclei,
-        e_nuclear=e_nuc,
         functional=SVWN(),
         n_electrons=2,
         n_radial=30,

@@ -21,17 +21,12 @@ to this script.
 
 import importlib.resources
 from pathlib import Path
-from typing import List, Tuple
-
 from q_block.compute.environment.configuration import Configuration
 from q_block.compute.environment.io.basis_set import Pople
 from q_block.compute.environment.io.input_data import InputData
 from q_block.compute.environment.io.output_data import OutputData
 from q_block.compute.environment.logs import setup_logging
 from q_block.compute.models.initialization import RKS
-from q_block.compute.models.initialization.nuclear_repulsion_energy import (
-    NuclearRepulsionEnergy,
-)
 from q_block.compute.models.molecule import Molecule
 from q_block.compute.solvers.electronic_density.functionals import (
     B3LYP,
@@ -66,30 +61,6 @@ logger.info(f"Loaded configuration: {config}")
 
 
 # ══════════════════════════════════════════════════════════════════
-# HELPER: extract nuclei list from a Molecule
-# ══════════════════════════════════════════════════════════════════
-
-
-def extract_nuclei(
-    mol: Molecule,
-) -> List[Tuple[int, Tuple[float, float, float]]]:
-    """Return a list of (Z, (x, y, z)) tuples for each nucleus.
-
-    :param mol: Molecule in Bohr units.
-    :type mol: Molecule
-    :returns: List of (atomic_number, (x, y, z)) pairs.
-    :rtype: List[Tuple[int, Tuple[float, float, float]]]
-    """
-    return [
-        (
-            atom.atomic_number,
-            (atom.coordinates.x, atom.coordinates.y, atom.coordinates.z),
-        )
-        for atom in mol.atoms
-    ]
-
-
-# ══════════════════════════════════════════════════════════════════
 # 1. INPUT DATA (from configuration)
 # ══════════════════════════════════════════════════════════════════
 
@@ -118,8 +89,6 @@ mol_h2 = Molecule(
 ctx_rks = RKS(molecule=mol_h2)
 logger.info(f"RKS context: {ctx_rks}")
 
-nuclei_h2 = extract_nuclei(ctx_rks.molecule)
-e_nuc_h2 = NuclearRepulsionEnergy(ctx_rks.molecule).energy
 
 
 # ══════════════════════════════════════════════════════════════════
@@ -133,8 +102,6 @@ logger.info("=" * 70)
 
 rks_svwn = RestrictedKohnSham(
     cgtos=ctx_rks.cgto,
-    nuclei=nuclei_h2,
-    e_nuclear=e_nuc_h2,
     functional=SVWN(),
     n_electrons=ctx_rks.n_electrons,
     n_radial=50,
@@ -161,8 +128,6 @@ logger.info("=" * 70)
 
 rks_pbe = RestrictedKohnSham(
     cgtos=ctx_rks.cgto,
-    nuclei=nuclei_h2,
-    e_nuclear=e_nuc_h2,
     functional=PBE(),
     n_electrons=ctx_rks.n_electrons,
     n_radial=50,
@@ -187,8 +152,6 @@ logger.info("=" * 70)
 
 rks_b3lyp = RestrictedKohnSham(
     cgtos=ctx_rks.cgto,
-    nuclei=nuclei_h2,
-    e_nuclear=e_nuc_h2,
     functional=B3LYP(),
     n_electrons=ctx_rks.n_electrons,
     n_radial=50,

@@ -11,20 +11,17 @@ Tests cover:
 All tests use pytest with parametrize, no test classes.
 """
 
-from typing import List, Tuple
+from typing import List
 
 import numpy as np
 import pytest
 
 from q_block.compute import Molecule
 from q_block.compute.models.basis_functions import ContractedGaussianTypeOrbital
-from q_block.compute.models.initialization.nuclear_repulsion_energy import (
-    NuclearRepulsionEnergy,
-)
 from q_block.compute.solvers.calculation_error_metric import CalculationErrorMetric
 from q_block.compute.solvers.diis import DIIS
 from q_block.compute.solvers.scf import SCF
-from q_block.tests.verification.utilities import extract_nuclei, h2_molecule
+from q_block.tests.verification.utilities import h2_molecule
 
 # ======================================================================
 # Minimal concrete SCF subclass (RHF-like stub)
@@ -47,25 +44,19 @@ class _StubRHF(SCF):
     def __init__(
         self,
         cgtos: List[ContractedGaussianTypeOrbital],
-        nuclei: List[Tuple[int, Tuple[float, float, float]]],
-        e_nuclear: float,
         n_electrons: int,
         **kwargs,
     ) -> None:
-        """Initialise the stub with basis functions, nuclei, and electron count.
+        """Initialise the stub with basis functions and electron count.
 
         :param cgtos: Contracted Gaussian basis functions for the molecule.
         :type cgtos: List[ContractedGaussianTypeOrbital]
-        :param nuclei: Nuclear charges and Cartesian coordinates as (Z, (x, y, z)) pairs.
-        :type nuclei: List[Tuple[int, Tuple[float, float, float]]]
-        :param e_nuclear: Nuclear repulsion energy in Hartree.
-        :type e_nuclear: float
         :param n_electrons: Total number of electrons (must be even for closed-shell).
         :type n_electrons: int
         :param kwargs: Extra keyword arguments forwarded to the SCF base class.
         :type kwargs: dict
         """
-        super().__init__(cgtos, nuclei, e_nuclear, **kwargs)
+        super().__init__(cgtos, **kwargs)
         # Number of doubly occupied orbitals for closed-shell RHF.
         self.n_occ: int = n_electrons // 2
 
@@ -205,16 +196,10 @@ def h2_scf(h2_molecule: Molecule) -> _StubRHF:
     :rtype: _StubRHF
     """
 
-    # Extract nuclear coordinates as (Z, (x, y, z)) pairs.
-    nuclei = extract_nuclei(h2_molecule)
     # Contracted Gaussian basis set for the molecule.
     cgtos = h2_molecule.contracted_gaussian_type_orbitals
-    # Nuclear repulsion energy computed once and reused.
-    e_nuc = NuclearRepulsionEnergy(h2_molecule).energy
     return _StubRHF(
         cgtos=cgtos,
-        nuclei=nuclei,
-        e_nuclear=e_nuc,
         n_electrons=2,
     )
 
@@ -234,14 +219,10 @@ def test_max_iterations_validation(h2_molecule: Molecule) -> None:
     :param h2_molecule: Pytest fixture providing an H2 Molecule with STO-3G basis in Bohr.
     :type h2_molecule: Molecule
     """
-    # Prepare nuclei and basis from the shared H2 fixture.
-    nuclei = extract_nuclei(h2_molecule)
     cgtos = h2_molecule.contracted_gaussian_type_orbitals
     with pytest.raises(ValueError, match="max_iterations must be >= 1"):
         _StubRHF(
             cgtos=cgtos,
-            nuclei=nuclei,
-            e_nuclear=0.0,
             n_electrons=2,
             max_iterations=0,
         )
@@ -257,14 +238,10 @@ def test_convergence_threshold_validation(h2_molecule: Molecule) -> None:
     :param h2_molecule: Pytest fixture providing an H2 Molecule with STO-3G basis in Bohr.
     :type h2_molecule: Molecule
     """
-    # Prepare nuclei and basis from the shared H2 fixture.
-    nuclei = extract_nuclei(h2_molecule)
     cgtos = h2_molecule.contracted_gaussian_type_orbitals
     with pytest.raises(ValueError, match="convergence_threshold must be > 0"):
         _StubRHF(
             cgtos=cgtos,
-            nuclei=nuclei,
-            e_nuclear=0.0,
             n_electrons=2,
             convergence_threshold=-1e-8,
         )

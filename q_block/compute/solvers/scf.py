@@ -91,13 +91,6 @@ class SCF(ABC):
 
     :param cgtos: Contracted Gaussian-type orbital basis.
     :type cgtos: List[ContractedGaussianTypeOrbital]
-    :param nuclei: List of ``(Z, (x, y, z))`` tuples in Bohr for each
-        nucleus.
-    :type nuclei: List[Tuple[int, Tuple[float, float, float]]]
-    :param e_nuclear: Nuclear repulsion energy in Hartree, typically
-        obtained from
-        :class:`~compute.models.initialization.nuclear_repulsion_energy.NuclearRepulsionEnergy`.
-    :type e_nuclear: float
     :param max_iterations: Maximum number of SCF cycles.
     :type max_iterations: int
     :param convergence_threshold: Threshold :math:`\tau` for both
@@ -117,6 +110,7 @@ class SCF(ABC):
     ----------
     cgtos : List[ContractedGaussianTypeOrbital]
     nuclei : List[Tuple[int, Tuple[float, float, float]]]
+        Derived from the CGTO list (unique atoms ordered by atom index).
     n_basis : int
         Total number of basis functions.
     max_iterations : int
@@ -161,8 +155,6 @@ class SCF(ABC):
     def __init__(
         self,
         cgtos: List[ContractedGaussianTypeOrbital],
-        nuclei: List[Tuple[int, Tuple[float, float, float]]],
-        e_nuclear: float,
         max_iterations: int = 100,
         convergence_threshold: float = 1e-8,
         diis_start: int = 1,
@@ -178,7 +170,8 @@ class SCF(ABC):
             )
 
         self.cgtos: List[ContractedGaussianTypeOrbital] = cgtos
-        self.nuclei: List[Tuple[int, Tuple[float, float, float]]] = nuclei
+        self._setup_nuclear_data()
+
         self.max_iterations: int = max_iterations
         self.convergence_threshold: float = convergence_threshold
         self.diis_start: int = diis_start
@@ -202,9 +195,6 @@ class SCF(ABC):
         eri_obj = TwoElectronRepulsion(cgtos=self.cgtos)
         self.eri: np.ndarray = eri_obj.tensor
         logger.info("Two-electron integrals computed.")
-
-        # ── Nuclear repulsion energy (precomputed by caller) ─────────
-        self.e_nuclear: float = e_nuclear
 
         # ── Log atomic system data ────────────────────────────────
         self._log_system_data()
@@ -230,8 +220,41 @@ class SCF(ABC):
         self.iteration_history: List[Dict[str, float]] = []
 
     # ==================================================================
-    # Logging helpers
+    # Private helpers
     # ==================================================================
+
+    def _setup_nuclear_data(self) -> None:
+        """Derive nuclei and nuclear repulsion energy from the CGTO list.
+
+        Populates :attr:`nuclei` with unique (Z, (x, y, z)) pairs ordered
+        by ``atom_index``, and :attr:`e_nuclear` with the classical
+        nuclear repulsion energy in Hartree.
+        """
+        # Unique atoms ordered by atom_index.
+        seen: Dict[int, Tuple[int, Tuple[float, float, float]]] = {}
+        for cgto in self.cgtos:
+            idx = cgto.atom_index if cgto.atom_index is not None else id(cgto)
+            if idx not in seen:
+                seen[idx] = (
+                    cgto.atomic_number,
+                    (cgto.center.x, cgto.center.y, cgto.center.z),
+                )
+        self.nuclei: List[Tuple[int, Tuple[float, float, float]]] = [
+            seen[k] for k in sorted(seen)
+        ]
+
+        # Classical nuclear repulsion energy.
+        e_nuc = 0.0
+        n_nuc = len(self.nuclei)
+        for a in range(n_nuc):
+            z_a, (xa, ya, za) = self.nuclei[a]
+            for b in range(a + 1, n_nuc):
+                z_b, (xb, yb, zb) = self.nuclei[b]
+                r_ab = np.sqrt(
+                    (xa - xb) ** 2 + (ya - yb) ** 2 + (za - zb) ** 2
+                )
+                e_nuc += z_a * z_b / r_ab
+        self.e_nuclear: float = e_nuc
 
     def _log_system_data(self) -> None:
         """Log geometry, basis set, and nuclear data once at init."""

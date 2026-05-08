@@ -5,9 +5,6 @@ from typing import Dict, List, Tuple, Union
 
 from q_block.compute.environment.io.basis_set import Pople
 from q_block.compute.environment.io.input_data import InputData
-from q_block.compute.models.initialization.nuclear_repulsion_energy import (
-    NuclearRepulsionEnergy,
-)
 from q_block.compute.models.molecule import Molecule
 
 HARTREE_TO_EV: float = 27.211386
@@ -55,13 +52,13 @@ def _build_from_geometry(
     basis_set_filename: Union[Path, str] = Path(
         "compute/environment/constants/numerical/basis_set/pople/3-21G.gbs"
     ),
-) -> Tuple:
+) -> List:
     """Build a Molecule from a geometry list and return SCF inputs.
 
     :param geometry: List of ``{"symbol", "x", "y", "z"}`` dicts (Å).
     :param multiplicity: Spin multiplicity 2S+1.
     :param basis_set_filename: Full path to basis-set file (e.g. ``Path("compute/environment/constants/numerical/basis_set/pople/6-311++Gss.gbs")``).
-    :returns: ``(cgtos, nuclei, e_nuclear)`` ready for HF constructors.
+    :returns: ``cgtos`` list ready for HF/KS constructors.
     """
     basis = _get_basis(basis_set_filename)
     inp = InputData()
@@ -74,10 +71,4 @@ def _build_from_geometry(
     mol = Molecule(input_data=inp, multiplicity=multiplicity)
     mol.to_bohr()
     mol.make_contracted_gaussian_type_orbital()
-    cgtos = mol.contracted_gaussian_type_orbitals
-    nuclei = [
-        (a.atomic_number, (a.coordinates.x, a.coordinates.y, a.coordinates.z))
-        for a in mol.atoms
-    ]
-    e_nuclear = NuclearRepulsionEnergy(mol).energy
-    return cgtos, nuclei, e_nuclear
+    return mol.contracted_gaussian_type_orbitals

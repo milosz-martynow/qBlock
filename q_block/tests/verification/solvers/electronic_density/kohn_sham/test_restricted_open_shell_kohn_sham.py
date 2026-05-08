@@ -48,11 +48,9 @@ def test_roks_construction_all_functionals(
     :param functional: XC functional instance.
     :type functional: object
     """
-    cgtos, nuclei, e_nuc = li_inputs()
+    cgtos = li_inputs()
     roks = RestrictedOpenShellKohnSham(
         cgtos=cgtos,
-        nuclei=nuclei,
-        e_nuclear=e_nuc,
         functional=functional,
         n_closed=1,
         n_open=1,
@@ -66,12 +64,10 @@ def test_roks_construction_all_functionals(
 
 def test_roks_negative_closed_raises() -> None:
     """ROKS raises ValueError when n_closed is negative."""
-    cgtos, nuclei, e_nuc = li_inputs()
+    cgtos = li_inputs()
     with pytest.raises(ValueError, match="non-negative"):
         RestrictedOpenShellKohnSham(
             cgtos=cgtos,
-            nuclei=nuclei,
-            e_nuclear=e_nuc,
             functional=SVWN(),
             n_closed=-1,
             n_open=1,
@@ -82,12 +78,10 @@ def test_roks_negative_closed_raises() -> None:
 
 def test_roks_zero_open_raises() -> None:
     """ROKS raises ValueError when n_open is zero."""
-    cgtos, nuclei, e_nuc = li_inputs()
+    cgtos = li_inputs()
     with pytest.raises(ValueError, match="open-shell orbital"):
         RestrictedOpenShellKohnSham(
             cgtos=cgtos,
-            nuclei=nuclei,
-            e_nuclear=e_nuc,
             functional=SVWN(),
             n_closed=1,
             n_open=0,
@@ -98,12 +92,10 @@ def test_roks_zero_open_raises() -> None:
 
 def test_roks_negative_open_raises() -> None:
     """ROKS raises ValueError when n_open is negative."""
-    cgtos, nuclei, e_nuc = li_inputs()
+    cgtos = li_inputs()
     with pytest.raises(ValueError, match="non-negative"):
         RestrictedOpenShellKohnSham(
             cgtos=cgtos,
-            nuclei=nuclei,
-            e_nuclear=e_nuc,
             functional=SVWN(),
             n_closed=1,
             n_open=-1,
@@ -119,11 +111,9 @@ def test_roks_negative_open_raises() -> None:
 
 def test_roks_n_electrons_from_closed_open() -> None:
     """n_electrons == 2*n_closed + n_open for Li (=3)."""
-    cgtos, nuclei, e_nuc = li_inputs()
+    cgtos = li_inputs()
     roks = RestrictedOpenShellKohnSham(
         cgtos=cgtos,
-        nuclei=nuclei,
-        e_nuclear=e_nuc,
         functional=SVWN(),
         n_closed=1,
         n_open=1,
@@ -135,11 +125,9 @@ def test_roks_n_electrons_from_closed_open() -> None:
 
 def test_roks_n_alpha_n_beta_from_closed_open() -> None:
     """n_alpha == n_closed + n_open, n_beta == n_closed."""
-    cgtos, nuclei, e_nuc = li_inputs()
+    cgtos = li_inputs()
     roks = RestrictedOpenShellKohnSham(
         cgtos=cgtos,
-        nuclei=nuclei,
-        e_nuclear=e_nuc,
         functional=SVWN(),
         n_closed=1,
         n_open=1,
@@ -157,11 +145,9 @@ def test_roks_n_alpha_n_beta_from_closed_open() -> None:
 
 def test_roks_svwn_li_converges() -> None:
     """ROKS-SVWN converges for Li / STO-3G (doublet)."""
-    cgtos, nuclei, e_nuc = li_inputs()
+    cgtos = li_inputs()
     roks = RestrictedOpenShellKohnSham(
         cgtos=cgtos,
-        nuclei=nuclei,
-        e_nuclear=e_nuc,
         functional=SVWN(),
         n_closed=1,
         n_open=1,
@@ -178,11 +164,9 @@ def test_roks_svwn_li_converges() -> None:
 
 def test_roks_pbe_li_converges() -> None:
     """ROKS-PBE converges for Li / STO-3G (doublet)."""
-    cgtos, nuclei, e_nuc = li_inputs()
+    cgtos = li_inputs()
     roks = RestrictedOpenShellKohnSham(
         cgtos=cgtos,
-        nuclei=nuclei,
-        e_nuclear=e_nuc,
         functional=PBE(),
         n_closed=1,
         n_open=1,
@@ -197,11 +181,9 @@ def test_roks_pbe_li_converges() -> None:
 
 def test_roks_b3lyp_li_converges() -> None:
     """ROKS-B3LYP converges for Li / STO-3G (doublet)."""
-    cgtos, nuclei, e_nuc = li_inputs()
+    cgtos = li_inputs()
     roks = RestrictedOpenShellKohnSham(
         cgtos=cgtos,
-        nuclei=nuclei,
-        e_nuclear=e_nuc,
         functional=B3LYP(),
         n_closed=1,
         n_open=1,
@@ -221,11 +203,9 @@ def test_roks_b3lyp_li_converges() -> None:
 
 def test_roks_total_energy_finite() -> None:
     """ROKS-SVWN produces a finite total energy for Li."""
-    cgtos, nuclei, e_nuc = li_inputs()
+    cgtos = li_inputs()
     roks = RestrictedOpenShellKohnSham(
         cgtos=cgtos,
-        nuclei=nuclei,
-        e_nuclear=e_nuc,
         functional=SVWN(),
         n_closed=1,
         n_open=1,
@@ -239,11 +219,9 @@ def test_roks_total_energy_finite() -> None:
 
 def test_roks_matrix_shapes_after_convergence() -> None:
     """All stored matrices have correct shapes after convergence."""
-    cgtos, nuclei, e_nuc = li_inputs()
+    cgtos = li_inputs()
     roks = RestrictedOpenShellKohnSham(
         cgtos=cgtos,
-        nuclei=nuclei,
-        e_nuclear=e_nuc,
         functional=SVWN(),
         n_closed=1,
         n_open=1,
@@ -267,11 +245,9 @@ def test_roks_matrix_shapes_after_convergence() -> None:
 
 def test_roks_effective_fock_symmetric() -> None:
     """F_eff (Roothaan effective Fock) is symmetric after convergence."""
-    cgtos, nuclei, e_nuc = li_inputs()
+    cgtos = li_inputs()
     roks = RestrictedOpenShellKohnSham(
         cgtos=cgtos,
-        nuclei=nuclei,
-        e_nuclear=e_nuc,
         functional=SVWN(),
         n_closed=1,
         n_open=1,
@@ -286,11 +262,9 @@ def test_roks_effective_fock_symmetric() -> None:
 
 def test_roks_fa_fb_symmetric() -> None:
     """F_alpha and F_beta are symmetric after convergence."""
-    cgtos, nuclei, e_nuc = li_inputs()
+    cgtos = li_inputs()
     roks = RestrictedOpenShellKohnSham(
         cgtos=cgtos,
-        nuclei=nuclei,
-        e_nuclear=e_nuc,
         functional=SVWN(),
         n_closed=1,
         n_open=1,
@@ -307,11 +281,9 @@ def test_roks_fa_fb_symmetric() -> None:
 
 def test_roks_density_matrices_symmetric() -> None:
     """P_alpha and P_beta are symmetric after convergence."""
-    cgtos, nuclei, e_nuc = li_inputs()
+    cgtos = li_inputs()
     roks = RestrictedOpenShellKohnSham(
         cgtos=cgtos,
-        nuclei=nuclei,
-        e_nuclear=e_nuc,
         functional=SVWN(),
         n_closed=1,
         n_open=1,
@@ -328,11 +300,9 @@ def test_roks_density_matrices_symmetric() -> None:
 
 def test_roks_density_matrices_consistent() -> None:
     """Total density P equals P_alpha + P_beta after convergence."""
-    cgtos, nuclei, e_nuc = li_inputs()
+    cgtos = li_inputs()
     roks = RestrictedOpenShellKohnSham(
         cgtos=cgtos,
-        nuclei=nuclei,
-        e_nuclear=e_nuc,
         functional=SVWN(),
         n_closed=1,
         n_open=1,
@@ -347,11 +317,9 @@ def test_roks_density_matrices_consistent() -> None:
 
 def test_roks_total_density_symmetric() -> None:
     """Total density matrix P is symmetric after convergence."""
-    cgtos, nuclei, e_nuc = li_inputs()
+    cgtos = li_inputs()
     roks = RestrictedOpenShellKohnSham(
         cgtos=cgtos,
-        nuclei=nuclei,
-        e_nuclear=e_nuc,
         functional=SVWN(),
         n_closed=1,
         n_open=1,
@@ -371,11 +339,9 @@ def test_roks_total_density_symmetric() -> None:
 
 def test_roks_orbital_energies_sorted() -> None:
     """Orbital energies are sorted in ascending order after convergence."""
-    cgtos, nuclei, e_nuc = li_inputs()
+    cgtos = li_inputs()
     roks = RestrictedOpenShellKohnSham(
         cgtos=cgtos,
-        nuclei=nuclei,
-        e_nuclear=e_nuc,
         functional=SVWN(),
         n_closed=1,
         n_open=1,
@@ -390,11 +356,9 @@ def test_roks_orbital_energies_sorted() -> None:
 
 def test_roks_orbital_energies_finite() -> None:
     """All orbital energies are finite after convergence."""
-    cgtos, nuclei, e_nuc = li_inputs()
+    cgtos = li_inputs()
     roks = RestrictedOpenShellKohnSham(
         cgtos=cgtos,
-        nuclei=nuclei,
-        e_nuclear=e_nuc,
         functional=SVWN(),
         n_closed=1,
         n_open=1,

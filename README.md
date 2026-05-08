@@ -1,6 +1,48 @@
 ﻿# qBlock
 
-A Python library for quantum chemistry calculations. qBlock implements SCF methods for both HF (RHF, UHF, ROHF) and DFT (RKS, UKS). Both methods are built on GTO basis sets. DFT supports exchange-correlation functionals like: LDA in SVWN implementation, GGA in PBE implementation, and hybrid in B3LYP implementation.
+A Python library for quantum chemistry calculations. Implemented numerical features:
+
+- **SCF methods** — RHF, UHF, ROHF (Hartree-Fock); RKS, UKS, ROKS (Kohn-Sham DFT)
+- **Basis sets** — GTO (Pople family, e.g. 3-21G, 6-311++G**); each atom can carry its own independent basis set
+- **Input** — geometry and basis set defined together per atom via `InputData.from_script`; supports both Å and Bohr
+- **Integrals** — overlap, kinetic energy, nuclear attraction, two-electron repulsion (ERI)
+- **XC functionals** — LDA (SVWN), GGA (PBE), hybrid (B3LYP)
+- **Convergence** — DIIS acceleration for all SCF variants
+- **Numerical integration** — Becke-partitioned grids for DFT quadrature
+
+```python
+from q_block.compute.environment.io.basis_set import Pople
+from q_block.compute.environment.io.input_data import InputData
+from q_block.compute.models.molecule import Molecule
+from q_block.compute.solvers.wavefunction.hartree_fock import UnrestrictedHartreeFock
+
+# Load Pople basis sets — different quality per element
+basis_dir = "q_block/compute/environment/constants/numerical/basis_set/pople"
+basis_O = Pople(filepath=f"{basis_dir}/6-311++Gss.gbs")  # triple-zeta + diffuse + polarisation
+basis_H = Pople(filepath=f"{basis_dir}/3-21G.gbs")        # split-valence
+
+# Build molecular geometry (coordinates in Å)
+inp = InputData()
+inp.from_script(atom_data=[
+    ["O",  0.0000, 0.0000, 0.0000, basis_O],
+    ["H",  0.7572, 0.0000, 0.5860, basis_H],
+    ["H", -0.7572, 0.0000, 0.5860, basis_H],
+])
+
+# Construct the molecule and expand into contracted GTO basis functions
+molecule = Molecule(input_data=inp, multiplicity=1)  # singlet: all electrons paired
+molecule.to_bohr()
+molecule.make_contracted_gaussian_type_orbital()
+
+# Run UHF SCF — nuclear geometry is derived automatically from the basis
+uhf = UnrestrictedHartreeFock(
+        cgtos=molecule.contracted_gaussian_type_orbitals, 
+        n_alpha=5, 
+        n_beta=5
+    )
+uhf.run()
+print(f"Converged: {uhf.converged},  E_total = {uhf.e_total:.6f} Hartree")
+```
 
 The project is designed to be easy to understand, modify, and extend. The overall project follows the **LCT** (Learn-Compute-Tests) architecture, which organises the entire development workflow into three layers: `q_block/learn/` for requirements, documentation and examples, `q_block/compute/` for the core library, and `q_block/tests/` for correctness verification. The `q_block/compute/` layer internally follows the **MUSE** (Models-Utilities-Solvers-Environment) architecture, separating domain models, shared mathematics, numerical algorithms, and infrastructure concerns into distinct, independently navigable modules.
 

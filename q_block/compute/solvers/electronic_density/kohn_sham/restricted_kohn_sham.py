@@ -76,8 +76,6 @@ class RestrictedKohnSham(KohnSham):
     def __init__(
         self,
         cgtos: List[ContractedGaussianTypeOrbital],
-        nuclei: List[Tuple[int, Tuple[float, float, float]]],
-        e_nuclear: float,
         functional: ExchangeCorrelationFunctional,
         n_electrons: int,
         n_radial: int = 50,
@@ -96,8 +94,6 @@ class RestrictedKohnSham(KohnSham):
         n_occ = n_electrons // 2
         super().__init__(
             cgtos,
-            nuclei,
-            e_nuclear,
             functional=functional,
             n_alpha=n_occ,
             n_beta=n_occ,

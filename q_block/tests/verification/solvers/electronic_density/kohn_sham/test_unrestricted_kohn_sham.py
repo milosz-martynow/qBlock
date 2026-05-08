@@ -50,11 +50,9 @@ def test_uks_construction_all_functionals(
     :param functional: XC functional instance.
     :type functional: object
     """
-    cgtos, nuclei, e_nuc = h2_inputs()
+    cgtos = h2_inputs()
     uks = UnrestrictedKohnSham(
         cgtos=cgtos,
-        nuclei=nuclei,
-        e_nuclear=e_nuc,
         functional=functional,
         n_alpha=1,
         n_beta=1,
@@ -68,12 +66,10 @@ def test_uks_construction_all_functionals(
 
 def test_uks_negative_electrons_raises() -> None:
     """UKS raises ValueError when n_alpha or n_beta is negative."""
-    cgtos, nuclei, e_nuc = h2_inputs()
+    cgtos = h2_inputs()
     with pytest.raises(ValueError, match="non-negative"):
         UnrestrictedKohnSham(
             cgtos=cgtos,
-            nuclei=nuclei,
-            e_nuclear=e_nuc,
             functional=SVWN(),
             n_alpha=-1,
             n_beta=0,
@@ -89,11 +85,9 @@ def test_uks_negative_electrons_raises() -> None:
 
 def test_uks_n_electrons_is_sum_of_spins() -> None:
     """n_electrons equals n_alpha + n_beta."""
-    cgtos, nuclei, e_nuc = h2_inputs()
+    cgtos = h2_inputs()
     uks = UnrestrictedKohnSham(
         cgtos=cgtos,
-        nuclei=nuclei,
-        e_nuclear=e_nuc,
         functional=SVWN(),
         n_alpha=1,
         n_beta=1,
@@ -105,11 +99,9 @@ def test_uks_n_electrons_is_sum_of_spins() -> None:
 
 def test_uks_shared_spin_is_false() -> None:
     """_shared_spin is False for UKS (independent spin channels)."""
-    cgtos, nuclei, e_nuc = h2_inputs()
+    cgtos = h2_inputs()
     uks = UnrestrictedKohnSham(
         cgtos=cgtos,
-        nuclei=nuclei,
-        e_nuclear=e_nuc,
         functional=SVWN(),
         n_alpha=1,
         n_beta=1,
@@ -126,11 +118,9 @@ def test_uks_shared_spin_is_false() -> None:
 
 def test_uks_svwn_h2_converges() -> None:
     """UKS-SVWN converges for H₂ / STO-3G."""
-    cgtos, nuclei, e_nuc = h2_inputs()
+    cgtos = h2_inputs()
     uks = UnrestrictedKohnSham(
         cgtos=cgtos,
-        nuclei=nuclei,
-        e_nuclear=e_nuc,
         functional=SVWN(),
         n_alpha=1,
         n_beta=1,
@@ -147,11 +137,9 @@ def test_uks_svwn_h2_converges() -> None:
 
 def test_uks_pbe_h2_converges() -> None:
     """UKS-PBE converges for H₂ / STO-3G."""
-    cgtos, nuclei, e_nuc = h2_inputs()
+    cgtos = h2_inputs()
     uks = UnrestrictedKohnSham(
         cgtos=cgtos,
-        nuclei=nuclei,
-        e_nuclear=e_nuc,
         functional=PBE(),
         n_alpha=1,
         n_beta=1,
@@ -166,11 +154,9 @@ def test_uks_pbe_h2_converges() -> None:
 
 def test_uks_b3lyp_h2_converges() -> None:
     """UKS-B3LYP converges for H₂ / STO-3G."""
-    cgtos, nuclei, e_nuc = h2_inputs()
+    cgtos = h2_inputs()
     uks = UnrestrictedKohnSham(
         cgtos=cgtos,
-        nuclei=nuclei,
-        e_nuclear=e_nuc,
         functional=B3LYP(),
         n_alpha=1,
         n_beta=1,
@@ -185,11 +171,9 @@ def test_uks_b3lyp_h2_converges() -> None:
 
 def test_uks_svwn_h_atom_converges() -> None:
     """UKS-SVWN converges for H atom (n_alpha=1, n_beta=0)."""
-    cgtos, nuclei, e_nuc = h_atom_inputs()
+    cgtos = h_atom_inputs()
     uks = UnrestrictedKohnSham(
         cgtos=cgtos,
-        nuclei=nuclei,
-        e_nuclear=e_nuc,
         functional=SVWN(),
         n_alpha=1,
         n_beta=0,
@@ -210,11 +194,9 @@ def test_uks_svwn_h_atom_converges() -> None:
 
 def test_uks_total_energy_finite() -> None:
     """UKS-SVWN produces a finite total energy for H₂."""
-    cgtos, nuclei, e_nuc = h2_inputs()
+    cgtos = h2_inputs()
     uks = UnrestrictedKohnSham(
         cgtos=cgtos,
-        nuclei=nuclei,
-        e_nuclear=e_nuc,
         functional=SVWN(),
         n_alpha=1,
         n_beta=1,
@@ -228,11 +210,9 @@ def test_uks_total_energy_finite() -> None:
 
 def test_uks_matrix_keys_after_convergence() -> None:
     """All expected matrix keys are present after convergence."""
-    cgtos, nuclei, e_nuc = h2_inputs()
+    cgtos = h2_inputs()
     uks = UnrestrictedKohnSham(
         cgtos=cgtos,
-        nuclei=nuclei,
-        e_nuclear=e_nuc,
         functional=SVWN(),
         n_alpha=1,
         n_beta=1,
@@ -259,11 +239,9 @@ def test_uks_matrix_keys_after_convergence() -> None:
 
 def test_uks_matrix_shapes_after_convergence() -> None:
     """All stored matrices have correct shapes after convergence."""
-    cgtos, nuclei, e_nuc = h2_inputs()
+    cgtos = h2_inputs()
     uks = UnrestrictedKohnSham(
         cgtos=cgtos,
-        nuclei=nuclei,
-        e_nuclear=e_nuc,
         functional=SVWN(),
         n_alpha=1,
         n_beta=1,
@@ -285,11 +263,9 @@ def test_uks_matrix_shapes_after_convergence() -> None:
 
 def test_uks_density_matrices_symmetric() -> None:
     """P_alpha and P_beta are symmetric after convergence."""
-    cgtos, nuclei, e_nuc = h2_inputs()
+    cgtos = h2_inputs()
     uks = UnrestrictedKohnSham(
         cgtos=cgtos,
-        nuclei=nuclei,
-        e_nuclear=e_nuc,
         functional=SVWN(),
         n_alpha=1,
         n_beta=1,
@@ -306,11 +282,9 @@ def test_uks_density_matrices_symmetric() -> None:
 
 def test_uks_fock_matrices_symmetric() -> None:
     """F_alpha and F_beta are symmetric after convergence."""
-    cgtos, nuclei, e_nuc = h2_inputs()
+    cgtos = h2_inputs()
     uks = UnrestrictedKohnSham(
         cgtos=cgtos,
-        nuclei=nuclei,
-        e_nuclear=e_nuc,
         functional=SVWN(),
         n_alpha=1,
         n_beta=1,
@@ -327,11 +301,9 @@ def test_uks_fock_matrices_symmetric() -> None:
 
 def test_uks_density_traces_match_spin_counts() -> None:
     """tr(P_sigma @ S) matches n_sigma for each spin channel."""
-    cgtos, nuclei, e_nuc = h2_inputs()
+    cgtos = h2_inputs()
     uks = UnrestrictedKohnSham(
         cgtos=cgtos,
-        nuclei=nuclei,
-        e_nuclear=e_nuc,
         functional=SVWN(),
         n_alpha=1,
         n_beta=1,
@@ -349,11 +321,9 @@ def test_uks_density_traces_match_spin_counts() -> None:
 
 def test_uks_total_density_non_negative_on_grid() -> None:
     """Total density on grid is non-negative after convergence."""
-    cgtos, nuclei, e_nuc = h2_inputs()
+    cgtos = h2_inputs()
     uks = UnrestrictedKohnSham(
         cgtos=cgtos,
-        nuclei=nuclei,
-        e_nuclear=e_nuc,
         functional=SVWN(),
         n_alpha=1,
         n_beta=1,
@@ -374,11 +344,9 @@ def test_uks_total_density_non_negative_on_grid() -> None:
 
 def test_uks_orbital_energies_sorted() -> None:
     """epsilon_alpha and epsilon_beta are sorted ascending after convergence."""
-    cgtos, nuclei, e_nuc = h2_inputs()
+    cgtos = h2_inputs()
     uks = UnrestrictedKohnSham(
         cgtos=cgtos,
-        nuclei=nuclei,
-        e_nuclear=e_nuc,
         functional=SVWN(),
         n_alpha=1,
         n_beta=1,
@@ -395,11 +363,9 @@ def test_uks_orbital_energies_sorted() -> None:
 
 def test_uks_orbital_energies_finite() -> None:
     """All orbital energies are finite after convergence."""
-    cgtos, nuclei, e_nuc = h2_inputs()
+    cgtos = h2_inputs()
     uks = UnrestrictedKohnSham(
         cgtos=cgtos,
-        nuclei=nuclei,
-        e_nuclear=e_nuc,
         functional=SVWN(),
         n_alpha=1,
         n_beta=1,
@@ -414,11 +380,9 @@ def test_uks_orbital_energies_finite() -> None:
 
 def test_uks_homo_alpha_energy_negative() -> None:
     """Alpha HOMO orbital energy is negative (bound state)."""
-    cgtos, nuclei, e_nuc = h2_inputs()
+    cgtos = h2_inputs()
     uks = UnrestrictedKohnSham(
         cgtos=cgtos,
-        nuclei=nuclei,
-        e_nuclear=e_nuc,
         functional=SVWN(),
         n_alpha=1,
         n_beta=1,

@@ -88,15 +88,13 @@ def uhf_atom_result(
     """Run UHF SCF for one open-shell atom (placed at origin) and return
     ``(entry, converged_hf)``."""
     entry = request.param
-    cgtos, nuclei, e_nuclear = _build_from_geometry(
+    cgtos = _build_from_geometry(
         geometry=[{"symbol": entry["symbol"], "x": 0.0, "y": 0.0, "z": 0.0}],
         multiplicity=entry["multiplicity"],
         basis_set_filename=entry["proposed_basis_set"],
     )
     hf = UnrestrictedHartreeFock(
         cgtos=cgtos,
-        nuclei=nuclei,
-        e_nuclear=e_nuclear,
         n_alpha=entry["n_alpha"],
         n_beta=entry["n_beta"],
         max_iterations=entry["max_iterations"],
@@ -115,15 +113,13 @@ def uhf_molecule_result(
     """Run UHF SCF for one open-shell molecule and return
     ``(entry, converged_hf)``."""
     entry = request.param
-    cgtos, nuclei, e_nuclear = _build_from_geometry(
+    cgtos = _build_from_geometry(
         geometry=entry["geometry"],
         multiplicity=entry["multiplicity"],
         basis_set_filename=entry["proposed_basis_set"],
     )
     hf = UnrestrictedHartreeFock(
         cgtos=cgtos,
-        nuclei=nuclei,
-        e_nuclear=e_nuclear,
         n_alpha=entry["n_alpha"],
         n_beta=entry["n_beta"],
         max_iterations=entry["max_iterations"],

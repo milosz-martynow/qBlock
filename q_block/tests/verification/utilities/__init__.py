@@ -12,9 +12,6 @@ import pytest
 from q_block.compute import Molecule
 from q_block.compute.environment.io.basis_set import Pople
 from q_block.compute.environment.io.input_data import InputData
-from q_block.compute.models.initialization.nuclear_repulsion_energy import (
-    NuclearRepulsionEnergy,
-)
 from q_block.compute.solvers.wavefunction.hartree_fock.restricted_hartree_fock import (
     RestrictedHartreeFock,
 )
@@ -107,13 +104,13 @@ def extract_nuclei(
 
 def h2_inputs(
     basis: Pople = BASIS_STO_3G,
-) -> Tuple[list, list, float]:
-    """Return (cgtos, nuclei, e_nuclear) for H₂ at 0.74 Å.
+) -> list:
+    """Return cgtos for H₂ at 0.74 Å.
 
     :param basis: Basis set (defaults to STO-3G).
     :type basis: Pople
-    :returns: CGTOs, nuclei list, and nuclear repulsion energy.
-    :rtype: Tuple[list, list, float]
+    :returns: CGTOs.
+    :rtype: list
     """
     inp = InputData()
     inp.from_script(
@@ -125,21 +122,18 @@ def h2_inputs(
     mol = Molecule(input_data=inp, multiplicity=1)
     mol.to_bohr()
     mol.make_contracted_gaussian_type_orbital()
-    cgtos = mol.contracted_gaussian_type_orbitals
-    nuclei = extract_nuclei(mol)
-    e_nuclear = NuclearRepulsionEnergy(mol).energy
-    return cgtos, nuclei, e_nuclear
+    return mol.contracted_gaussian_type_orbitals
 
 
 def h_atom_inputs(
     basis: Pople = BASIS_STO_3G,
-) -> Tuple[list, list, float]:
-    """Return (cgtos, nuclei, e_nuclear) for an H atom (doublet, multiplicity=2).
+) -> list:
+    """Return cgtos for an H atom (doublet, multiplicity=2).
 
     :param basis: Basis set (defaults to STO-3G).
     :type basis: Pople
-    :returns: CGTOs, nuclei list, and nuclear repulsion energy.
-    :rtype: Tuple[list, list, float]
+    :returns: CGTOs.
+    :rtype: list
     """
     inp = InputData()
     inp.from_script(
@@ -150,23 +144,20 @@ def h_atom_inputs(
     mol = Molecule(input_data=inp, multiplicity=2)
     mol.to_bohr()
     mol.make_contracted_gaussian_type_orbital()
-    cgtos = mol.contracted_gaussian_type_orbitals
-    nuclei = extract_nuclei(mol)
-    e_nuclear = NuclearRepulsionEnergy(mol).energy
-    return cgtos, nuclei, e_nuclear
+    return mol.contracted_gaussian_type_orbitals
 
 
 def li_inputs(
     basis: Pople = BASIS_STO_3G,
-) -> Tuple[list, list, float]:
-    """Return (cgtos, nuclei, e_nuclear) for a Li atom (doublet, multiplicity=2).
+) -> list:
+    """Return cgtos for a Li atom (doublet, multiplicity=2).
 
     Li has Z=3 (1s² 2s¹): suitable for ROKS with n_closed=1, n_open=1.
 
     :param basis: Basis set (defaults to STO-3G).
     :type basis: Pople
-    :returns: CGTOs, nuclei list, and nuclear repulsion energy.
-    :rtype: Tuple[list, list, float]
+    :returns: CGTOs.
+    :rtype: list
     """
     inp = InputData()
     inp.from_script(
@@ -177,10 +168,7 @@ def li_inputs(
     mol = Molecule(input_data=inp, multiplicity=2)
     mol.to_bohr()
     mol.make_contracted_gaussian_type_orbital()
-    cgtos = mol.contracted_gaussian_type_orbitals
-    nuclei = extract_nuclei(mol)
-    e_nuclear = NuclearRepulsionEnergy(mol).energy
-    return cgtos, nuclei, e_nuclear
+    return mol.contracted_gaussian_type_orbitals
 
 
 # ======================================================================
@@ -302,13 +290,8 @@ def h2_rhf(h2_molecule: Molecule) -> RestrictedHartreeFock:
     :returns: Uninitialised RHF instance ready for .run().
     :rtype: RestrictedHartreeFock
     """
-    nuclei = extract_nuclei(molecule=h2_molecule)
-    cgtos = h2_molecule.contracted_gaussian_type_orbitals
-    e_nuc = NuclearRepulsionEnergy(molecule=h2_molecule).energy
     return RestrictedHartreeFock(
-        cgtos=cgtos,
-        nuclei=nuclei,
-        e_nuclear=e_nuc,
+        cgtos=h2_molecule.contracted_gaussian_type_orbitals,
         n_electrons=2,
     )
 
@@ -322,13 +305,8 @@ def h2_uhf(h2_molecule: Molecule) -> UnrestrictedHartreeFock:
     :returns: Uninitialised UHF instance ready for .run().
     :rtype: UnrestrictedHartreeFock
     """
-    nuclei = extract_nuclei(molecule=h2_molecule)
-    cgtos = h2_molecule.contracted_gaussian_type_orbitals
-    e_nuc = NuclearRepulsionEnergy(molecule=h2_molecule).energy
     return UnrestrictedHartreeFock(
-        cgtos=cgtos,
-        nuclei=nuclei,
-        e_nuclear=e_nuc,
+        cgtos=h2_molecule.contracted_gaussian_type_orbitals,
         n_alpha=1,
         n_beta=1,
     )
@@ -343,13 +321,8 @@ def water_rhf(water_molecule: Molecule) -> RestrictedHartreeFock:
     :returns: Uninitialised RHF instance ready for .run().
     :rtype: RestrictedHartreeFock
     """
-    nuclei = extract_nuclei(molecule=water_molecule)
-    cgtos = water_molecule.contracted_gaussian_type_orbitals
-    e_nuc = NuclearRepulsionEnergy(molecule=water_molecule).energy
     return RestrictedHartreeFock(
-        cgtos=cgtos,
-        nuclei=nuclei,
-        e_nuclear=e_nuc,
+        cgtos=water_molecule.contracted_gaussian_type_orbitals,
         n_electrons=10,
     )
 
@@ -363,13 +336,8 @@ def water_uhf(water_molecule: Molecule) -> UnrestrictedHartreeFock:
     :returns: Uninitialised UHF instance ready for .run().
     :rtype: UnrestrictedHartreeFock
     """
-    nuclei = extract_nuclei(molecule=water_molecule)
-    cgtos = water_molecule.contracted_gaussian_type_orbitals
-    e_nuc = NuclearRepulsionEnergy(molecule=water_molecule).energy
     return UnrestrictedHartreeFock(
-        cgtos=cgtos,
-        nuclei=nuclei,
-        e_nuclear=e_nuc,
+        cgtos=water_molecule.contracted_gaussian_type_orbitals,
         n_alpha=5,
         n_beta=5,
     )
@@ -384,13 +352,8 @@ def h2_rohf(h2_molecule: Molecule) -> RestrictedOpenShellHartreeFock:
     :returns: Uninitialised ROHF instance ready for .run().
     :rtype: RestrictedOpenShellHartreeFock
     """
-    nuclei = extract_nuclei(molecule=h2_molecule)
-    cgtos = h2_molecule.contracted_gaussian_type_orbitals
-    e_nuc = NuclearRepulsionEnergy(molecule=h2_molecule).energy
     return RestrictedOpenShellHartreeFock(
-        cgtos=cgtos,
-        nuclei=nuclei,
-        e_nuclear=e_nuc,
+        cgtos=h2_molecule.contracted_gaussian_type_orbitals,
         n_closed=1,
         n_open=0,
     )
@@ -405,13 +368,8 @@ def water_rohf(water_molecule: Molecule) -> RestrictedOpenShellHartreeFock:
     :returns: Uninitialised ROHF instance ready for .run().
     :rtype: RestrictedOpenShellHartreeFock
     """
-    nuclei = extract_nuclei(molecule=water_molecule)
-    cgtos = water_molecule.contracted_gaussian_type_orbitals
-    e_nuc = NuclearRepulsionEnergy(molecule=water_molecule).energy
     return RestrictedOpenShellHartreeFock(
-        cgtos=cgtos,
-        nuclei=nuclei,
-        e_nuclear=e_nuc,
+        cgtos=water_molecule.contracted_gaussian_type_orbitals,
         n_closed=5,
         n_open=0,
     )

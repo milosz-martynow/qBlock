@@ -19,14 +19,10 @@ import numpy as np
 import pytest
 
 from q_block.compute import Molecule
-from q_block.compute.models.initialization.nuclear_repulsion_energy import (
-    NuclearRepulsionEnergy,
-)
 from q_block.compute.solvers.wavefunction.hartree_fock.restricted_hartree_fock import (
     RestrictedHartreeFock,
 )
 from q_block.tests.verification.utilities import (
-    extract_nuclei,
     h2_molecule,
     h2_rhf,
     water_molecule,
@@ -47,13 +43,9 @@ def test_even_electrons_accepted(h2_molecule: Molecule) -> None:
     :param h2_molecule: Pytest fixture providing an H2 Molecule.
     :type h2_molecule: Molecule
     """
-    nuclei = extract_nuclei(molecule=h2_molecule)
     cgtos = h2_molecule.contracted_gaussian_type_orbitals
-    e_nuc = NuclearRepulsionEnergy(molecule=h2_molecule).energy
     rhf = RestrictedHartreeFock(
         cgtos=cgtos,
-        nuclei=nuclei,
-        e_nuclear=e_nuc,
         n_electrons=2,
     )
     assert rhf.n_occ == 1
@@ -76,14 +68,10 @@ def test_odd_electrons_raises(h2_molecule: Molecule, n_electrons: int) -> None:
     :param n_electrons: Odd electron count, provided by parametrize.
     :type n_electrons: int
     """
-    nuclei = extract_nuclei(molecule=h2_molecule)
     cgtos = h2_molecule.contracted_gaussian_type_orbitals
-    e_nuc = NuclearRepulsionEnergy(molecule=h2_molecule).energy
     with pytest.raises(ValueError, match="even number of electrons"):
         RestrictedHartreeFock(
             cgtos=cgtos,
-            nuclei=nuclei,
-            e_nuclear=e_nuc,
             n_electrons=n_electrons,
         )
 

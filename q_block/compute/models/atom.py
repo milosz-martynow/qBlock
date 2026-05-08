@@ -356,6 +356,7 @@ class Atom:
                             exponents=shell["exponents"],
                             contractions=shell["coefficients"],
                             atom_index=atom_index,
+                            atomic_number=self.atomic_number,
                         )
                     )
 

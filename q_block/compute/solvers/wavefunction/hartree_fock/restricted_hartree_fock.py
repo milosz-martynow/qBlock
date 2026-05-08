@@ -44,10 +44,6 @@ class RestrictedHartreeFock(HartreeFock):
 
     :param cgtos: Contracted Gaussian-type orbital basis.
     :type cgtos: List[ContractedGaussianTypeOrbital]
-    :param nuclei: ``(Z, (x, y, z))`` per nucleus (Bohr).
-    :type nuclei: List[Tuple[int, Tuple[float, float, float]]]
-    :param e_nuclear: Nuclear repulsion energy (Hartree).
-    :type e_nuclear: float
     :param n_electrons: Total electron count (must be even).
     :type n_electrons: int
     :param max_iterations: Maximum number of SCF cycles.
@@ -75,8 +71,6 @@ class RestrictedHartreeFock(HartreeFock):
     def __init__(
         self,
         cgtos: List[ContractedGaussianTypeOrbital],
-        nuclei: List[Tuple[int, Tuple[float, float, float]]],
-        e_nuclear: float,
         n_electrons: int,
         max_iterations: int = 100,
         convergence_threshold: float = 1e-8,
@@ -91,8 +85,6 @@ class RestrictedHartreeFock(HartreeFock):
         n_occ = n_electrons // 2
         super().__init__(
             cgtos,
-            nuclei,
-            e_nuclear,
             n_alpha=n_occ,
             n_beta=n_occ,
             max_iterations=max_iterations,

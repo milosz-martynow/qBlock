@@ -78,10 +78,6 @@ class RestrictedOpenShellHartreeFock(HartreeFock):
 
     :param cgtos: Contracted Gaussian-type orbital basis.
     :type cgtos: List[ContractedGaussianTypeOrbital]
-    :param nuclei: ``(Z, (x, y, z))`` per nucleus (Bohr).
-    :type nuclei: List[Tuple[int, Tuple[float, float, float]]]
-    :param e_nuclear: Nuclear repulsion energy (Hartree).
-    :type e_nuclear: float
     :param n_closed: Number of doubly-occupied spatial orbitals.
     :type n_closed: int
     :param n_open: Number of singly-occupied spatial orbitals.
@@ -112,8 +108,6 @@ class RestrictedOpenShellHartreeFock(HartreeFock):
     def __init__(
         self,
         cgtos: List[ContractedGaussianTypeOrbital],
-        nuclei: List[Tuple[int, Tuple[float, float, float]]],
-        e_nuclear: float,
         n_closed: int,
         n_open: int,
         max_iterations: int = 100,
@@ -131,8 +125,6 @@ class RestrictedOpenShellHartreeFock(HartreeFock):
         n_beta = n_closed
         super().__init__(
             cgtos,
-            nuclei,
-            e_nuclear,
             n_alpha=n_alpha,
             n_beta=n_beta,
             max_iterations=max_iterations,

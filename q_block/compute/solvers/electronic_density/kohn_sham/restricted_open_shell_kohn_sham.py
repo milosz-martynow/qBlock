@@ -137,8 +137,6 @@ class RestrictedOpenShellKohnSham(KohnSham):
     def __init__(
         self,
         cgtos: List[ContractedGaussianTypeOrbital],
-        nuclei: List[Tuple[int, Tuple[float, float, float]]],
-        e_nuclear: float,
         functional: ExchangeCorrelationFunctional,
         n_closed: int,
         n_open: int,
@@ -164,8 +162,6 @@ class RestrictedOpenShellKohnSham(KohnSham):
         n_beta = n_closed
         super().__init__(
             cgtos,
-            nuclei,
-            e_nuclear,
             functional=functional,
             n_alpha=n_alpha,
             n_beta=n_beta,

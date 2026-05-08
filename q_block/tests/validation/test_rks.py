@@ -110,15 +110,13 @@ def rks_atom_result(
     :rtype: Tuple[Dict[str, Any], str, RestrictedKohnSham]
     """
     atom_key, entry, func_name, func = request.param
-    cgtos, nuclei, e_nuclear = _build_from_geometry(
+    cgtos = _build_from_geometry(
         geometry=[{"symbol": entry["symbol"], "x": 0.0, "y": 0.0, "z": 0.0}],
         multiplicity=entry["multiplicity"],
         basis_set_filename=entry["proposed_basis_set"],
     )
     rks = RestrictedKohnSham(
         cgtos=cgtos,
-        nuclei=nuclei,
-        e_nuclear=e_nuclear,
         functional=func,
         n_electrons=entry["n_electrons"],
         n_radial=50,
@@ -151,15 +149,13 @@ def rks_molecule_result(
     :rtype: Tuple[Dict[str, Any], str, RestrictedKohnSham]
     """
     mol_key, entry, func_name, func = request.param
-    cgtos, nuclei, e_nuclear = _build_from_geometry(
+    cgtos = _build_from_geometry(
         geometry=entry["geometry"],
         multiplicity=entry["multiplicity"],
         basis_set_filename=entry["proposed_basis_set"],
     )
     rks = RestrictedKohnSham(
         cgtos=cgtos,
-        nuclei=nuclei,
-        e_nuclear=e_nuclear,
         functional=func,
         n_electrons=entry["n_electrons"],
         n_radial=50,

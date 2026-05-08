@@ -82,15 +82,13 @@ def rohf_atom_result(
     """Run ROHF SCF for one open-shell atom (placed at origin) and return
     ``(entry, converged_hf)``."""
     entry = request.param
-    cgtos, nuclei, e_nuclear = _build_from_geometry(
+    cgtos = _build_from_geometry(
         geometry=[{"symbol": entry["symbol"], "x": 0.0, "y": 0.0, "z": 0.0}],
         multiplicity=entry["multiplicity"],
         basis_set_filename=entry["proposed_basis_set"],
     )
     hf = RestrictedOpenShellHartreeFock(
         cgtos=cgtos,
-        nuclei=nuclei,
-        e_nuclear=e_nuclear,
         n_closed=entry["n_closed"],
         n_open=entry["n_open"],
         max_iterations=entry["max_iterations"],
@@ -109,15 +107,13 @@ def rohf_molecule_result(
     """Run ROHF SCF for one open-shell molecule and return
     ``(entry, converged_hf)``."""
     entry = request.param
-    cgtos, nuclei, e_nuclear = _build_from_geometry(
+    cgtos = _build_from_geometry(
         geometry=entry["geometry"],
         multiplicity=entry["multiplicity"],
         basis_set_filename=entry["proposed_basis_set"],
     )
     hf = RestrictedOpenShellHartreeFock(
         cgtos=cgtos,
-        nuclei=nuclei,
-        e_nuclear=e_nuclear,
         n_closed=entry["n_closed"],
         n_open=entry["n_open"],
         max_iterations=entry["max_iterations"],

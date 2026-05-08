@@ -59,8 +59,6 @@ class UnrestrictedHartreeFock(HartreeFock):
     def __init__(
         self,
         cgtos: List[ContractedGaussianTypeOrbital],
-        nuclei: List[Tuple[int, Tuple[float, float, float]]],
-        e_nuclear: float,
         n_alpha: int,
         n_beta: int,
         max_iterations: int = 100,
@@ -76,8 +74,6 @@ class UnrestrictedHartreeFock(HartreeFock):
             )
         super().__init__(
             cgtos,
-            nuclei,
-            e_nuclear,
             n_alpha=n_alpha,
             n_beta=n_beta,
             max_iterations=max_iterations,

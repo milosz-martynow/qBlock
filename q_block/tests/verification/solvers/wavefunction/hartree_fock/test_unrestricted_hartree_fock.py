@@ -20,14 +20,10 @@ import numpy as np
 import pytest
 
 from q_block.compute import Molecule
-from q_block.compute.models.initialization.nuclear_repulsion_energy import (
-    NuclearRepulsionEnergy,
-)
 from q_block.compute.solvers.wavefunction.hartree_fock.unrestricted_hartree_fock import (
     UnrestrictedHartreeFock,
 )
 from q_block.tests.verification.utilities import (
-    extract_nuclei,
     h2_molecule,
     h2_uhf,
     water_molecule,
@@ -69,14 +65,10 @@ def test_negative_electrons_raises(
     :param n_beta: Beta electron count, provided by parametrize.
     :type n_beta: int
     """
-    nuclei = extract_nuclei(molecule=h2_molecule)
     cgtos = h2_molecule.contracted_gaussian_type_orbitals
-    e_nuc = NuclearRepulsionEnergy(molecule=h2_molecule).energy
     with pytest.raises(ValueError, match="non-negative"):
         UnrestrictedHartreeFock(
             cgtos=cgtos,
-            nuclei=nuclei,
-            e_nuclear=e_nuc,
             n_alpha=n_alpha,
             n_beta=n_beta,
         )

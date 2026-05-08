@@ -58,10 +58,6 @@ class HartreeFock(SCF):
 
     :param cgtos: Contracted Gaussian-type orbital basis.
     :type cgtos: List[ContractedGaussianTypeOrbital]
-    :param nuclei: ``(Z, (x, y, z))`` for each nucleus (Bohr).
-    :type nuclei: List[Tuple[int, Tuple[float, float, float]]]
-    :param e_nuclear: Nuclear repulsion energy (Hartree).
-    :type e_nuclear: float
     :param n_alpha: Number of alpha electrons.
     :type n_alpha: int
     :param n_beta: Number of beta electrons.
@@ -85,8 +81,6 @@ class HartreeFock(SCF):
     def __init__(
         self,
         cgtos: List[ContractedGaussianTypeOrbital],
-        nuclei: List[Tuple[int, Tuple[float, float, float]]],
-        e_nuclear: float,
         n_alpha: int,
         n_beta: int,
         max_iterations: int = 100,
@@ -97,8 +91,6 @@ class HartreeFock(SCF):
     ) -> None:
         super().__init__(
             cgtos,
-            nuclei,
-            e_nuclear,
             max_iterations=max_iterations,
             convergence_threshold=convergence_threshold,
             diis_start=diis_start,

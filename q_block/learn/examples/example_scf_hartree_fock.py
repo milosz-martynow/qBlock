@@ -22,17 +22,12 @@ Results are saved as JSON and formatted text files in an
 
 import importlib.resources
 from pathlib import Path
-from typing import List, Tuple
-
 from q_block.compute.environment.configuration import Configuration
 from q_block.compute.environment.io.basis_set import Pople
 from q_block.compute.environment.io.input_data import InputData
 from q_block.compute.environment.io.output_data import OutputData
 from q_block.compute.environment.logs import setup_logging
 from q_block.compute.models.initialization import RHF, ROHF, UHF
-from q_block.compute.models.initialization.nuclear_repulsion_energy import (
-    NuclearRepulsionEnergy,
-)
 from q_block.compute.models.molecule import Molecule
 from q_block.compute.solvers.wavefunction.hartree_fock import (
     RestrictedHartreeFock,
@@ -52,30 +47,6 @@ SCRIPT_NAME: str = "example_scf_hartree_fock"
 
 OUTPUT_DIR = SCRIPT_DIR / f"output_{SCRIPT_NAME}"
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-
-
-# ══════════════════════════════════════════════════════════════════════════════
-# HELPER: extract nuclei list from a Molecule
-# ══════════════════════════════════════════════════════════════════════════════
-
-
-def extract_nuclei(
-    mol: Molecule,
-) -> List[Tuple[int, Tuple[float, float, float]]]:
-    """Return a list of (Z, (x, y, z)) tuples for each nucleus.
-
-    :param mol: Molecule in Bohr units.
-    :type mol: Molecule
-    :returns: List of (atomic_number, (x, y, z)) pairs.
-    :rtype: List[Tuple[int, Tuple[float, float, float]]]
-    """
-    return [
-        (
-            atom.atomic_number,
-            (atom.coordinates.x, atom.coordinates.y, atom.coordinates.z),
-        )
-        for atom in mol.atoms
-    ]
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -151,13 +122,8 @@ logger.info("=" * 70)
 logger.info("RHF – Restricted Closed-Shell (H₂, singlet)")
 logger.info("=" * 70)
 
-nuclei_h2 = extract_nuclei(ctx_rhf.molecule)
-e_nuc_h2 = NuclearRepulsionEnergy(ctx_rhf.molecule).energy
-
 rhf = RestrictedHartreeFock(
     cgtos=ctx_rhf.cgto,
-    nuclei=nuclei_h2,
-    e_nuclear=e_nuc_h2,
     n_electrons=ctx_rhf.n_electrons,
     max_iterations=config.get_max_scf_iterations(),
     convergence_threshold=config.get_scf_convergence_threshold(),
@@ -175,13 +141,8 @@ logger.info("=" * 70)
 logger.info("UHF – Unrestricted (H₂⁺ cation, doublet)")
 logger.info("=" * 70)
 
-nuclei_cat = extract_nuclei(ctx_uhf.molecule)
-e_nuc_cat = NuclearRepulsionEnergy(ctx_uhf.molecule).energy
-
 uhf = UnrestrictedHartreeFock(
     cgtos=ctx_uhf.cgto,
-    nuclei=nuclei_cat,
-    e_nuclear=e_nuc_cat,
     n_alpha=ctx_uhf.n_alpha,
     n_beta=ctx_uhf.n_beta,
     max_iterations=config.get_max_scf_iterations(),
@@ -202,8 +163,6 @@ logger.info("=" * 70)
 
 rohf = RestrictedOpenShellHartreeFock(
     cgtos=ctx_rohf.cgto,
-    nuclei=nuclei_cat,
-    e_nuclear=e_nuc_cat,
     n_closed=ctx_rohf.n_closed,
     n_open=ctx_rohf.n_open,
     max_iterations=config.get_max_scf_iterations(),

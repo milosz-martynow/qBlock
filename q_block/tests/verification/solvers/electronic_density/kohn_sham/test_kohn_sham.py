@@ -39,11 +39,9 @@ from q_block.tests.verification.utilities import (
 
 def test_phi_grid_shape() -> None:
     """phi_grid has shape (n_basis, n_points) and all entries are finite."""
-    cgtos, nuclei, e_nuc = h2_inputs()
+    cgtos = h2_inputs()
     rks = RestrictedKohnSham(
         cgtos=cgtos,
-        nuclei=nuclei,
-        e_nuclear=e_nuc,
         functional=SVWN(),
         n_electrons=2,
         n_radial=20,
@@ -55,11 +53,9 @@ def test_phi_grid_shape() -> None:
 
 def test_dphi_grid_none_for_lda() -> None:
     """dphi_grid is None for LDA functionals (no gradient needed)."""
-    cgtos, nuclei, e_nuc = h2_inputs()
+    cgtos = h2_inputs()
     rks = RestrictedKohnSham(
         cgtos=cgtos,
-        nuclei=nuclei,
-        e_nuclear=e_nuc,
         functional=SVWN(),
         n_electrons=2,
         n_radial=20,
@@ -70,11 +66,9 @@ def test_dphi_grid_none_for_lda() -> None:
 
 def test_dphi_grid_computed_for_gga() -> None:
     """dphi_grid has shape (3, n_basis, n_points) for GGA functionals."""
-    cgtos, nuclei, e_nuc = h2_inputs()
+    cgtos = h2_inputs()
     rks = RestrictedKohnSham(
         cgtos=cgtos,
-        nuclei=nuclei,
-        e_nuclear=e_nuc,
         functional=PBE(),
         n_electrons=2,
         n_radial=20,
@@ -87,11 +81,9 @@ def test_dphi_grid_computed_for_gga() -> None:
 
 def test_dphi_grid_computed_for_hybrid() -> None:
     """dphi_grid is computed for hybrid functionals."""
-    cgtos, nuclei, e_nuc = h2_inputs()
+    cgtos = h2_inputs()
     rks = RestrictedKohnSham(
         cgtos=cgtos,
-        nuclei=nuclei,
-        e_nuclear=e_nuc,
         functional=B3LYP(),
         n_electrons=2,
         n_radial=20,
@@ -107,11 +99,9 @@ def test_dphi_grid_computed_for_hybrid() -> None:
 
 def test_density_on_grid_shape_and_non_negative() -> None:
     """_density_on_grid returns (n_points,) array with rho >= 0."""
-    cgtos, nuclei, e_nuc = h2_inputs()
+    cgtos = h2_inputs()
     rks = RestrictedKohnSham(
         cgtos=cgtos,
-        nuclei=nuclei,
-        e_nuclear=e_nuc,
         functional=SVWN(),
         n_electrons=2,
         n_radial=20,
@@ -130,11 +120,9 @@ def test_density_on_grid_shape_and_non_negative() -> None:
 
 def test_gradient_on_grid_shape_and_finite() -> None:
     """_gradient_on_grid returns (3, n_points) finite array for GGA."""
-    cgtos, nuclei, e_nuc = h2_inputs()
+    cgtos = h2_inputs()
     rks = RestrictedKohnSham(
         cgtos=cgtos,
-        nuclei=nuclei,
-        e_nuclear=e_nuc,
         functional=PBE(),
         n_electrons=2,
         n_radial=20,
@@ -153,11 +141,9 @@ def test_gradient_on_grid_shape_and_finite() -> None:
 
 def test_coulomb_matrix_square_and_symmetric() -> None:
     """_build_coulomb returns a square symmetric matrix."""
-    cgtos, nuclei, e_nuc = h2_inputs()
+    cgtos = h2_inputs()
     rks = RestrictedKohnSham(
         cgtos=cgtos,
-        nuclei=nuclei,
-        e_nuclear=e_nuc,
         functional=SVWN(),
         n_electrons=2,
         n_radial=20,
@@ -171,11 +157,9 @@ def test_coulomb_matrix_square_and_symmetric() -> None:
 
 def test_exchange_matrix_square_and_symmetric() -> None:
     """_build_exchange returns a square symmetric matrix."""
-    cgtos, nuclei, e_nuc = h2_inputs()
+    cgtos = h2_inputs()
     rks = RestrictedKohnSham(
         cgtos=cgtos,
-        nuclei=nuclei,
-        e_nuclear=e_nuc,
         functional=SVWN(),
         n_electrons=2,
         n_radial=20,
@@ -194,11 +178,9 @@ def test_exchange_matrix_square_and_symmetric() -> None:
 
 def test_vxc_matrix_shape_and_symmetry_lda() -> None:
     """_build_vxc_matrix returns a square symmetric matrix for LDA."""
-    cgtos, nuclei, e_nuc = h2_inputs()
+    cgtos = h2_inputs()
     rks = RestrictedKohnSham(
         cgtos=cgtos,
-        nuclei=nuclei,
-        e_nuclear=e_nuc,
         functional=SVWN(),
         n_electrons=2,
         n_radial=20,
@@ -216,11 +198,9 @@ def test_vxc_matrix_shape_and_symmetry_lda() -> None:
 
 def test_vxc_matrix_shape_gga() -> None:
     """_build_vxc_matrix has correct shape for GGA functionals."""
-    cgtos, nuclei, e_nuc = h2_inputs()
+    cgtos = h2_inputs()
     rks = RestrictedKohnSham(
         cgtos=cgtos,
-        nuclei=nuclei,
-        e_nuclear=e_nuc,
         functional=PBE(),
         n_electrons=2,
         n_radial=20,
@@ -252,11 +232,9 @@ def test_vxc_matrix_shape_gga() -> None:
 
 def test_xc_energy_is_finite_float() -> None:
     """_compute_xc_energy returns a finite float for SVWN."""
-    cgtos, nuclei, e_nuc = h2_inputs()
+    cgtos = h2_inputs()
     rks = RestrictedKohnSham(
         cgtos=cgtos,
-        nuclei=nuclei,
-        e_nuclear=e_nuc,
         functional=SVWN(),
         n_electrons=2,
         n_radial=20,

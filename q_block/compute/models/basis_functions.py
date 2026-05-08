@@ -84,6 +84,9 @@ class ContractedGaussianTypeOrbital:
         ``None`` when the CGTO is built at the :class:`Atom` level
         (before a molecule context exists).
     :type atom_index: Optional[int]
+    :param atomic_number: Atomic number (proton count, Z) of the nucleus
+        this shell is centred on.  ``None`` when not yet known.
+    :type atomic_number: Optional[int]
 
     Attributes
     ----------
@@ -97,6 +100,8 @@ class ContractedGaussianTypeOrbital:
         Contraction coefficients :math:`d_p`.
     atom_index : Optional[int]
         Owning atom index in the parent Molecule (``None`` at atom level).
+    atomic_number : Optional[int]
+        Atomic number Z of the nucleus this shell belongs to.
     n_primitives : int
         Number of primitive Gaussians in this contraction.
     n_functions : int
@@ -110,6 +115,7 @@ class ContractedGaussianTypeOrbital:
         exponents: List[float],
         contractions: List[float],
         atom_index: Optional[int] = None,
+        atomic_number: Optional[int] = None,
     ) -> None:
         if len(exponents) != len(contractions):
             raise ValueError(
@@ -124,6 +130,7 @@ class ContractedGaussianTypeOrbital:
         self.exponents: List[float] = list(exponents)
         self.contractions: List[float] = list(contractions)
         self.atom_index: Optional[int] = atom_index
+        self.atomic_number: Optional[int] = atomic_number
         self.n_primitives: int = len(exponents)
         self.n_functions: int = 2 * l + 1
 
@@ -147,6 +154,7 @@ class ContractedGaussianTypeOrbital:
             and self.exponents == other.exponents
             and self.contractions == other.contractions
             and self.atom_index == other.atom_index
+            and self.atomic_number == other.atomic_number
         )
 
     # ------------------------------------------------------------------

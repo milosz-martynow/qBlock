@@ -70,10 +70,6 @@ class KohnSham(SCF):
 
     :param cgtos: Contracted Gaussian-type orbital basis.
     :type cgtos: List[ContractedGaussianTypeOrbital]
-    :param nuclei: ``(Z, (x, y, z))`` for each nucleus (Bohr).
-    :type nuclei: List[Tuple[int, Tuple[float, float, float]]]
-    :param e_nuclear: Nuclear repulsion energy (Hartree).
-    :type e_nuclear: float
     :param functional: Exchange-correlation functional.
     :type functional: ExchangeCorrelationFunctional
     :param n_alpha: Number of alpha electrons.
@@ -116,8 +112,6 @@ class KohnSham(SCF):
     def __init__(
         self,
         cgtos: List[ContractedGaussianTypeOrbital],
-        nuclei: List[Tuple[int, Tuple[float, float, float]]],
-        e_nuclear: float,
         functional: ExchangeCorrelationFunctional,
         n_alpha: int,
         n_beta: int,
@@ -131,8 +125,6 @@ class KohnSham(SCF):
     ) -> None:
         super().__init__(
             cgtos,
-            nuclei,
-            e_nuclear,
             max_iterations=max_iterations,
             convergence_threshold=convergence_threshold,
             diis_start=diis_start,
@@ -150,7 +142,7 @@ class KohnSham(SCF):
             f"{n_angular} angular)..."
         )
         self.grid: NumericalGrid = NumericalGrid(
-            nuclei=nuclei,
+            nuclei=self.nuclei,
             n_radial=n_radial,
             n_angular=n_angular,
         )
