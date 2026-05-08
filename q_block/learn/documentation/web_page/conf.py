@@ -2,20 +2,16 @@
 Sphinx configuration for qBlock documentation.
 """
 
-import sys
 from pathlib import Path
 from typing import List
 
 _ROOT: Path = Path(__file__).resolve().parents[4]
-sys.path.insert(0, str(_ROOT))
-
-from setup import PROJECT_AUTHOR, PROJECT_NAME, PROJECT_VERSION
 
 # -- Project information -----------------------------------------------------
 
-project: str = PROJECT_NAME
-author: str = PROJECT_AUTHOR
-release: str = PROJECT_VERSION
+project: str = "qBlock"
+author: str = "Miłosz Martynow"
+release: str = "1.0.7"
 copyright: str = f"2026, {author}"
 
 # -- General configuration ---------------------------------------------------
