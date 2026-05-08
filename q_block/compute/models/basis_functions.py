@@ -84,9 +84,6 @@ class ContractedGaussianTypeOrbital:
         ``None`` when the CGTO is built at the :class:`Atom` level
         (before a molecule context exists).
     :type atom_index: Optional[int]
-    :param atomic_number: Atomic number (proton count, Z) of the nucleus
-        this shell is centred on.  ``None`` when not yet known.
-    :type atomic_number: Optional[int]
 
     Attributes
     ----------
