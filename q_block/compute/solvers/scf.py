@@ -105,6 +105,10 @@ class SCF(ABC):
     :param calculation_error_metric: Error reduction method used for
         convergence checking (default: ``"rms"``).
     :type calculation_error_metric: str
+    :param precomputed_eri: Pre-built ERI tensor to reuse instead of
+        recomputing (useful when running multiple solvers on the same
+        geometry). When ``None`` the tensor is computed from scratch.
+    :type precomputed_eri: Optional[np.ndarray]
 
     Attributes
     ----------
@@ -160,6 +164,7 @@ class SCF(ABC):
         diis_start: int = 1,
         diis_max_vectors: int = 6,
         calculation_error_metric: str = "rms",
+        precomputed_eri: Optional[np.ndarray] = None,
     ) -> None:
         if max_iterations < 1:
             raise ValueError(f"max_iterations must be >= 1; got {max_iterations}.")
@@ -192,9 +197,13 @@ class SCF(ABC):
         logger.info(f"One-electron integrals computed (n_basis={self.n_basis}).")
 
         logger.info("Computing two-electron repulsion integrals...")
-        eri_obj = TwoElectronRepulsion(cgtos=self.cgtos)
-        self.eri: np.ndarray = eri_obj.tensor
-        logger.info("Two-electron integrals computed.")
+        self.eri: np.ndarray
+        if precomputed_eri is not None:
+            self.eri = precomputed_eri
+            logger.info("Two-electron integrals reused from precomputed tensor.")
+        else:
+            self.eri = TwoElectronRepulsion(cgtos=self.cgtos).tensor
+            logger.info("Two-electron integrals computed.")
 
         # ── Log atomic system data ────────────────────────────────
         self._log_system_data()

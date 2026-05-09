@@ -14,7 +14,9 @@ UnrestrictedKohnSham
     Concrete UKS implementation.
 """
 
-from typing import List, Tuple
+from typing import List, Optional
+
+import numpy as np
 
 from q_block.compute.models.basis_functions import ContractedGaussianTypeOrbital
 from q_block.compute.solvers.electronic_density.functionals.exchange_correlation_functional import (
@@ -34,10 +36,6 @@ class UnrestrictedKohnSham(KohnSham):
 
     :param cgtos: Contracted Gaussian-type orbital basis.
     :type cgtos: List[ContractedGaussianTypeOrbital]
-    :param nuclei: ``(Z, (x, y, z))`` per nucleus (Bohr).
-    :type nuclei: List[Tuple[int, Tuple[float, float, float]]]
-    :param e_nuclear: Nuclear repulsion energy (Hartree).
-    :type e_nuclear: float
     :param functional: Exchange-correlation functional.
     :type functional: ExchangeCorrelationFunctional
     :param n_alpha: Number of alpha electrons.
@@ -62,6 +60,9 @@ class UnrestrictedKohnSham(KohnSham):
     :param calculation_error_metric: Error reduction method
         (``"rms"`` or ``"max_abs"``).
     :type calculation_error_metric: str
+    :param precomputed_eri: Pre-built ERI tensor to reuse instead of
+        recomputing. ``None`` triggers computation from scratch.
+    :type precomputed_eri: Optional[np.ndarray]
     """
 
     def __init__(
@@ -77,6 +78,7 @@ class UnrestrictedKohnSham(KohnSham):
         diis_start: int = 1,
         diis_max_vectors: int = 6,
         calculation_error_metric: str = "rms",
+        precomputed_eri: Optional[np.ndarray] = None,
     ) -> None:
         if n_alpha < 0 or n_beta < 0:
             raise ValueError(
@@ -95,6 +97,7 @@ class UnrestrictedKohnSham(KohnSham):
             diis_start=diis_start,
             diis_max_vectors=diis_max_vectors,
             calculation_error_metric=calculation_error_metric,
+            precomputed_eri=precomputed_eri,
         )
 
     # ------------------------------------------------------------------

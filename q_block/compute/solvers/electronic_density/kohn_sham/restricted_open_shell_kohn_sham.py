@@ -73,7 +73,7 @@ RestrictedOpenShellKohnSham
     Concrete ROKS implementation.
 """
 
-from typing import List, Optional, Tuple, Union
+from typing import List, Optional
 
 import numpy as np
 
@@ -97,10 +97,6 @@ class RestrictedOpenShellKohnSham(KohnSham):
 
     :param cgtos: Contracted Gaussian-type orbital basis.
     :type cgtos: List[ContractedGaussianTypeOrbital]
-    :param nuclei: ``(Z, (x, y, z))`` per nucleus (Bohr).
-    :type nuclei: List[Tuple[int, Tuple[float, float, float]]]
-    :param e_nuclear: Nuclear repulsion energy (Hartree).
-    :type e_nuclear: float
     :param functional: Exchange-correlation functional.
     :type functional: ExchangeCorrelationFunctional
     :param n_closed: Number of doubly-occupied spatial orbitals.
@@ -125,6 +121,9 @@ class RestrictedOpenShellKohnSham(KohnSham):
     :param calculation_error_metric: Error reduction method
         (``"rms"`` or ``"max_abs"``).
     :type calculation_error_metric: str
+    :param precomputed_eri: Pre-built ERI tensor to reuse instead of
+        recomputing. ``None`` triggers computation from scratch.
+    :type precomputed_eri: Optional[np.ndarray]
 
     Attributes
     ----------
@@ -147,6 +146,7 @@ class RestrictedOpenShellKohnSham(KohnSham):
         diis_start: int = 1,
         diis_max_vectors: int = 6,
         calculation_error_metric: str = "rms",
+        precomputed_eri: Optional[np.ndarray] = None,
     ) -> None:
         if n_closed < 0 or n_open < 0:
             raise ValueError(
@@ -172,6 +172,7 @@ class RestrictedOpenShellKohnSham(KohnSham):
             diis_start=diis_start,
             diis_max_vectors=diis_max_vectors,
             calculation_error_metric=calculation_error_metric,
+            precomputed_eri=precomputed_eri,
         )
         self.n_closed: int = n_closed
         self.n_open: int = n_open

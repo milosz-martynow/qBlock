@@ -94,6 +94,9 @@ class KohnSham(SCF):
     :param calculation_error_metric: Error reduction method
         (``"rms"`` or ``"max_abs"``).
     :type calculation_error_metric: str
+    :param precomputed_eri: Pre-built ERI tensor to reuse instead of
+        recomputing. ``None`` triggers computation from scratch.
+    :type precomputed_eri: Optional[np.ndarray]
 
     Attributes
     ----------
@@ -122,6 +125,7 @@ class KohnSham(SCF):
         diis_start: int = 1,
         diis_max_vectors: int = 6,
         calculation_error_metric: str = "rms",
+        precomputed_eri: Optional[np.ndarray] = None,
     ) -> None:
         super().__init__(
             cgtos,
@@ -130,6 +134,7 @@ class KohnSham(SCF):
             diis_start=diis_start,
             diis_max_vectors=diis_max_vectors,
             calculation_error_metric=calculation_error_metric,
+            precomputed_eri=precomputed_eri,
         )
         self._n_alpha: int = n_alpha
         self._n_beta: int = n_beta
@@ -205,35 +210,30 @@ class KohnSham(SCF):
         """
         n_pts = self.grid.n_points
         phi = np.zeros((self.n_basis, n_pts))
+        coords = self.grid.coords  # (n_pts, 3)
 
         mu = 0
         for cgto in self.cgtos:
+            dx = coords[:, 0] - cgto.center.x  # (n_pts,)
+            dy = coords[:, 1] - cgto.center.y
+            dz = coords[:, 2] - cgto.center.z
+            r_sq = dx * dx + dy * dy + dz * dz  # (n_pts,)
+
+            alphas = np.array(cgto.exponents)     # (n_prim,)
+            coeffs = np.array(cgto.contractions)  # (n_prim,)
+
             components = get_cartesian_components(cgto.l)
             for lx, ly, lz in components:
-                for g in range(n_pts):
-                    rx = self.grid.coords[g, 0]
-                    ry = self.grid.coords[g, 1]
-                    rz = self.grid.coords[g, 2]
-                    dx = rx - cgto.center.x
-                    dy = ry - cgto.center.y
-                    dz = rz - cgto.center.z
-                    r_sq = dx * dx + dy * dy + dz * dz
-                    angular = dx ** lx * dy ** ly * dz ** lz
+                norms = np.array([
+                    normalization_constant(a, lx, ly, lz) for a in alphas
+                ])  # (n_prim,)
+                # weighted[p, g] = coeff_p * norm_p * exp(-alpha_p * r_sq_g)
+                weighted = (coeffs * norms)[:, np.newaxis] * np.exp(
+                    -alphas[:, np.newaxis] * r_sq[np.newaxis, :]
+                )  # (n_prim, n_pts)
 
-                    val = 0.0
-                    for p in range(cgto.n_primitives):
-                        alpha = cgto.exponents[p]
-                        coeff = cgto.contractions[p]
-                        norm = normalization_constant(
-                            alpha, lx, ly, lz
-                        )
-                        val += (
-                            coeff
-                            * norm
-                            * angular
-                            * np.exp(-alpha * r_sq)
-                        )
-                    phi[mu, g] = val
+                angular = dx ** lx * dy ** ly * dz ** lz  # (n_pts,)
+                phi[mu] = angular * weighted.sum(axis=0)
                 mu += 1
         return phi
 

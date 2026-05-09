@@ -31,6 +31,8 @@ from typing import Any, Callable, Dict, List, Tuple
 import numpy as np
 import pytest
 
+from q_block.compute.models.basis_functions import ContractedGaussianTypeOrbital
+from q_block.compute.models.integrals.two_electron_repulsion import TwoElectronRepulsion
 from q_block.compute.solvers.electronic_density.functionals import (
     B3LYP,
     PBE,
@@ -84,6 +86,18 @@ _functionals: List[Tuple[str, ExchangeCorrelationFunctional]] = [
 ]
 
 # ---------------------------------------------------------------------------
+# Module-level caches: CGTOs and ERI built once per atom/molecule key.
+# Each cache entry is (cgtos, eri_tensor) and is populated lazily on first
+# access during fixture execution, then reused for subsequent functionals.
+# ---------------------------------------------------------------------------
+_uks_atom_cache: Dict[
+    str, Tuple[List[ContractedGaussianTypeOrbital], np.ndarray]
+] = {}
+_uks_mol_cache: Dict[
+    str, Tuple[List[ContractedGaussianTypeOrbital], np.ndarray]
+] = {}
+
+# ---------------------------------------------------------------------------
 # Module-scoped fixtures (each SCF is run once, shared across test functions)
 # ---------------------------------------------------------------------------
 
@@ -106,15 +120,25 @@ def uks_atom_result(
 ) -> Tuple[Dict[str, Any], str, UnrestrictedKohnSham]:
     """Run UKS SCF for one open-shell atom with one functional.
 
+    CGTOs and the ERI tensor are built once per atom (cached in
+    ``_uks_atom_cache``) and reused across all three functionals, avoiding
+    redundant O(N\u2074) ERI recomputation.
+
     :returns: ``(entry, functional_name, uks)``
     :rtype: Tuple[Dict[str, Any], str, UnrestrictedKohnSham]
     """
     atom_key, entry, func_name, func = request.param
-    cgtos = _build_from_geometry(
-        geometry=[{"symbol": entry["symbol"], "x": 0.0, "y": 0.0, "z": 0.0}],
-        multiplicity=entry["multiplicity"],
-        basis_set_filename=entry["proposed_basis_set"],
-    )
+    if atom_key not in _uks_atom_cache:
+        cgtos = _build_from_geometry(
+            geometry=[
+                {"symbol": entry["symbol"], "x": 0.0, "y": 0.0, "z": 0.0}
+            ],
+            multiplicity=entry["multiplicity"],
+            basis_set_filename=entry["proposed_basis_set"],
+        )
+        eri = TwoElectronRepulsion(cgtos=cgtos).tensor
+        _uks_atom_cache[atom_key] = (cgtos, eri)
+    cgtos, eri = _uks_atom_cache[atom_key]
     uks = UnrestrictedKohnSham(
         cgtos=cgtos,
         functional=func,
@@ -124,6 +148,7 @@ def uks_atom_result(
         n_angular=14,
         max_iterations=entry.get("max_iterations", 200),
         convergence_threshold=1e-5,
+        precomputed_eri=eri,
     ).run()
     return entry, func_name, uks
 
@@ -146,15 +171,23 @@ def uks_molecule_result(
 ) -> Tuple[Dict[str, Any], str, UnrestrictedKohnSham]:
     """Run UKS SCF for one open-shell molecule with one functional.
 
+    CGTOs and the ERI tensor are built once per molecule (cached in
+    ``_uks_mol_cache``) and reused across all three functionals, avoiding
+    redundant O(N\u2074) ERI recomputation.
+
     :returns: ``(entry, functional_name, uks)``
     :rtype: Tuple[Dict[str, Any], str, UnrestrictedKohnSham]
     """
     mol_key, entry, func_name, func = request.param
-    cgtos = _build_from_geometry(
-        geometry=entry["geometry"],
-        multiplicity=entry["multiplicity"],
-        basis_set_filename=entry["proposed_basis_set"],
-    )
+    if mol_key not in _uks_mol_cache:
+        cgtos = _build_from_geometry(
+            geometry=entry["geometry"],
+            multiplicity=entry["multiplicity"],
+            basis_set_filename=entry["proposed_basis_set"],
+        )
+        eri = TwoElectronRepulsion(cgtos=cgtos).tensor
+        _uks_mol_cache[mol_key] = (cgtos, eri)
+    cgtos, eri = _uks_mol_cache[mol_key]
     uks = UnrestrictedKohnSham(
         cgtos=cgtos,
         functional=func,
@@ -164,8 +197,12 @@ def uks_molecule_result(
         n_angular=14,
         max_iterations=entry.get("max_iterations", 200),
         convergence_threshold=1e-5,
+        precomputed_eri=eri,
     ).run()
     return entry, func_name, uks
+
+
+# ---------------------------------------------------------------------------
 
 
 # ---------------------------------------------------------------------------
