@@ -102,7 +102,8 @@ class ContractedGaussianTypeOrbital:
     n_primitives : int
         Number of primitive Gaussians in this contraction.
     n_functions : int
-        Number of basis functions this shell contributes (:math:`2l + 1`).
+        Number of Cartesian basis functions this shell contributes
+        (:math:`(l+1)(l+2)/2`).
     """
 
     def __init__(
@@ -129,7 +130,7 @@ class ContractedGaussianTypeOrbital:
         self.atom_index: Optional[int] = atom_index
         self.atomic_number: Optional[int] = atomic_number
         self.n_primitives: int = len(exponents)
-        self.n_functions: int = 2 * l + 1
+        self.n_functions: int = (l + 1) * (l + 2) // 2
 
     # ------------------------------------------------------------------
     # Dunder helpers

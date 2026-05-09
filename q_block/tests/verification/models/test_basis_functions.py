@@ -69,10 +69,10 @@ def water_molecule() -> Molecule:
 @pytest.mark.parametrize(
     "l, expected_n_functions",
     [
-        (0, 1),  # s-orbital: 2*0 + 1 = 1
-        (1, 3),  # p-orbital: 2*1 + 1 = 3
-        (2, 5),  # d-orbital: 2*2 + 1 = 5
-        (3, 7),  # f-orbital: 2*3 + 1 = 7
+        (0, 1),  # s-orbital: (0+1)*(0+2)//2 = 1
+        (1, 3),  # p-orbital: (1+1)*(1+2)//2 = 3
+        (2, 6),  # d-orbital: (2+1)*(2+2)//2 = 6
+        (3, 10),  # f-orbital: (3+1)*(3+2)//2 = 10
     ],
     ids=["s_orbital", "p_orbital", "d_orbital", "f_orbital"],
 )
@@ -81,7 +81,7 @@ def test_cgto_init_orbital_types(l: int, expected_n_functions: int) -> None:
 
     :param l: Angular momentum quantum number.
     :type l: int
-    :param expected_n_functions: Expected number of basis functions (2l+1).
+    :param expected_n_functions: Expected number of Cartesian basis functions ((l+1)(l+2)//2).
     :type expected_n_functions: int
     """
     cgto: ContractedGaussianTypeOrbital = ContractedGaussianTypeOrbital(

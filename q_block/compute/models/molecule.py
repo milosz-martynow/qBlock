@@ -203,8 +203,8 @@ class Molecule(AtomicSystem):
             for region_name in ("core", "valence_inner", "valence_outer"):
                 region = regions.get(region_name, {})
                 for l_val, shells in region.items():
-                    # Each shell contributes (2l+1) basis functions
-                    n_basis += len(shells) * (2 * l_val + 1)
+                    # Each shell contributes (l+1)(l+2)/2 Cartesian basis functions
+                    n_basis += len(shells) * (l_val + 1) * (l_val + 2) // 2
         return n_basis
 
     def make_contracted_gaussian_type_orbital(self) -> None:
