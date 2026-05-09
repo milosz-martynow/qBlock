@@ -19,6 +19,7 @@ PROJECT_DESCRIPTION: str = (
 
 requires: List[str] = [
     "setuptools==80.9.0",
+    "numba>=0.59.0",
     "pandas==2.3.3",
     "numpy>=1.23.0,<3.0.0",
     "scipy>=1.10.0,<2.0.0",

@@ -3,12 +3,10 @@
 **qBlock** — Electronic structure library in Python 3.12. Author: Miłosz Martynow. Implements Hartree-Fock (RHF, UHF, ROHF) via McMurchie-Davidson integrals and SCF with DIIS acceleration.
 
 ## Package Layers
-- `constants/` Pure data, no logic beyond dict inversion.
-- `io/` Input parsing and data wrangling.
-- `methods/` Electronic structure algorithms: SCF loop, DIIS, HF variants (RHF, UHF, ROHF).
-- `models/` Quantum-structure models of atoms and electrons.
-- `systems/` Atomic systems containers: atoms, molecules, crystals.
-- `theory/` Physics: basis functions, integrals, nuclear repulsion.
+- `environment/` Foundational infrastructure: configuration, logging, constants (natural/numerical), I/O interfaces.
+- `models/` Physical models: particles, orbitals, composite systems (atoms, molecules, crystals), basis functions, integral engines, initialization.
+- `solvers/` Numerical algorithms: SCF loop, DIIS, diagonalisation, HF variants (RHF, UHF, ROHF), KS-DFT variants (RKS, UKS, ROKS), XC functionals (SVWN, PBE, B3LYP).
+- `utilities/` Pure-math helpers: Boys function, double factorial, normalization constants, Hermite tables.
 
 ## Root Files
 - `setup.py` — Package definition.
@@ -17,7 +15,7 @@
 ## Other Directories
 - `q_block/compute/environment/constants/numerical/basis_set/pople/` — Gaussian basis set files like: `STO-3G`, `3-21G`.
 - `examples/` — runnable scripts demonstrating the API (molecule creation, integrals, SCF, GTO dataframe), located under `q_block/learn/examples/`.
-- `architecture/` — PlantUML diagrams: `scf_activity_diagram.puml`, `use_case_diagram.puml`, block definition diagrams for each sub-package (`io`, `methods`, `models`, `systems`, `theory`).
+- `q_block/learn/documentation/` — BDD and component diagrams for each sub-package (`environment`, `models`, `solvers`, `utilities`).
 
 ## Key Data Flow (SCF)
 1. Load basis (`.gbs` file) → `Pople`
@@ -46,15 +44,15 @@ pytest .
 ### Verification Tests (`q_block/tests/verification/`)
 Per-module, parametrized, no test classes — bare functions with `@pytest.mark.parametrize`.
 - `constants.py` — shared fixtures: pre-loaded basis sets (`BASIS_3_21G`, `BASIS_STO_3G`, …), path constants (`BASIS_ROOT`, `GOLDEN_ROOT`, `GEOMETRIES_DIR`), `ORIGIN` coordinate.
-- `utilities.py` — shared helpers: `ALL_ORBITAL_COMPONENTS`, `ORBITAL_LABELS`, `orbital_id()`, `get_orbital_ids()`.
+- `utilities/` — directory mirroring `compute/utilities/`; `__init__.py` provides shared helpers: `ALL_ORBITAL_COMPONENTS`, `ORBITAL_LABELS`, `orbital_id()`, `get_orbital_ids()`.
 - `verification_data/` — golden reference files: `expected_atom_empirical.py`, `expected_atom_pure.py`, `gto_population/*.json`, `geometries/*.xyz` (H2, water, azobenzene, tetraethylammonium), `tools/` (generator scripts).
-- Mirror structure: `q_block/tests/verification/io/test_coordinates.py` ↔ `q_block/compute/io/coordinates.py`, etc.
+- Mirror structure: `q_block/tests/verification/environment/io/test_coordinates.py` ↔ `q_block/compute/environment/io/coordinates.py`, etc.
 
 ### Validation Tests (`q_block/tests/validation/`)
 End-to-end HF calculations verifying Koopmans' theorem ionization energies.
-- `validation_data.py` — reference dicts (`ATOMS_HOMO_ENERGIES`, `MOLECULES_HOMO_ENERGIES`) mapping Z (1–54) → `{symbol, config, multiplicity, n_electrons, n_alpha, n_beta, n_closed, n_open, hf_ie_eV}`.
+- `validation_data.py` — reference dicts (`ATOMS`, `MOLECULES`) mapping Z (1–54) / molecule name → `{symbol, config, multiplicity, n_electrons, n_alpha, n_beta, n_closed, n_open, hf_ie_eV}`.
 - `utils.py` — `HARTREE_TO_EV = 27.211386`, `ABS_TOL_EV = 3.0` eV, `_build_from_geometry()` (full molecule→SCF-inputs pipeline with basis caching).
-- `templates.py` — test factory functions: `make_atom_scf_converged_test()`, `make_atom_koopmans_ie_test()`, `make_molecule_scf_converged_test()`, etc. Eliminates duplication across `test_rhf.py`, `test_uhf.py`, `test_rohf.py`.
+- `templates.py` — test factory functions: `make_atom_scf_converged_test()`, `make_atom_koopmans_ie_test()`, `make_molecule_scf_converged_test()`, `make_dft_atom_scf_converged_test()`, etc. Eliminates duplication across `test_rhf.py`, `test_uhf.py`, `test_rohf.py`, `test_rks.py`, `test_uks.py`, `test_roks.py`.
 - Module-scoped fixtures — each expensive SCF runs once, shared across 3 checks (converged, negative energy, IE match).
 
 ## Performance Notes
@@ -63,3 +61,4 @@ Bottleneck is `TwoElectronRepulsion` (4-center ERI). Optimizations applied:
 - `boys_function_array` with downward recursion
 - Bottom-up DP for `hermite_expansion_coefficients` and `hermite_coulomb_table`
 - Schwarz screening to skip negligible ERI quartets
+- Numba `@njit(cache=True)` on `_primitive_eri` and its math helpers (`_normalization_constant_jit`, `_hermite_expansion_coefficients_jit`, `_hermite_coulomb_table_jit`, `_boys_function_jit`) — JIT-compiled at first call, cached to `__pycache__`

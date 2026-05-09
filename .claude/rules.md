@@ -3,7 +3,7 @@
 ## Language & Runtime
 - Python 3.12 only. 
 - No PEP 604 union syntax (`X | Y`); use `typing.Optional`, `typing.Union`.
-- Dependencies: numpy, scipy, pandas, pytest. No numba, cython, or C extensions.
+- Dependencies: numpy, scipy, pandas, pytest, numba. No cython or C extensions.
 
 ## Formatting
 - **Black**: line-length 84, target `py312` (config in `.blackrc`).
@@ -48,7 +48,7 @@
 ## Tests
 - No test classes. 
 - Bare test functions with `@pytest.mark.parametrize`.
-- Verification tests mirror source tree: `q_block/tests/verification/io/test_coordinates.py` ↔ `q_block/compute/io/coordinates.py`.
+- Verification tests mirror source tree: `q_block/tests/verification/environment/io/test_coordinates.py` ↔ `q_block/compute/environment/io/coordinates.py`, etc.
 - Validation tests use factory functions from `templates.py`.
 - Test IDs: `Z{atomic_number}_{symbol}` for atoms.
 - All verification tests should be run to test applied changes.
@@ -57,7 +57,7 @@
 - **Validation** ("Are we building the right product?") — tests against external requirements.
 
 ## Architecture
-- Keep algorithmic optimizations pure Python (caching, DP tables, screening). No compiled extensions.
+- Keep algorithmic optimizations pure Python (caching, DP tables, screening) or Numba JIT for hot paths. No other compiled extensions.
 - if anything is changed in the files and folder structure, then update the main README.md file.
 
 ## Diagrams
