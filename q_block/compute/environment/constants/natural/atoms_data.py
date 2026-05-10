@@ -424,3 +424,7 @@ OPEN_SHELL_ATOMS: List[int] = [
 # 1 Å = 1 / a₀ ≈ 1.8897259886 Bohr, where a₀ = 0.529177210903 Å is the
 # Bohr radius (NIST 2018 CODATA value).
 ANGSTROM_TO_BOHR: float = 1.8897259886
+
+# Conversion factor from Hartree (atomic units of energy) to electron-volts.
+# 1 Eₕ = 27.211386 eV (NIST 2018 CODATA value).
+HARTREE_TO_EV: float = 27.211386

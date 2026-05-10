@@ -3,12 +3,10 @@
 from pathlib import Path
 from typing import Dict, List, Tuple, Union
 
+from q_block.compute.environment.constants import HARTREE_TO_EV
 from q_block.compute.environment.io.basis_set import Pople
 from q_block.compute.environment.io.input_data import InputData
 from q_block.compute.models.molecule import Molecule
-
-HARTREE_TO_EV: float = 27.211386
-"""Conversion factor: 1 Hartree = 27.211386 eV."""
 
 ABS_TOL_EV: float = 3.0
 """Absolute tolerance (eV) for Koopmans IE comparison.
@@ -19,20 +17,17 @@ elements.  This tolerance catches implementation bugs (wrong sign, wrong
 units, wrong orbital index) while remaining robust to basis-set effects.
 """
 
-DFT_ABS_TOL_EV: float = 13.0
+DFT_ABS_TOL_EV: float = 5.0
 """Absolute tolerance (eV) for DFT Koopmans IE comparison against experiment.
 
 DFT (Kohn-Sham) HOMO eigenvalues are compared against experimental
 ionisation energies via Janak's theorem:  IE ≈ −ε_HOMO.  With approximate
-functionals and small basis sets, deviations can reach 5–13 eV:
+functionals and small basis sets, deviations of 2–4 eV are common:
 
   - LDA/GGA functionals systematically underestimate the HOMO depth
-    (IE too low) due to the incorrect −1/r asymptotic behaviour.
-  - The worst well-behaved case is Ne/PBE: ~12.8 eV below experiment.
+    (IE too low).
   - Hybrid functionals partially correct this via exact exchange.
   - Basis-set incompleteness adds further error.
-  - 13.0 eV covers all physically reasonable LDA/GGA/hybrid Koopmans
-    deviations; genuine implementation bugs produce errors >>13 eV.
 """
 
 _BASIS_CACHE: Dict[str, Pople] = {}

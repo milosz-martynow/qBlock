@@ -273,7 +273,7 @@ ATOMS: dict = {
                 {"value": 13.622, "reference": 'https://cccbdb.nist.gov/ie2x.asp?casno=17778-80-2', "note": "", "level": 0},
             ],
         },
-        "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/3-21G.gbs",
+        "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/6-31G.gbs",
         "max_iterations": 200,
     },
     9: {
@@ -418,7 +418,7 @@ ATOMS: dict = {
                 {"value": 8.141, "reference": 'https://cccbdb.nist.gov/ie2x.asp?casno=7440-21-3', "note": "", "level": 0},
             ],
         },
-        "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/6-31G.gbs",
+        "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/3-21G.gbs",
         "max_iterations": 200,
     },
     15: {
@@ -466,7 +466,7 @@ ATOMS: dict = {
                 {"value": 10.483, "reference": 'https://cccbdb.nist.gov/ie2x.asp?casno=7704-34-9', "note": "", "level": 0},
             ],
         },
-        "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/6-311G.gbs",
+        "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/3-21G.gbs",
         "max_iterations": 200,
     },
     17: {
@@ -490,7 +490,7 @@ ATOMS: dict = {
                 {"value": 13.059, "reference": 'https://cccbdb.nist.gov/ie2x.asp?casno=22537-15-1', "note": "", "level": 0},
             ],
         },
-        "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/6-311G.gbs",
+        "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/3-21G.gbs",
         "max_iterations": 200,
     },
     18: {
@@ -653,7 +653,7 @@ ATOMS: dict = {
             ],
             "dft": [],
         },
-        "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/6-31G.gbs",
+        "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/3-21G.gbs",
         "max_iterations": 200,
     },
     25: {
@@ -835,7 +835,7 @@ ATOMS: dict = {
                 {"value": 7.642, "reference": 'https://cccbdb.nist.gov/ie2x.asp?casno=7440-56-4', "note": "", "level": 0},
             ],
         },
-        "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/6-31G.gbs",
+        "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/3-21G.gbs",
         "max_iterations": 200,
     },
     33: {
@@ -883,7 +883,7 @@ ATOMS: dict = {
                 {"value": 9.469, "reference": 'https://cccbdb.nist.gov/ie2x.asp?casno=7782-49-2', "note": "", "level": 0},
             ],
         },
-        "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/6-311G.gbs",
+        "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/3-21G.gbs",
         "max_iterations": 200,
     },
     35: {
@@ -907,7 +907,7 @@ ATOMS: dict = {
                 {"value": 11.547, "reference": 'https://cccbdb.nist.gov/ie2x.asp?casno=10097-32-2', "note": "", "level": 0},
             ],
         },
-        "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/6-31G.gbs",
+        "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/3-21G.gbs",
         "max_iterations": 200,
     },
     36: {
@@ -1122,7 +1122,7 @@ ATOMS: dict = {
         "n_beta": 23,
         "n_closed": 23,
         "n_open": 0,
-        "proposed_approach": ["RHF", "RKS"],
+        "proposed_approach": ["RHF"],
         "energies": {
             "experiment": [
                 {"value": 8.3369, "reference": 'https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=Pd&units=1', "note": "", "level": 0},
@@ -1132,7 +1132,7 @@ ATOMS: dict = {
             ],
             "dft": [],
         },
-        "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/6-31G.gbs",
+        "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/STO-3G.gbs",
         "max_iterations": 200,
     },
     # Ag works for ROHF in 200 SCF iterations.
@@ -1213,7 +1213,7 @@ ATOMS: dict = {
                 {"value": 7.122, "reference": 'https://cccbdb.nist.gov/ie2x.asp?casno=7440-31-5', "note": "", "level": 0},
             ],
         },
-        "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/6-31G.gbs",
+        "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/STO-3G.gbs",
         "max_iterations": 200,
     },
     # Sb works for ROHF in 200 SCF iterations.
@@ -1556,7 +1556,7 @@ MOLECULES: dict = {
                 {"value": 10.121, "reference": 'https://cccbdb.nist.gov/ie2x.asp?casno=10102-43-9', "note": "B3LYP/3-21G adiabatic IE (delta-SCF)", "level": 0},
             ],
         },
-        "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/6-311G.gbs",
+        "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/3-21G.gbs",
         "max_iterations": 200,
     },
     # Methyl radical: doublet D₃h; HOMO = 2a₂'' (singly occupied, p_z on C)

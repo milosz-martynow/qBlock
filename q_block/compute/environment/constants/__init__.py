@@ -17,6 +17,7 @@ from .natural.atoms_data import (
     ATOMS_SYMBOLS_Z_TO_SYMBOL,
     CLOSED_SHELL_ATOMS,
     EMPIRICAL_EXCEPTIONS,
+    HARTREE_TO_EV,
     OPEN_SHELL_ATOMS,
 )
 
@@ -26,4 +27,5 @@ __all__ = [
     "CLOSED_SHELL_ATOMS",
     "OPEN_SHELL_ATOMS",
     "ANGSTROM_TO_BOHR",
+    "HARTREE_TO_EV",
 ]
