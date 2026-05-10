@@ -1,4 +1,4 @@
-﻿"""Two-electron repulsion integral computation for Gaussian basis functions.
+"""Two-electron repulsion integral computation for Gaussian basis functions.
 
 This module computes the two-electron repulsion integrals (ERI) between
 contracted Gaussian-type orbitals (CGTOs):

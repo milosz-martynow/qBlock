@@ -61,4 +61,3 @@ Bottleneck is `TwoElectronRepulsion` (4-center ERI). Optimizations applied:
 - `boys_function_array` with downward recursion
 - Bottom-up DP for `hermite_expansion_coefficients` and `hermite_coulomb_table`
 - Schwarz screening to skip negligible ERI quartets
-- Numba `@njit(cache=True)` on `_primitive_eri` and its math helpers (`_normalization_constant_jit`, `_hermite_expansion_coefficients_jit`, `_hermite_coulomb_table_jit`, `_boys_function_jit`) — JIT-compiled at first call, cached to `__pycache__`

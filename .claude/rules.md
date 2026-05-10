@@ -3,7 +3,7 @@
 ## Language & Runtime
 - Python 3.12 only. 
 - No PEP 604 union syntax (`X | Y`); use `typing.Optional`, `typing.Union`.
-- Dependencies: numpy, scipy, pandas, pytest, numba. No cython or C extensions.
+- Dependencies: numpy, scipy, pandas, pytest. No numba, cython, or C extensions.
 
 ## Formatting
 - **Black**: line-length 84, target `py312` (config in `.blackrc`).
@@ -57,7 +57,7 @@
 - **Validation** ("Are we building the right product?") — tests against external requirements.
 
 ## Architecture
-- Keep algorithmic optimizations pure Python (caching, DP tables, screening) or Numba JIT for hot paths. No other compiled extensions.
+- Keep algorithmic optimizations pure Python (caching, DP tables, screening). No compiled extensions.
 - if anything is changed in the files and folder structure, then update the main README.md file.
 
 ## Diagrams
