@@ -40,7 +40,8 @@ import pytest
 from q_block.compute.solvers.wavefunction.hartree_fock.unrestricted_hartree_fock import (
     UnrestrictedHartreeFock,
 )
-from q_block.tests.validation.templates import (
+from q_block.tests.validation.utils import (
+    build_from_geometry,
     make_atom_koopmans_ie_test,
     make_atom_scf_converged_test,
     make_molecule_homo_ie_positive_test,
@@ -48,7 +49,6 @@ from q_block.tests.validation.templates import (
     make_molecule_scf_converged_test,
     make_molecule_total_energy_negative_test,
 )
-from q_block.tests.validation.utils import _build_from_geometry
 from q_block.tests.validation.validation_data import (
     ATOMS,
     MOLECULES,
@@ -88,16 +88,17 @@ def uhf_atom_result(
     """Run UHF SCF for one open-shell atom (placed at origin) and return
     ``(entry, converged_hf)``."""
     entry = request.param
-    cgtos = _build_from_geometry(
+    cfg = entry["proposed_approach"]["UHF"]
+    cgtos = build_from_geometry(
         geometry=[{"symbol": entry["symbol"], "x": 0.0, "y": 0.0, "z": 0.0}],
         multiplicity=entry["multiplicity"],
-        basis_set_filename=entry["proposed_basis_set"],
+        basis_set_filename=cfg["proposed_basis_set"],
     )
     hf = UnrestrictedHartreeFock(
         cgtos=cgtos,
         n_alpha=entry["n_alpha"],
         n_beta=entry["n_beta"],
-        max_iterations=entry["max_iterations"],
+        max_iterations=cfg["max_iterations"],
     ).run()
     return entry, hf
 
@@ -113,16 +114,17 @@ def uhf_molecule_result(
     """Run UHF SCF for one open-shell molecule and return
     ``(entry, converged_hf)``."""
     entry = request.param
-    cgtos = _build_from_geometry(
+    cfg = entry["proposed_approach"]["UHF"]
+    cgtos = build_from_geometry(
         geometry=entry["geometry"],
         multiplicity=entry["multiplicity"],
-        basis_set_filename=entry["proposed_basis_set"],
+        basis_set_filename=cfg["proposed_basis_set"],
     )
     hf = UnrestrictedHartreeFock(
         cgtos=cgtos,
         n_alpha=entry["n_alpha"],
         n_beta=entry["n_beta"],
-        max_iterations=entry["max_iterations"],
+        max_iterations=cfg["max_iterations"],
     ).run()
     return entry, hf
 

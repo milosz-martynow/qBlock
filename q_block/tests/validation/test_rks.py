@@ -42,7 +42,8 @@ from q_block.compute.solvers.electronic_density.functionals import (
 from q_block.compute.solvers.electronic_density.kohn_sham import (
     RestrictedKohnSham,
 )
-from q_block.tests.validation.templates import (
+from q_block.tests.validation.utils import (
+    build_from_geometry,
     make_dft_atom_homo_ie_positive_test,
     make_dft_atom_koopmans_ie_test,
     make_dft_atom_scf_converged_test,
@@ -54,7 +55,6 @@ from q_block.tests.validation.templates import (
     make_dft_molecule_total_energy_finite_test,
     make_dft_molecule_total_energy_negative_test,
 )
-from q_block.tests.validation.utils import _build_from_geometry
 from q_block.tests.validation.validation_data import (
     ATOMS,
     MOLECULES,
@@ -78,12 +78,13 @@ _rks_mol_entries: List[Tuple[str, Dict[str, Any]]] = [
     if "RKS" in entry["proposed_approach"]
 ]
 
-# Functionals to test
-_functionals: List[Tuple[str, ExchangeCorrelationFunctional]] = [
-    ("SVWN", SVWN()),
-    ("PBE", PBE()),
-    ("B3LYP", B3LYP()),
-]
+# All available functionals; each entry's proposed_approach["RKS"]["functional"]
+# list selects the subset to run for that system.
+_functional_map: Dict[str, ExchangeCorrelationFunctional] = {
+    "SVWN": SVWN(),
+    "PBE": PBE(),
+    "B3LYP": B3LYP(),
+}
 
 # ---------------------------------------------------------------------------
 # Module-level caches: CGTOs and ERI built once per atom/molecule key.
@@ -105,14 +106,14 @@ _rks_mol_cache: Dict[
 @pytest.fixture(
     scope="module",
     params=[
-        (atom_key, atom_entry, func_name, func)
+        (atom_key, atom_entry, func_name, _functional_map[func_name])
         for atom_key, atom_entry in _rks_atom_entries
-        for func_name, func in _functionals
+        for func_name in atom_entry["proposed_approach"]["RKS"]["functional"]
     ],
     ids=[
         f"{atom_key}_{func_name}"
-        for atom_key, _ in _rks_atom_entries
-        for func_name, _ in _functionals
+        for atom_key, atom_entry in _rks_atom_entries
+        for func_name in atom_entry["proposed_approach"]["RKS"]["functional"]
     ],
 )
 def rks_atom_result(
@@ -130,10 +131,11 @@ def rks_atom_result(
     atom_key, entry, func_name, func = request.param
 
     if atom_key not in _rks_atom_cache:
-        cgtos = _build_from_geometry(
+        cfg = entry["proposed_approach"]["RKS"]
+        cgtos = build_from_geometry(
             geometry=[{"symbol": entry["symbol"], "x": 0.0, "y": 0.0, "z": 0.0}],
             multiplicity=entry["multiplicity"],
-            basis_set_filename=entry["proposed_basis_set"],
+            basis_set_filename=cfg["proposed_basis_set"],
         )
         eri = TwoElectronRepulsion(cgtos=cgtos).tensor
         _rks_atom_cache[atom_key] = (cgtos, eri)
@@ -145,7 +147,7 @@ def rks_atom_result(
         n_electrons=entry["n_electrons"],
         n_radial=50,
         n_angular=14,
-        max_iterations=entry.get("max_iterations", 200),
+        max_iterations=entry["proposed_approach"]["RKS"]["max_iterations"],
         convergence_threshold=1e-5,
         precomputed_eri=eri,
     ).run()
@@ -155,14 +157,14 @@ def rks_atom_result(
 @pytest.fixture(
     scope="module",
     params=[
-        (mol_key, mol_entry, func_name, func)
+        (mol_key, mol_entry, func_name, _functional_map[func_name])
         for mol_key, mol_entry in _rks_mol_entries
-        for func_name, func in _functionals
+        for func_name in mol_entry["proposed_approach"]["RKS"]["functional"]
     ],
     ids=[
         f"{mol_key}_{func_name}"
-        for mol_key, _ in _rks_mol_entries
-        for func_name, _ in _functionals
+        for mol_key, mol_entry in _rks_mol_entries
+        for func_name in mol_entry["proposed_approach"]["RKS"]["functional"]
     ],
 )
 def rks_molecule_result(
@@ -179,10 +181,11 @@ def rks_molecule_result(
     mol_key, entry, func_name, func = request.param
 
     if mol_key not in _rks_mol_cache:
-        cgtos = _build_from_geometry(
+        cfg = entry["proposed_approach"]["RKS"]
+        cgtos = build_from_geometry(
             geometry=entry["geometry"],
             multiplicity=entry["multiplicity"],
-            basis_set_filename=entry["proposed_basis_set"],
+            basis_set_filename=cfg["proposed_basis_set"],
         )
         eri = TwoElectronRepulsion(cgtos=cgtos).tensor
         _rks_mol_cache[mol_key] = (cgtos, eri)
@@ -194,7 +197,7 @@ def rks_molecule_result(
         n_electrons=entry["n_electrons"],
         n_radial=50,
         n_angular=14,
-        max_iterations=entry.get("max_iterations", 200),
+        max_iterations=entry["proposed_approach"]["RKS"]["max_iterations"],
         convergence_threshold=1e-5,
         precomputed_eri=eri,
     ).run()
