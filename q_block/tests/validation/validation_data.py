@@ -106,12 +106,12 @@ ATOMS: dict = {
                 "max_iterations": 200,
             },
             "UKS": {
-                "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/3-21G.gbs",
+                "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/6-31G.gbs",
                 "max_iterations": 200,
                 "functional": ["B3LYP", "PBE", "SVWN"],
             },
             "ROKS": {
-                "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/3-21G.gbs",
+                "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/6-31G.gbs",
                 "max_iterations": 200,
                 "functional": ["B3LYP", "PBE", "SVWN"],
             }
@@ -143,7 +143,7 @@ ATOMS: dict = {
                 "max_iterations": 200,
             },
             "RKS": {
-                "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/3-21G.gbs",
+                "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/6-31G.gbs",
                 "max_iterations": 200,
                 "functional": ["B3LYP", "PBE", "SVWN"],
             }
@@ -253,12 +253,12 @@ ATOMS: dict = {
                 "max_iterations": 200,
             },
             "UKS": {
-                "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/3-21G.gbs",
+                "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/6-31G.gbs",
                 "max_iterations": 200,
                 "functional": ["B3LYP", "PBE", "SVWN"],
             },
             "ROKS": {
-                "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/3-21G.gbs",
+                "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/6-31G.gbs",
                 "max_iterations": 200,
                 "functional": ["B3LYP", "PBE", "SVWN"],
             }
@@ -294,12 +294,12 @@ ATOMS: dict = {
                 "max_iterations": 200,
             },
             "UKS": {
-                "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/3-21G.gbs",
+                "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/6-31G.gbs",
                 "max_iterations": 200,
                 "functional": ["B3LYP", "PBE", "SVWN"],
             },
             "ROKS": {
-                "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/3-21G.gbs",
+                "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/6-31G.gbs",
                 "max_iterations": 200,
                 "functional": ["B3LYP", "PBE", "SVWN"],
             }
@@ -335,12 +335,12 @@ ATOMS: dict = {
                 "max_iterations": 200,
             },
             "UKS": {
-                "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/3-21G.gbs",
+                "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/6-31G.gbs",
                 "max_iterations": 200,
                 "functional": ["B3LYP", "PBE", "SVWN"],
             },
             "ROKS": {
-                "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/3-21G.gbs",
+                "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/6-31G.gbs",
                 "max_iterations": 200,
                 "functional": ["B3LYP", "PBE", "SVWN"],
             }
@@ -401,7 +401,7 @@ ATOMS: dict = {
                 "max_iterations": 200,
             },
             "UKS": {
-                "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/3-21G.gbs",
+                "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/6-31G.gbs",
                 "max_iterations": 200,
                 "functional": ["B3LYP", "PBE", "SVWN"],
             }
@@ -433,7 +433,7 @@ ATOMS: dict = {
                 "max_iterations": 200,
             },
             "RKS": {
-                "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/3-21G.gbs",
+                "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/6-31G.gbs",
                 "max_iterations": 200,
                 "functional": ["B3LYP", "PBE", "SVWN"],
             }
@@ -694,7 +694,7 @@ ATOMS: dict = {
                 "max_iterations": 200,
             },
             "UKS": {
-                "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/6-311G.gbs",
+                "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/6-311++Gss.gbs",
                 "max_iterations": 200,
                 "functional": ["B3LYP", "PBE"],
             }
@@ -726,7 +726,7 @@ ATOMS: dict = {
                 "max_iterations": 200,
             },
             "RKS": {
-                "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/3-21G.gbs",
+                "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/6-31G.gbs",
                 "max_iterations": 200,
                 "functional": ["B3LYP", "PBE", "SVWN"],
             }
@@ -924,7 +924,7 @@ ATOMS: dict = {
                 "max_iterations": 200,
             },
             "UKS": {
-                "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/6-31G.gbs",
+                "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/6-31Gss.gbs",
                 "max_iterations": 200,
                 "functional": ["B3LYP"],
             }
@@ -984,7 +984,7 @@ ATOMS: dict = {
                 "max_iterations": 200,
             },
             "UKS": {
-                "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/3-21G.gbs",
+                "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/6-31G.gbs",
                 "max_iterations": 200,
                 "functional": ["B3LYP", "PBE", "SVWN"],
             }
@@ -1074,7 +1074,7 @@ ATOMS: dict = {
                 "max_iterations": 200,
             },
             "UKS": {
-                "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/3-21G.gbs",
+                "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/6-31G.gbs",
                 "max_iterations": 200,
                 "functional": ["B3LYP", "PBE", "SVWN"],
             }
@@ -1106,7 +1106,7 @@ ATOMS: dict = {
                 "max_iterations": 200,
             },
             "RKS": {
-                "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/3-21G.gbs",
+                "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/6-31G.gbs",
                 "max_iterations": 200,
                 "functional": ["B3LYP", "PBE", "SVWN"],
             }
@@ -1323,7 +1323,7 @@ ATOMS: dict = {
                 "max_iterations": 200,
             },
             "RKS": {
-                "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/6-31G.gbs",
+                "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/6-311G.gbs",
                 "max_iterations": 200,
                 "functional": ["B3LYP", "PBE", "SVWN"],
             }
@@ -1860,7 +1860,7 @@ MOLECULES: dict = {
                 "max_iterations": 200,
             },
             "RKS": {
-                "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/3-21G.gbs",
+                "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/6-31G.gbs",
                 "max_iterations": 200,
                 "functional": ["B3LYP", "PBE", "SVWN"],
             }
@@ -1899,7 +1899,7 @@ MOLECULES: dict = {
                 "max_iterations": 200,
             },
             "RKS": {
-                "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/3-21G.gbs",
+                "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/6-31G.gbs",
                 "max_iterations": 200,
                 "functional": ["B3LYP", "PBE", "SVWN"],
             }
@@ -1937,7 +1937,7 @@ MOLECULES: dict = {
                 "max_iterations": 200,
             },
             "RKS": {
-                "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/3-21G.gbs",
+                "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/6-31G.gbs",
                 "max_iterations": 200,
                 "functional": ["B3LYP", "PBE", "SVWN"],
             }
@@ -1975,7 +1975,7 @@ MOLECULES: dict = {
                 "max_iterations": 200,
             },
             "RKS": {
-                "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/3-21G.gbs",
+                "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/6-31G.gbs",
                 "max_iterations": 200,
                 "functional": ["B3LYP", "PBE", "SVWN"],
             }
@@ -1998,8 +1998,10 @@ MOLECULES: dict = {
             ],
         },
     },
-    # ---- ROHF molecules (open-shell, fixed multiplicity) -----------------
     # Dioxygen: triplet ground state; HOMO = 1πg (degenerate, singly occupied)
+    # ionization_energies_hf_eV = −ε_α_HOMO (alpha-spin HOMO energy).  UHF introduces spin
+    # contamination; <S²> may deviate from the exact S(S+1) value.
+    # Dioxygen (UHF): same geometry as ROHF reference above
     "O2": {
         "formula": "O₂",
         "name": "oxygen",
@@ -2018,12 +2020,12 @@ MOLECULES: dict = {
                 "max_iterations": 200,
             },
             "UKS": {
-                "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/3-21G.gbs",
+                "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/6-31G.gbs",
                 "max_iterations": 200,
                 "functional": ["B3LYP", "PBE", "SVWN"],
             },
             "ROKS": {
-                "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/3-21G.gbs",
+                "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/6-31G.gbs",
                 "max_iterations": 200,
                 "functional": ["B3LYP", "PBE", "SVWN"],
             }
@@ -2070,7 +2072,7 @@ MOLECULES: dict = {
                 "functional": ["B3LYP", "PBE", "SVWN"],
             },
             "ROKS": {
-                "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/3-21G.gbs",
+                "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/6-31G.gbs",
                 "max_iterations": 200,
                 "functional": ["B3LYP", "PBE", "SVWN"],
             }
@@ -2108,7 +2110,7 @@ MOLECULES: dict = {
                 "max_iterations": 200,
             },
             "UKS": {
-                "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/6-311G.gbs",
+                "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/6-311++Gss.gbs",
                 "max_iterations": 200,
                 "functional": ["B3LYP", "PBE", "SVWN"],
             }
@@ -2131,85 +2133,6 @@ MOLECULES: dict = {
             ],
         },
     },
-    # ---- UHF molecules (open-shell, spin-unrestricted) -------------------
-    # ionization_energies_hf_eV = −ε_α_HOMO (alpha-spin HOMO energy).  UHF introduces spin
-    # contamination; <S²> may deviate from the exact S(S+1) value.
-    # Dioxygen (UHF): same geometry as ROHF reference above
-    "O2": {
-        "formula": "O₂",
-        "name": "oxygen",
-        "technical_name": "[O][O]",
-        "geometry": [
-            {"symbol": "O", "x": 0.0000, "y": 0.0000, "z": 0.6038},
-            {"symbol": "O", "x": 0.0000, "y": 0.0000, "z": -0.6038},
-        ],
-        "proposed_approach": {
-            "UHF": {
-                "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/3-21G.gbs",
-                "max_iterations": 200,
-            },
-            "UKS": {
-                "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/3-21G.gbs",
-                "max_iterations": 200,
-                "functional": ["B3LYP", "PBE", "SVWN"],
-            }
-        },
-        "multiplicity": 3,
-        "n_electrons": 16,
-        "n_alpha": 9,
-        "n_beta": 7,
-        "n_closed": 7,
-        "n_open": 2,
-        "energies": {
-            "experiment": [
-                {"value": 12.0697, "reference": 'https://webbook.nist.gov/cgi/cbook.cgi?ID=C7782447', "note": "", "level": 0},
-            ],
-            "hf": [
-                {"value": 15.87, "reference": 'https://cccbdb.nist.gov/', "note": "", "level": 0},
-            ],
-            "dft": [
-                {"value": 13.266, "reference": 'https://cccbdb.nist.gov/ie2x.asp?casno=7782-44-7', "note": "B3LYP/3-21G adiabatic IE (delta-SCF)", "level": 0},
-            ],
-        },
-    },
-    # Nitric oxide (UHF)
-    "NO": {
-        "formula": "NO",
-        "name": "nitric oxide",
-        "technical_name": "[N]=O",
-        "geometry": [
-            {"symbol": "N", "x": 0.0000, "y": 0.0000, "z": -0.5754},
-            {"symbol": "O", "x": 0.0000, "y": 0.0000, "z": 0.5754},
-        ],
-        "proposed_approach": {
-            "UHF": {
-                "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/3-21G.gbs",
-                "max_iterations": 200,
-            },
-            "UKS": {
-                "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/3-21G.gbs",
-                "max_iterations": 200,
-                "functional": ["B3LYP", "PBE", "SVWN"],
-            }
-        },
-        "multiplicity": 2,
-        "n_electrons": 15,
-        "n_alpha": 8,
-        "n_beta": 7,
-        "n_closed": 7,
-        "n_open": 1,
-        "energies": {
-            "experiment": [
-                {"value": 9.2643, "reference": 'https://webbook.nist.gov/cgi/cbook.cgi?ID=C10102439', "note": "", "level": 0},
-            ],
-            "hf": [
-                {"value": 11.54, "reference": 'https://cccbdb.nist.gov/', "note": "", "level": 0},
-            ],
-            "dft": [
-                {"value": 10.121, "reference": 'https://cccbdb.nist.gov/ie2x.asp?casno=10102-43-9', "note": "B3LYP/3-21G adiabatic IE (delta-SCF)", "level": 0},
-            ],
-        },
-    },
     # Methyl radical: doublet D₃h; HOMO = 2a₂'' (singly occupied, p_z on C)
     "CH3": {
         "formula": "CH₃",
@@ -2227,7 +2150,7 @@ MOLECULES: dict = {
                 "max_iterations": 200,
             },
             "UKS": {
-                "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/3-21G.gbs",
+                "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/6-31G.gbs",
                 "max_iterations": 200,
                 "functional": ["B3LYP", "PBE", "SVWN"],
             }
@@ -2267,7 +2190,7 @@ MOLECULES: dict = {
     #   Value is strongly basis-set-dependent; treat as ±0.5 eV.
     # Chromium monoxide (ROHF): highest open-shell orbital is a 3d-based π/δ SOMO
     # CrO works for ROHF with 200 SCF iteration loop
-    # "CrO": {
+    #"CrO": {
     #    "formula": "CrO",
     #    "name": "chromium monoxide",
     #    "technical_name": "[Cr]=O",
@@ -2279,17 +2202,36 @@ MOLECULES: dict = {
     #        "ROHF": {
     #            "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/6-31G.gbs",
     #            "max_iterations": 200,
-    #        },
+    #         },
     #        "UHF": {
     #            "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/6-31G.gbs",
     #            "max_iterations": 200,
-    #        }
+    #        },
+    #        "UKS": {
+    #            "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/6-31G.gbs",
+    #            "max_iterations": 200,
+    #            "functional": ["B3LYP", "PBE", "SVWN"],
+    #        },
+    #        "ROKS": {
+    #            "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/6-31G.gbs",
+    #            "max_iterations": 200,
+    #            "functional": ["B3LYP", "PBE", "SVWN"],
+    #        },
     #    },
     #    "multiplicity": 5,
-    #    "n_electrons": 32, "n_alpha": 18, "n_beta": 14,
-    #    "n_closed": 14, "n_open": 4,
-    #    "ionization_energies_experiment_eV": 8.16, "ionization_energies_hf_eV": 10.19,
-    #    "experimental_reference_url": "https://doi.org/10.1039/F29837902083",
-    #    "hf_reference_url": "https://cccbdb.nist.gov/",
-    # }
+    #    "n_electrons": 32,
+    #    "n_alpha": 18,
+    #    "n_beta": 14,
+    #    "n_closed": 14,
+    #    "n_open": 4,
+    #    "energies": {
+    #        "experiment": [
+    #            {"value": 8.16, "reference": "https://doi.org/10.1039/F29837902083", "note": "vertical IE, PE spectroscopy; adiabatic IE = 7.85 ± 0.02 eV", "level": 0},
+    #        ],
+    #        "hf": [
+    #            {"value": 10.19, "reference": "https://cccbdb.nist.gov/", "note": "approximate near-basis-set-limit ROHF/UHF Koopmans; ±0.5 eV", "level": 0},
+    #        ],
+    #        "dft": [],
+    #    },
+    #},
 }
