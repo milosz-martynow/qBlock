@@ -584,7 +584,7 @@ ATOMS: dict = {
                 "max_iterations": 200,
             },
             "UKS": {
-                "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/3-21G.gbs",
+                "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/6-31G.gbs",
                 "max_iterations": 200,
                 "functional": ["B3LYP", "PBE", "SVWN"],
             },
@@ -662,7 +662,7 @@ ATOMS: dict = {
                 "max_iterations": 200,
             },
             "UKS": {
-                "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/3-21G.gbs",
+                "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/6-311G.gbs",
                 "max_iterations": 200,
                 "functional": ["B3LYP", "PBE", "SVWN"],
             }
@@ -694,7 +694,7 @@ ATOMS: dict = {
                 "max_iterations": 200,
             },
             "UKS": {
-                "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/3-21G.gbs",
+                "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/6-311G.gbs",
                 "max_iterations": 200,
                 "functional": ["B3LYP", "PBE", "SVWN"],
             }
@@ -826,11 +826,11 @@ ATOMS: dict = {
         "n_open": 1,
         "proposed_approach": {
             "UHF": {
-                "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/6-31Gss.gbs",
+                "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/6-31G.gbs",
                 "max_iterations": 200,
             },
             "UKS": {
-                "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/6-31Gss.gbs",
+                "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/6-31G.gbs",
                 "max_iterations": 200,
                 "functional": ["B3LYP", "PBE", "SVWN"],
             }
@@ -924,7 +924,7 @@ ATOMS: dict = {
                 "max_iterations": 200,
             },
             "UKS": {
-                "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/3-21G.gbs",
+                "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/6-31G.gbs",
                 "max_iterations": 200,
                 "functional": ["B3LYP", "PBE", "SVWN"],
             }
@@ -1181,7 +1181,7 @@ ATOMS: dict = {
                 "max_iterations": 200,
             },
             "UKS": {
-                "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/3-21G.gbs",
+                "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/6-31G.gbs",
                 "max_iterations": 200,
                 "functional": ["B3LYP", "PBE", "SVWN"],
             },
@@ -1259,7 +1259,7 @@ ATOMS: dict = {
                 "max_iterations": 200,
             },
             "UKS": {
-                "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/3-21G.gbs",
+                "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/6-311G.gbs",
                 "max_iterations": 200,
                 "functional": ["B3LYP", "PBE", "SVWN"],
             }
@@ -1291,7 +1291,7 @@ ATOMS: dict = {
                 "max_iterations": 200,
             },
             "UKS": {
-                "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/3-21G.gbs",
+                "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/6-31G.gbs",
                 "max_iterations": 200,
                 "functional": ["B3LYP", "PBE", "SVWN"],
             }
@@ -2065,7 +2065,7 @@ MOLECULES: dict = {
                 "max_iterations": 200,
             },
             "UKS": {
-                "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/3-21G.gbs",
+                "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/6-31G.gbs",
                 "max_iterations": 200,
                 "functional": ["B3LYP", "PBE", "SVWN"],
             },
