@@ -20,16 +20,23 @@ from q_block.compute.solvers.electronic_density.functionals import SVWN
 
 
 def test_svwn_exc_vxc_output_shapes() -> None:
-    """compute_exc_vxc returns three arrays each of shape (n_points,)."""
+    """compute_exc_vxc returns six arrays each of shape (n_points,)."""
     func = SVWN()
     n = 50
     rho = np.linspace(0.01, 1.0, n)
     rho_a = rho / 2.0
     rho_b = rho / 2.0
-    exc, vxc_a, vxc_b = func.compute_exc_vxc(rho_a, rho_b)
+    exc, vxc_a, vxc_b, h_alpha, h_ab, h_beta = func.compute_exc_vxc(rho_a, rho_b)
     assert exc.shape == (n,)
     assert vxc_a.shape == (n,)
     assert vxc_b.shape == (n,)
+    assert h_alpha.shape == (n,)
+    assert h_ab.shape == (n,)
+    assert h_beta.shape == (n,)
+    # LDA has no gradient correction — h arrays must be zero
+    assert np.allclose(h_alpha, 0.0)
+    assert np.allclose(h_ab, 0.0)
+    assert np.allclose(h_beta, 0.0)
 
 
 # ======================================================================
@@ -42,7 +49,7 @@ def test_svwn_exc_negative_for_finite_density() -> None:
     func = SVWN()
     rho_a = np.linspace(0.01, 1.0, 100)
     rho_b = np.linspace(0.01, 1.0, 100)
-    exc, _, _ = func.compute_exc_vxc(rho_a, rho_b)
+    exc, _, _, _, _, _ = func.compute_exc_vxc(rho_a, rho_b)
     assert np.all(exc < 0.0)
 
 
@@ -56,7 +63,7 @@ def test_svwn_potentials_are_finite() -> None:
     func = SVWN()
     rho_a = np.linspace(1e-5, 2.0, 200)
     rho_b = np.linspace(1e-5, 2.0, 200)
-    exc, vxc_a, vxc_b = func.compute_exc_vxc(rho_a, rho_b)
+    exc, vxc_a, vxc_b, h_alpha, h_ab, h_beta = func.compute_exc_vxc(rho_a, rho_b)
     assert np.all(np.isfinite(exc))
     assert np.all(np.isfinite(vxc_a))
     assert np.all(np.isfinite(vxc_b))
@@ -72,7 +79,7 @@ def test_svwn_zero_density_gives_zero_output() -> None:
     func = SVWN()
     rho_a = np.array([0.0, 0.0, 0.5])
     rho_b = np.array([0.0, 0.0, 0.5])
-    exc, vxc_a, vxc_b = func.compute_exc_vxc(rho_a, rho_b)
+    exc, vxc_a, vxc_b, h_alpha, h_ab, h_beta = func.compute_exc_vxc(rho_a, rho_b)
     assert exc[0] == pytest.approx(0.0)
     assert exc[1] == pytest.approx(0.0)
     assert vxc_a[0] == pytest.approx(0.0)
@@ -89,7 +96,7 @@ def test_svwn_spin_symmetry_equal_densities() -> None:
     func = SVWN()
     rho_a = np.array([0.1, 0.5, 1.0])
     rho_b = rho_a.copy()
-    exc, vxc_a, vxc_b = func.compute_exc_vxc(rho_a, rho_b)
+    exc, vxc_a, vxc_b, h_alpha, h_ab, h_beta = func.compute_exc_vxc(rho_a, rho_b)
     assert np.allclose(vxc_a, vxc_b, atol=1e-12)
 
 
@@ -103,7 +110,7 @@ def test_svwn_accepts_and_ignores_gga_kwargs() -> None:
     func = SVWN()
     rho_a = np.array([0.5])
     rho_b = np.array([0.5])
-    exc, vxc_a, vxc_b = func.compute_exc_vxc(
+    exc, vxc_a, vxc_b, h_alpha, h_ab, h_beta = func.compute_exc_vxc(
         rho_a,
         rho_b,
         gamma_aa=np.array([0.0]),

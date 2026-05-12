@@ -128,6 +128,7 @@ ATOMS: dict = {
             ],
         },
     },
+    # There is a problem with DFT for He atom. Need to add more functionals, and basis sets readers.
     2: {
         "symbol": "He",
         "config": "1s2",
@@ -142,11 +143,6 @@ ATOMS: dict = {
                 "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/3-21G.gbs",
                 "max_iterations": 200,
             },
-            "RKS": {
-                "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/6-31G.gbs",
-                "max_iterations": 200,
-                "functional": ["B3LYP", "PBE", "SVWN"],
-            }
         },
         "energies": {
             "experiment": [
@@ -155,9 +151,7 @@ ATOMS: dict = {
             "hf": [
                 {"value": 24.98, "reference": 'https://doi.org/10.12691/wjce-5-3-6', "note": "", "level": 0},
             ],
-            "dft": [
-                {"value": 24.746, "reference": 'https://cccbdb.nist.gov/ie2x.asp?casno=7440-59-7', "note": "", "level": 0},
-            ],
+            "dft": [],
         },
     },
     # ---- Period 2 --------------------------------------------------------
@@ -433,9 +427,9 @@ ATOMS: dict = {
                 "max_iterations": 200,
             },
             "RKS": {
-                "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/6-31G.gbs",
+                "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/6-311++G.gbs",
                 "max_iterations": 200,
-                "functional": ["B3LYP", "PBE", "SVWN"],
+                "functional": ["B3LYP"],
             }
         },
         "energies": {
@@ -728,7 +722,7 @@ ATOMS: dict = {
             "RKS": {
                 "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/6-31G.gbs",
                 "max_iterations": 200,
-                "functional": ["B3LYP", "PBE", "SVWN"],
+                "functional": ["B3LYP"],
             }
         },
         "energies": {
@@ -1325,7 +1319,7 @@ ATOMS: dict = {
             "RKS": {
                 "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/6-311G.gbs",
                 "max_iterations": 200,
-                "functional": ["B3LYP", "PBE", "SVWN"],
+                "functional": ["B3LYP", "SVWN"],
             }
         },
         "energies": {

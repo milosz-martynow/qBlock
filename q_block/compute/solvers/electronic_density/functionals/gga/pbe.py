@@ -80,7 +80,14 @@ class PBE(ExchangeCorrelationFunctional):
         gamma_aa: Optional[np.ndarray] = None,
         gamma_ab: Optional[np.ndarray] = None,
         gamma_bb: Optional[np.ndarray] = None,
-    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    ) -> Tuple[
+        np.ndarray,
+        np.ndarray,
+        np.ndarray,
+        np.ndarray,
+        np.ndarray,
+        np.ndarray,
+    ]:
         r"""Compute PBE energy density and potentials.
 
         :param rho_alpha: Alpha density, shape ``(n_points,)``.
@@ -94,8 +101,12 @@ class PBE(ExchangeCorrelationFunctional):
         :type gamma_ab: Optional[np.ndarray]
         :param gamma_bb: :math:`|\nabla\rho_\beta|^2`.
         :type gamma_bb: Optional[np.ndarray]
-        :returns: ``(exc, vxc_alpha, vxc_beta)``.
-        :rtype: Tuple[np.ndarray, np.ndarray, np.ndarray]
+        :returns: ``(exc, vxc_alpha, vxc_beta, h_alpha, h_ab, h_beta)``
+            where ``h_sigma = d(rho*eps_xc)/d(gamma_ss)`` and
+            ``h_ab = d(rho*eps_xc)/d(gamma_ab)`` for the GGA Fock
+            matrix correction.
+        :rtype: Tuple[np.ndarray, np.ndarray, np.ndarray,
+            np.ndarray, np.ndarray, np.ndarray]
         """
         if gamma_aa is None or gamma_bb is None:
             raise ValueError(
@@ -110,6 +121,9 @@ class PBE(ExchangeCorrelationFunctional):
         exc = np.zeros(n_pts)
         vxc_alpha = np.zeros(n_pts)
         vxc_beta = np.zeros(n_pts)
+        h_alpha = np.zeros(n_pts)
+        h_ab = np.zeros(n_pts)
+        h_beta = np.zeros(n_pts)
 
         mask = rho > 1e-18
         rho_m = rho[mask]
@@ -122,7 +136,6 @@ class PBE(ExchangeCorrelationFunctional):
 
         # ── LDA exchange baseline ────────────────────────────────
         cx = -(3.0 / 4.0) * (3.0 / np.pi) ** (1.0 / 3.0)
-        scale = 2.0 ** (1.0 / 3.0)
 
         # ── PBE exchange (spin-scaled) ───────────────────────────
         def _pbe_exchange_spin(
@@ -164,20 +177,28 @@ class PBE(ExchangeCorrelationFunctional):
             )
 
             # Potential w.r.t. gamma (for GGA contribution to V_xc)
+            # ds2/dgamma_ss using chain rule through the factor-4 scaling
             ds2_dgamma = (
                 4.0 / (4.0 * kf ** 2 * safe_rho ** 2)
             )
+            # vx_gamma = d(rho_2s * ex_s)/d(gamma_ss)
             vx_gamma = ex_lda * safe_rho * dFx_ds2 * ds2_dgamma
 
             return 0.5 * ex_s, vx_rho, vx_gamma
 
-        ex_a, vx_rho_a, _ = _pbe_exchange_spin(
+        ex_a, vx_rho_a, vx_gamma_a = _pbe_exchange_spin(
             rho_a, gaa
         )
-        ex_b, vx_rho_b, _ = _pbe_exchange_spin(
+        ex_b, vx_rho_b, vx_gamma_b = _pbe_exchange_spin(
             rho_b, gbb
         )
-        exc_x = (ex_a + ex_b)
+        exc_x = ex_a + ex_b
+
+        # h_alpha^exchange = d(rho*eps_x)/d(gamma_aa) = vx_gamma_a / 2
+        # because vx_gamma_a = d(rho_2a * ex_s)/d(gamma_aa)
+        # and rho * 0.5 * ex_s = rho_a * ex_s
+        h_alpha_x = 0.5 * vx_gamma_a
+        h_beta_x = 0.5 * vx_gamma_b
 
         # ── PBE correlation ──────────────────────────────────────
         rs = (3.0 / (4.0 * np.pi * rho_m)) ** (1.0 / 3.0)
@@ -190,35 +211,50 @@ class PBE(ExchangeCorrelationFunctional):
 
         # Thomas-Fermi screening
         ks = np.sqrt(4.0 * (3.0 / np.pi) ** (1.0 / 3.0) / rs)
-        t = np.sqrt(np.maximum(gamma_total, 0.0)) / (
-            2.0 * ks * rho_m
+        t_sq = np.maximum(gamma_total, 0.0) / (
+            4.0 * ks ** 2 * rho_m ** 2
         )
-        t2 = t * t
 
         # PBE H function
         A = PBE_BETA / PBE_GAMMA / (
             np.exp(-ec_lda / PBE_GAMMA) - 1.0 + 1e-30
         )
-        At2 = A * t2
-        inner = 1.0 + At2 * (1.0 + At2)
+        At_sq = A * t_sq
+        numer = 1.0 + At_sq * (1.0 + At_sq)
+        denom_H = PBE_GAMMA * numer + PBE_BETA * t_sq * At_sq + 1e-30
         H = PBE_GAMMA * np.log(
-            1.0 + PBE_BETA * t2 * inner / (
-                PBE_GAMMA * inner + PBE_BETA * t2 * At2
-                + 1e-30
-            )
+            1.0 + PBE_BETA * t_sq * numer / denom_H
         )
 
         exc_c = ec_lda + H
 
-        # Correlation potential (approximate — using LDA part + H correction)
+        # Correlation potential (LDA part + H)
         vc_lda = ec_lda - (rs / 3.0) * dec_drs
-
         vc_a = vc_lda + H
         vc_b = vc_lda + H
+
+        # d(rho * H)/d(gamma_total) = rho * dH/d(t_sq) * d(t_sq)/d(gamma_total)
+        # d(t_sq)/d(gamma_total) = 1 / (4 * ks^2 * rho^2)
+        # dH/d(t_sq) via quotient rule on H formula
+        g_u = t_sq * numer / (denom_H + 1e-30)
+        dg_dt_sq = (
+            numer * (denom_H - PBE_BETA * At_sq * t_sq)
+            + t_sq * numer * PBE_GAMMA * A
+            - t_sq * numer * PBE_BETA * At_sq
+        ) / (denom_H ** 2 + 1e-30)
+        dH_dt_sq = PBE_BETA / (1.0 + PBE_BETA / PBE_GAMMA * g_u + 1e-30) * dg_dt_sq
+
+        dt_sq_dgamma = 1.0 / (4.0 * ks ** 2 * rho_m ** 2 + 1e-60)
+        h_c = rho_m * dH_dt_sq * dt_sq_dgamma
 
         # ── Total ────────────────────────────────────────────────
         exc[mask] = exc_x + exc_c
         vxc_alpha[mask] = vx_rho_a + vc_a
         vxc_beta[mask] = vx_rho_b + vc_b
 
-        return exc, vxc_alpha, vxc_beta
+        # GGA gamma derivatives
+        h_alpha[mask] = h_alpha_x + h_c
+        h_ab[mask] = 2.0 * h_c
+        h_beta[mask] = h_beta_x + h_c
+
+        return exc, vxc_alpha, vxc_beta, h_alpha, h_ab, h_beta

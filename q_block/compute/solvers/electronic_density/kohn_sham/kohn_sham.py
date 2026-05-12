@@ -374,14 +374,34 @@ class KohnSham(SCF):
         rho_beta: np.ndarray,
         vxc_alpha: np.ndarray,
         vxc_beta: np.ndarray,
+        h_alpha: Optional[np.ndarray] = None,
+        h_ab: Optional[np.ndarray] = None,
+        h_beta: Optional[np.ndarray] = None,
+        grad_a: Optional[np.ndarray] = None,
+        grad_b: Optional[np.ndarray] = None,
     ) -> SpinPair:
         r"""Build XC potential matrices via numerical integration.
+
+        Local (LDA) term:
 
         .. math::
 
             V^{xc,\sigma}_{\mu\nu}
                 = \sum_g w_g\,v_{xc}^\sigma(\mathbf{r}_g)\,
                   \phi_\mu(\mathbf{r}_g)\,\phi_\nu(\mathbf{r}_g)
+
+        GGA gradient correction (applied when ``h_alpha`` and
+        ``grad_a`` are provided):
+
+        .. math::
+
+            \Delta V^{xc,\alpha}_{\mu\nu}
+                = \sum_g w_g\,(2h_\alpha\nabla\rho_\alpha
+                  + h_{ab}\nabla\rho_\beta)_g\cdot
+                  \nabla(\phi_\mu\phi_\nu)_g
+
+        The integrand is symmetrised as :math:`X + X^T` to preserve
+        Hermiticity.
 
         :param rho_alpha: Alpha density on grid.
         :type rho_alpha: np.ndarray
@@ -391,20 +411,67 @@ class KohnSham(SCF):
         :type vxc_alpha: np.ndarray
         :param vxc_beta: Beta XC potential on grid.
         :type vxc_beta: np.ndarray
+        :param h_alpha: ``d(rho*eps_xc)/d(gamma_aa)`` on grid.
+        :type h_alpha: Optional[np.ndarray]
+        :param h_ab: ``d(rho*eps_xc)/d(gamma_ab)`` on grid.
+        :type h_ab: Optional[np.ndarray]
+        :param h_beta: ``d(rho*eps_xc)/d(gamma_bb)`` on grid.
+        :type h_beta: Optional[np.ndarray]
+        :param grad_a: Alpha density gradient, shape ``(3, n_pts)``.
+        :type grad_a: Optional[np.ndarray]
+        :param grad_b: Beta density gradient, shape ``(3, n_pts)``.
+        :type grad_b: Optional[np.ndarray]
         :returns: XC potential matrices.
         :rtype: SpinPair
         """
         w = self.grid.weights
 
-        # V^xc_alpha_mn = sum_g w_g * v_a(g) * phi_m(g) * phi_n(g)
+        # Local term: V^xc_alpha_mn = sum_g w_g * v_a(g) * phi_m(g) * phi_n(g)
         weighted_a = self.phi_grid * (w * vxc_alpha)[np.newaxis, :]
         Vxc_alpha = weighted_a @ self.phi_grid.T
 
+        _has_gga = (
+            h_alpha is not None
+            and h_ab is not None
+            and grad_a is not None
+            and grad_b is not None
+            and self.dphi_grid is not None
+        )
+
         if self._shared_spin:
+            if _has_gga:
+                # u_alpha[d, g] = w_g * (2*h_alpha*grad_a[d] + h_ab*grad_b[d])
+                u_a = w * (
+                    2.0 * h_alpha[np.newaxis, :] * grad_a
+                    + h_ab[np.newaxis, :] * grad_b
+                )  # (3, n_pts)
+                # X_mn = sum_{d,g} u[d,g] * dphi[d,m,g] * phi[n,g]
+                X = np.einsum(
+                    "dg,dmg,ng->mn", u_a, self.dphi_grid, self.phi_grid
+                )
+                Vxc_alpha += X + X.T
             return SpinPair(Vxc_alpha)
 
         weighted_b = self.phi_grid * (w * vxc_beta)[np.newaxis, :]
         Vxc_beta = weighted_b @ self.phi_grid.T
+
+        if _has_gga:
+            u_a = w * (
+                2.0 * h_alpha[np.newaxis, :] * grad_a
+                + h_ab[np.newaxis, :] * grad_b
+            )  # (3, n_pts)
+            u_b = w * (
+                2.0 * h_beta[np.newaxis, :] * grad_b
+                + h_ab[np.newaxis, :] * grad_a
+            )  # (3, n_pts)
+            X_a = np.einsum(
+                "dg,dmg,ng->mn", u_a, self.dphi_grid, self.phi_grid
+            )
+            X_b = np.einsum(
+                "dg,dmg,ng->mn", u_b, self.dphi_grid, self.phi_grid
+            )
+            Vxc_alpha += X_a + X_a.T
+            Vxc_beta += X_b + X_b.T
 
         return SpinPair(Vxc_alpha, Vxc_beta)
 
@@ -502,6 +569,8 @@ class KohnSham(SCF):
         gamma_aa = None
         gamma_ab = None
         gamma_bb = None
+        grad_a = None
+        grad_b = None
         if self.functional.needs_gradient and self.dphi_grid is not None:
             grad_a = self._gradient_on_grid(density.alpha)
             grad_b = self._gradient_on_grid(density.beta)
@@ -510,17 +579,20 @@ class KohnSham(SCF):
             gamma_bb = np.sum(grad_b * grad_b, axis=0)
 
         # Evaluate XC functional
-        _, vxc_a, vxc_b = self.functional.compute_exc_vxc(
-            rho_alpha_grid,
-            rho_beta_grid,
-            gamma_aa=gamma_aa,
-            gamma_ab=gamma_ab,
-            gamma_bb=gamma_bb,
+        _, vxc_a, vxc_b, h_a, h_ab_g, h_b = (
+            self.functional.compute_exc_vxc(
+                rho_alpha_grid,
+                rho_beta_grid,
+                gamma_aa=gamma_aa,
+                gamma_ab=gamma_ab,
+                gamma_bb=gamma_bb,
+            )
         )
 
         # Build XC potential matrix
         Vxc = self._build_vxc_matrix(
-            rho_alpha_grid, rho_beta_grid, vxc_a, vxc_b
+            rho_alpha_grid, rho_beta_grid, vxc_a, vxc_b,
+            h_a, h_ab_g, h_b, grad_a, grad_b
         )
 
         # Coulomb
@@ -594,7 +666,7 @@ class KohnSham(SCF):
             gamma_ab = np.sum(grad_a * grad_b, axis=0)
             gamma_bb = np.sum(grad_b * grad_b, axis=0)
 
-        exc, _, _ = self.functional.compute_exc_vxc(
+        exc, _, _, _, _, _ = self.functional.compute_exc_vxc(
             rho_a_grid,
             rho_b_grid,
             gamma_aa=gamma_aa,

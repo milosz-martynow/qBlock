@@ -175,8 +175,16 @@ class B3LYP(ExchangeCorrelationFunctional):
         gamma_total: np.ndarray,
         gamma_aa: np.ndarray,
         gamma_bb: np.ndarray,
-    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-        r"""Lee-Yang-Parr correlation energy density and potentials.
+    ) -> Tuple[
+        np.ndarray,
+        np.ndarray,
+        np.ndarray,
+        np.ndarray,
+        np.ndarray,
+        np.ndarray,
+    ]:
+        r"""Lee-Yang-Parr correlation energy density, potentials and
+        gamma derivatives.
 
         :param rho: Total density.
         :type rho: np.ndarray
@@ -190,8 +198,11 @@ class B3LYP(ExchangeCorrelationFunctional):
         :type gamma_aa: np.ndarray
         :param gamma_bb: :math:`|\nabla\rho_\beta|^2`.
         :type gamma_bb: np.ndarray
-        :returns: ``(ec_lyp, vc_a, vc_b)``.
-        :rtype: Tuple[np.ndarray, np.ndarray, np.ndarray]
+        :returns: ``(ec_lyp, vc_a, vc_b, h_lyp_aa, h_lyp_ab, h_lyp_bb)``
+            where ``h_lyp_ss = d(rho*ec_lyp)/d(gamma_ss)`` and
+            ``h_lyp_ab = d(rho*ec_lyp)/d(gamma_ab)``.
+        :rtype: Tuple[np.ndarray, np.ndarray, np.ndarray,
+            np.ndarray, np.ndarray, np.ndarray]
         """
         a, b, c, d = LYP_A, LYP_B, LYP_C, LYP_D
         safe_rho = np.maximum(rho, 1e-30)
@@ -228,7 +239,25 @@ class B3LYP(ExchangeCorrelationFunctional):
         vc_a = ec_lyp
         vc_b = ec_lyp
 
-        return ec_lyp, vc_a, vc_b
+        # Gamma derivatives: d(rho * ec_lyp)/d(gamma_ss)
+        # term2 = P * (... + C_tot*gamma_total - C_aa*(gamma_aa+gamma_bb)
+        #                   - C_diag_a*gamma_aa - C_diag_b*gamma_bb)
+        # where P = -a*b*omega*rho_a*rho_b
+        # d(term2)/d(gamma_aa) = P * (C_tot - C_aa - C_diag_a)
+        # = P * [(47/18 - 7*delta/18) - (5/2 - delta/18) - (delta-11)/9]
+        # = P * [4/3 - 4*delta/9]  (simplified analytically)
+        # d(term2)/d(gamma_ab) = P * 2*(47/18 - 7*delta/18)
+        # d(term2)/d(gamma_bb) = P * (C_tot - C_aa - C_diag_b) = same as gamma_aa
+
+        P = -a * b * omega * rho_a * rho_b
+        c_aa_bb = 4.0 / 3.0 - 4.0 * delta / 9.0
+        c_ab = 2.0 * (47.0 / 18.0 - 7.0 * delta / 18.0)
+
+        h_lyp_aa = P * c_aa_bb
+        h_lyp_ab = P * c_ab
+        h_lyp_bb = P * c_aa_bb
+
+        return ec_lyp, vc_a, vc_b, h_lyp_aa, h_lyp_ab, h_lyp_bb
 
     def compute_exc_vxc(
         self,
@@ -237,7 +266,14 @@ class B3LYP(ExchangeCorrelationFunctional):
         gamma_aa: Optional[np.ndarray] = None,
         gamma_ab: Optional[np.ndarray] = None,
         gamma_bb: Optional[np.ndarray] = None,
-    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    ) -> Tuple[
+        np.ndarray,
+        np.ndarray,
+        np.ndarray,
+        np.ndarray,
+        np.ndarray,
+        np.ndarray,
+    ]:
         r"""Compute B3LYP energy density and potentials.
 
         Note: the exact exchange contribution is **not** included here;
@@ -255,8 +291,12 @@ class B3LYP(ExchangeCorrelationFunctional):
         :type gamma_ab: Optional[np.ndarray]
         :param gamma_bb: :math:`|\nabla\rho_\beta|^2`.
         :type gamma_bb: Optional[np.ndarray]
-        :returns: ``(exc, vxc_alpha, vxc_beta)``.
-        :rtype: Tuple[np.ndarray, np.ndarray, np.ndarray]
+        :returns: ``(exc, vxc_alpha, vxc_beta, h_alpha, h_ab, h_beta)``
+            where ``h_sigma = d(rho*eps_xc)/d(gamma_ss)`` and
+            ``h_ab = d(rho*eps_xc)/d(gamma_ab)`` for the GGA Fock
+            matrix correction.
+        :rtype: Tuple[np.ndarray, np.ndarray, np.ndarray,
+            np.ndarray, np.ndarray, np.ndarray]
         """
         if gamma_aa is None or gamma_bb is None:
             raise ValueError(
@@ -271,6 +311,9 @@ class B3LYP(ExchangeCorrelationFunctional):
         exc = np.zeros(n_pts)
         vxc_alpha = np.zeros(n_pts)
         vxc_beta = np.zeros(n_pts)
+        h_alpha = np.zeros(n_pts)
+        h_ab = np.zeros(n_pts)
+        h_beta = np.zeros(n_pts)
 
         mask = rho > 1e-18
         rho_m = rho[mask]
@@ -297,10 +340,10 @@ class B3LYP(ExchangeCorrelationFunctional):
         ) ** (1.0 / 3.0)
 
         # ── Becke88 exchange correction ──────────────────────────
-        f_b88_a, df_a_drho, _ = self._becke88_exchange(
+        f_b88_a, df_a_drho, df_a_dgamma = self._becke88_exchange(
             rho_a, gaa
         )
-        f_b88_b, df_b_drho, _ = self._becke88_exchange(
+        f_b88_b, df_b_drho, df_b_dgamma = self._becke88_exchange(
             rho_b, gbb
         )
         exc_b88 = (f_b88_a + f_b88_b) / rho_m
@@ -316,8 +359,10 @@ class B3LYP(ExchangeCorrelationFunctional):
         vc_vwn = ec_vwn - (rs / 3.0) * dec_vwn
 
         # ── LYP correlation ──────────────────────────────────────
-        ec_lyp, vc_lyp_a, vc_lyp_b = self._lyp_correlation(
-            rho_m, rho_a, rho_b, gamma_total, gaa, gbb
+        ec_lyp, vc_lyp_a, vc_lyp_b, h_lyp_aa, h_lyp_ab, h_lyp_bb = (
+            self._lyp_correlation(
+                rho_m, rho_a, rho_b, gamma_total, gaa, gbb
+            )
         )
 
         # ── B3LYP mixing ────────────────────────────────────────
@@ -344,4 +389,13 @@ class B3LYP(ExchangeCorrelationFunctional):
             + self.ac * vc_lyp_b
         )
 
-        return exc, vxc_alpha, vxc_beta
+        # GGA gamma derivatives (B88 exchange + LYP correlation)
+        h_alpha[mask] = (
+            self.ax * df_a_dgamma + self.ac * h_lyp_aa
+        )
+        h_ab[mask] = self.ac * h_lyp_ab
+        h_beta[mask] = (
+            self.ax * df_b_dgamma + self.ac * h_lyp_bb
+        )
+
+        return exc, vxc_alpha, vxc_beta, h_alpha, h_ab, h_beta

@@ -189,15 +189,25 @@ class SVWN(ExchangeCorrelationFunctional):
         rho_alpha: np.ndarray,
         rho_beta: np.ndarray,
         **_kwargs: object,
-    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    ) -> Tuple[
+        np.ndarray,
+        np.ndarray,
+        np.ndarray,
+        np.ndarray,
+        np.ndarray,
+        np.ndarray,
+    ]:
         r"""Compute SVWN energy density and potentials.
 
         :param rho_alpha: Alpha density, shape ``(n_points,)``.
         :type rho_alpha: np.ndarray
         :param rho_beta: Beta density, shape ``(n_points,)``.
         :type rho_beta: np.ndarray
-        :returns: ``(exc, vxc_alpha, vxc_beta)``.
-        :rtype: Tuple[np.ndarray, np.ndarray, np.ndarray]
+        :returns: ``(exc, vxc_alpha, vxc_beta, h_alpha, h_ab, h_beta)``
+            where the last three are zero arrays (LDA has no gradient
+            correction).
+        :rtype: Tuple[np.ndarray, np.ndarray, np.ndarray,
+            np.ndarray, np.ndarray, np.ndarray]
         """
         rho = rho_alpha + rho_beta
         n_pts = len(rho)
@@ -289,4 +299,9 @@ class SVWN(ExchangeCorrelationFunctional):
         vxc_alpha[mask] = vx_a + vc_a
         vxc_beta[mask] = vx_b + vc_b
 
-        return exc, vxc_alpha, vxc_beta
+        # LDA has no gradient dependence — gamma derivatives are zero
+        h_alpha = np.zeros(n_pts)
+        h_ab = np.zeros(n_pts)
+        h_beta = np.zeros(n_pts)
+
+        return exc, vxc_alpha, vxc_beta, h_alpha, h_ab, h_beta

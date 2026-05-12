@@ -96,8 +96,45 @@ class ExchangeCorrelationFunctional(ABC):
         gamma_aa: Optional[np.ndarray] = None,
         gamma_ab: Optional[np.ndarray] = None,
         gamma_bb: Optional[np.ndarray] = None,
-    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-        r"""Compute XC energy density and potentials on the grid.
+    ) -> Tuple[
+        np.ndarray,
+        np.ndarray,
+        np.ndarray,
+        np.ndarray,
+        np.ndarray,
+        np.ndarray,
+    ]:
+        r"""Compute XC energy density, potentials and gamma derivatives.
+
+        Returns six arrays needed to build the full KS Fock matrix,
+        including the GGA gradient correction to the XC potential matrix.
+
+        For LDA functionals the last three arrays are all-zero.  For
+        GGA/hybrid functionals they carry the derivative of the XC
+        energy density with respect to the spin-resolved gradient
+        invariants :math:`\gamma_{\sigma\sigma'}`:
+
+        .. math::
+
+            h_\alpha = \frac{\partial(\rho\,\varepsilon_{xc})}
+                            {\partial \gamma_{\alpha\alpha}}, \quad
+            h_{ab}   = \frac{\partial(\rho\,\varepsilon_{xc})}
+                            {\partial \gamma_{\alpha\beta}}, \quad
+            h_\beta  = \frac{\partial(\rho\,\varepsilon_{xc})}
+                            {\partial \gamma_{\beta\beta}}.
+
+        These are used by the KS solver to build the GGA correction:
+
+        .. math::
+
+            \Delta V^{xc,\sigma}_{\mu\nu}
+                = 2 \sum_g w_g
+                  \bigl(
+                      h_\sigma(\mathbf{r}_g)\,
+                      \nabla\phi_\mu \cdot \nabla\phi_\nu
+                    + h_{ab}(\mathbf{r}_g)\,
+                      \nabla\phi_\mu \cdot \nabla\phi_\nu
+                  \bigr)
 
         :param rho_alpha: Alpha-spin density at each grid point,
             shape ``(n_points,)``.
@@ -114,10 +151,12 @@ class ExchangeCorrelationFunctional(ABC):
         :param gamma_bb: :math:`|\nabla\rho_\beta|^2` at each
             grid point.
         :type gamma_bb: Optional[np.ndarray]
-        :returns: ``(exc, vxc_alpha, vxc_beta)`` — energy density
-            per electron and per-spin potentials, each shape
-            ``(n_points,)``.
-        :rtype: Tuple[np.ndarray, np.ndarray, np.ndarray]
+        :returns: ``(exc, vxc_alpha, vxc_beta, h_alpha, h_ab, h_beta)``
+            — energy density per electron, per-spin local potentials,
+            and gamma derivatives for the GGA correction.
+            Each array has shape ``(n_points,)``.
+        :rtype: Tuple[np.ndarray, np.ndarray, np.ndarray,
+            np.ndarray, np.ndarray, np.ndarray]
         """
 
     def __repr__(self) -> str:

@@ -91,7 +91,7 @@ def test_svwn_uniform_density() -> None:
     f = SVWN()
     n_pts = 100
     rho = np.full(n_pts, 0.1)
-    exc, vxc_a, vxc_b = f.compute_exc_vxc(
+    exc, vxc_a, vxc_b, h_alpha, h_ab, h_beta = f.compute_exc_vxc(
         rho * 0.5, rho * 0.5
     )
     assert np.all(np.isfinite(exc))
@@ -104,7 +104,7 @@ def test_svwn_exchange_is_negative() -> None:
     f = SVWN()
     n_pts = 50
     rho = np.full(n_pts, 0.5)
-    exc, _, _ = f.compute_exc_vxc(rho * 0.5, rho * 0.5)
+    exc, _, _, _, _, _ = f.compute_exc_vxc(rho * 0.5, rho * 0.5)
     mask = rho > 1e-18
     assert np.all(exc[mask] < 0.0)
 
@@ -114,7 +114,7 @@ def test_svwn_zero_density() -> None:
     f = SVWN()
     n_pts = 10
     rho = np.zeros(n_pts)
-    exc, vxc_a, vxc_b = f.compute_exc_vxc(rho, rho)
+    exc, vxc_a, vxc_b, h_alpha, h_ab, h_beta = f.compute_exc_vxc(rho, rho)
     assert np.allclose(exc, 0.0)
     assert np.allclose(vxc_a, 0.0)
     assert np.allclose(vxc_b, 0.0)
@@ -125,7 +125,7 @@ def test_svwn_symmetric_closed_shell() -> None:
     f = SVWN()
     n_pts = 50
     rho_half = np.linspace(0.01, 1.0, n_pts)
-    exc, vxc_a, vxc_b = f.compute_exc_vxc(rho_half, rho_half)
+    exc, vxc_a, vxc_b, h_alpha, h_ab, h_beta = f.compute_exc_vxc(rho_half, rho_half)
     np.testing.assert_allclose(vxc_a, vxc_b, atol=1e-12)
 
 
@@ -134,7 +134,7 @@ def test_svwn_output_shapes() -> None:
     f = SVWN()
     n_pts = 30
     rho = np.random.uniform(0.01, 1.0, n_pts)
-    exc, vxc_a, vxc_b = f.compute_exc_vxc(
+    exc, vxc_a, vxc_b, h_alpha, h_ab, h_beta = f.compute_exc_vxc(
         rho * 0.6, rho * 0.4
     )
     assert exc.shape == (n_pts,)
@@ -161,7 +161,7 @@ def test_pbe_uniform_density() -> None:
     n_pts = 50
     rho = np.full(n_pts, 0.1)
     gamma = np.full(n_pts, 0.01)
-    exc, vxc_a, vxc_b = f.compute_exc_vxc(
+    exc, vxc_a, vxc_b, h_alpha, h_ab, h_beta = f.compute_exc_vxc(
         rho * 0.5,
         rho * 0.5,
         gamma_aa=gamma,
@@ -180,14 +180,14 @@ def test_pbe_zero_gradient_matches_lda_trends() -> None:
     n_pts = 50
     rho = np.linspace(0.01, 1.0, n_pts)
     gamma_zero = np.zeros(n_pts)
-    exc_pbe, _, _ = pbe.compute_exc_vxc(
+    exc_pbe, _, _, _, _, _ = pbe.compute_exc_vxc(
         rho * 0.5,
         rho * 0.5,
         gamma_aa=gamma_zero,
         gamma_ab=gamma_zero,
         gamma_bb=gamma_zero,
     )
-    exc_lda, _, _ = lda.compute_exc_vxc(rho * 0.5, rho * 0.5)
+    exc_lda, _, _, _, _, _ = lda.compute_exc_vxc(rho * 0.5, rho * 0.5)
     # PBE with zero gradient should be similar to LDA
     mask = rho > 1e-18
     assert np.corrcoef(exc_pbe[mask], exc_lda[mask])[0, 1] > 0.9
@@ -212,7 +212,7 @@ def test_b3lyp_uniform_density() -> None:
     n_pts = 50
     rho = np.full(n_pts, 0.1)
     gamma = np.full(n_pts, 0.01)
-    exc, vxc_a, vxc_b = f.compute_exc_vxc(
+    exc, vxc_a, vxc_b, h_alpha, h_ab, h_beta = f.compute_exc_vxc(
         rho * 0.5,
         rho * 0.5,
         gamma_aa=gamma,

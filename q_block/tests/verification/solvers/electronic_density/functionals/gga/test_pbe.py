@@ -21,18 +21,21 @@ from q_block.compute.solvers.electronic_density.functionals import PBE
 
 
 def test_pbe_exc_vxc_output_shapes() -> None:
-    """compute_exc_vxc returns three arrays each of shape (n_points,)."""
+    """compute_exc_vxc returns six arrays each of shape (n_points,)."""
     func = PBE()
     n = 50
     rho_a = np.linspace(0.01, 1.0, n) / 2.0
     rho_b = rho_a.copy()
     gamma = np.zeros(n)
-    exc, vxc_a, vxc_b = func.compute_exc_vxc(
+    exc, vxc_a, vxc_b, h_alpha, h_ab, h_beta = func.compute_exc_vxc(
         rho_a, rho_b, gamma_aa=gamma, gamma_ab=gamma, gamma_bb=gamma
     )
     assert exc.shape == (n,)
     assert vxc_a.shape == (n,)
     assert vxc_b.shape == (n,)
+    assert h_alpha.shape == (n,)
+    assert h_ab.shape == (n,)
+    assert h_beta.shape == (n,)
 
 
 # ======================================================================
@@ -69,7 +72,7 @@ def test_pbe_exc_negative_for_finite_density() -> None:
     rho_a = np.linspace(0.01, 1.0, 100) / 2.0
     rho_b = rho_a.copy()
     gamma = np.zeros(100)
-    exc, _, _ = func.compute_exc_vxc(
+    exc, _, _, _, _, _ = func.compute_exc_vxc(
         rho_a, rho_b, gamma_aa=gamma, gamma_ab=gamma, gamma_bb=gamma
     )
     assert np.all(exc < 0.0)
@@ -87,7 +90,7 @@ def test_pbe_potentials_are_finite() -> None:
     rho_a = np.linspace(1e-5, 2.0, n) / 2.0
     rho_b = rho_a.copy()
     gamma = np.linspace(0.0, 0.1, n)
-    exc, vxc_a, vxc_b = func.compute_exc_vxc(
+    exc, vxc_a, vxc_b, h_alpha, h_ab, h_beta = func.compute_exc_vxc(
         rho_a,
         rho_b,
         gamma_aa=gamma,
@@ -97,6 +100,9 @@ def test_pbe_potentials_are_finite() -> None:
     assert np.all(np.isfinite(exc))
     assert np.all(np.isfinite(vxc_a))
     assert np.all(np.isfinite(vxc_b))
+    assert np.all(np.isfinite(h_alpha))
+    assert np.all(np.isfinite(h_ab))
+    assert np.all(np.isfinite(h_beta))
 
 
 # ======================================================================
@@ -111,10 +117,10 @@ def test_pbe_gradient_affects_exc() -> None:
     rho_b = np.array([0.3])
     zero = np.array([0.0])
     nonzero = np.array([0.5])
-    exc_zero, _, _ = func.compute_exc_vxc(
+    exc_zero, _, _, _, _, _ = func.compute_exc_vxc(
         rho_a, rho_b, gamma_aa=zero, gamma_ab=zero, gamma_bb=zero
     )
-    exc_nz, _, _ = func.compute_exc_vxc(
+    exc_nz, _, _, _, _, _ = func.compute_exc_vxc(
         rho_a, rho_b, gamma_aa=nonzero, gamma_ab=zero, gamma_bb=nonzero
     )
     assert not np.isclose(exc_zero[0], exc_nz[0])
@@ -131,7 +137,8 @@ def test_pbe_spin_symmetry_equal_densities() -> None:
     rho_a = np.array([0.1, 0.5, 1.0])
     rho_b = rho_a.copy()
     gamma = np.array([0.0, 0.01, 0.05])
-    exc, vxc_a, vxc_b = func.compute_exc_vxc(
+    exc, vxc_a, vxc_b, h_alpha, h_ab, h_beta = func.compute_exc_vxc(
         rho_a, rho_b, gamma_aa=gamma, gamma_ab=gamma, gamma_bb=gamma
     )
     assert np.allclose(vxc_a, vxc_b, atol=1e-12)
+    assert np.allclose(h_alpha, h_beta, atol=1e-12)
