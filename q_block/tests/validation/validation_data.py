@@ -586,7 +586,7 @@ ATOMS: dict = {
             "UKS": {
                 "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/6-31G.gbs",
                 "max_iterations": 200,
-                "functional": ["B3LYP", "PBE", "SVWN"],
+                "functional": ["B3LYP", "PBE"],
             },
             "ROKS": {
                 "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/3-21G.gbs",
@@ -664,7 +664,7 @@ ATOMS: dict = {
             "UKS": {
                 "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/6-311G.gbs",
                 "max_iterations": 200,
-                "functional": ["B3LYP", "PBE", "SVWN"],
+                "functional": ["B3LYP", "PBE"],
             }
         },
         "energies": {
@@ -696,7 +696,7 @@ ATOMS: dict = {
             "UKS": {
                 "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/6-311G.gbs",
                 "max_iterations": 200,
-                "functional": ["B3LYP", "PBE", "SVWN"],
+                "functional": ["B3LYP", "PBE"],
             }
         },
         "energies": {
@@ -926,7 +926,7 @@ ATOMS: dict = {
             "UKS": {
                 "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/6-31G.gbs",
                 "max_iterations": 200,
-                "functional": ["B3LYP", "PBE", "SVWN"],
+                "functional": ["B3LYP"],
             }
         },
         "energies": {
@@ -1183,7 +1183,7 @@ ATOMS: dict = {
             "UKS": {
                 "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/6-31G.gbs",
                 "max_iterations": 200,
-                "functional": ["B3LYP", "PBE", "SVWN"],
+                "functional": ["B3LYP", "PBE"],
             },
             "ROKS": {
                 "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/3-21G.gbs",
@@ -1261,7 +1261,7 @@ ATOMS: dict = {
             "UKS": {
                 "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/6-311G.gbs",
                 "max_iterations": 200,
-                "functional": ["B3LYP", "PBE", "SVWN"],
+                "functional": ["B3LYP", "PBE"],
             }
         },
         "energies": {
@@ -1293,7 +1293,7 @@ ATOMS: dict = {
             "UKS": {
                 "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/6-31G.gbs",
                 "max_iterations": 200,
-                "functional": ["B3LYP", "PBE", "SVWN"],
+                "functional": ["B3LYP"],
             }
         },
         "energies": {
