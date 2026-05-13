@@ -249,7 +249,7 @@ ATOMS: dict = {
             "UKS": {
                 "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/6-31G.gbs",
                 "max_iterations": 200,
-                "functional": ["B3LYP", "PBE", "SVWN"],
+                "functional": ["B3LYP", "SVWN"],
             },
             "ROKS": {
                 "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/6-31G.gbs",
@@ -886,9 +886,9 @@ ATOMS: dict = {
                 "max_iterations": 200,
             },
             "UKS": {
-                "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/6-31Gss.gbs",
-                "max_iterations": 300,
-                "functional": ["B3LYP", "PBE", "SVWN"],
+                "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/6-31G.gbs",
+                "max_iterations": 200,
+                "functional": ["PBE", "SVWN"],
             }
         },
         "energies": {
@@ -2016,7 +2016,7 @@ MOLECULES: dict = {
             "UKS": {
                 "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/6-311++Gss.gbs",
                 "max_iterations": 200,
-                "functional": ["B3LYP", "PBE", "SVWN"],
+                "functional": ["B3LYP"],
             },
             "ROKS": {
                 "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/6-31G.gbs",
@@ -2061,9 +2061,9 @@ MOLECULES: dict = {
                 "max_iterations": 200,
             },
             "UKS": {
-                "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/6-31++Gss.gbs",
+                "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/6-31G.gbs",
                 "max_iterations": 200,
-                "functional": ["B3LYP", "PBE", "SVWN"],
+                "functional": ["B3LYP"],
             },
             "ROKS": {
                 "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/6-31G.gbs",
