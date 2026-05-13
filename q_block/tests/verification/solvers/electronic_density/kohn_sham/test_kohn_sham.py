@@ -190,7 +190,7 @@ def test_vxc_matrix_shape_and_symmetry_lda() -> None:
     P = np.eye(n) * 0.5
     rho_a = rks._density_on_grid(P)
     rho_b = rks._density_on_grid(P)
-    _, vxc_a, vxc_b = rks.functional.compute_exc_vxc(rho_a, rho_b)
+    _, vxc_a, vxc_b, _, _, _ = rks.functional.compute_exc_vxc(rho_a, rho_b)
     Vxc = rks._build_vxc_matrix(rho_a, rho_b, vxc_a, vxc_b)
     assert Vxc.alpha.shape == (n, n)
     assert np.allclose(Vxc.alpha, Vxc.alpha.T)
@@ -214,7 +214,7 @@ def test_vxc_matrix_shape_gga() -> None:
     gamma_aa = np.sum(grad_a * grad_a, axis=0)
     gamma_ab = gamma_aa
     gamma_bb = gamma_aa
-    _, vxc_a, vxc_b = rks.functional.compute_exc_vxc(
+    _, vxc_a, vxc_b, _, _, _ = rks.functional.compute_exc_vxc(
         rho_a,
         rho_b,
         gamma_aa=gamma_aa,
@@ -244,7 +244,7 @@ def test_xc_energy_is_finite_float() -> None:
     rho_a = rks._density_on_grid(P)
     rho_b = rks._density_on_grid(P)
     rho = rho_a + rho_b
-    exc, _, _ = rks.functional.compute_exc_vxc(rho_a, rho_b)
+    exc, _, _, _, _, _ = rks.functional.compute_exc_vxc(rho_a, rho_b)
     e_xc = rks._compute_xc_energy(exc, rho)
     assert isinstance(e_xc, float)
     assert np.isfinite(e_xc)
