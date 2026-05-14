@@ -72,6 +72,14 @@ q_block/compute/
                         Boys function, double factorial, normalisation
                         constants, Hermite expansion coefficients, and
                         Cartesian component generation.
+
+environment/constants/numerical/pople.py
+                        Convenience module — lazily-loaded, pre-named
+                        :class:`~q_block.compute.environment.io.basis_set.Pople`
+                        instances for every bundled Pople .gbs file.
+                        Also exposes :data:`BASIS_DIR` (path to the bundled
+                        basis-set directory) for dynamic file access.
+                        Usage: ``from q_block.compute.environment.constants.numerical.pople import G631, STO3G``
 """
 
 import logging

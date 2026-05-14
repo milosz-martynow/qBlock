@@ -44,7 +44,7 @@ _ALL_IDS: List[str] = [
     "3-21G",
     "6-31G",
     "6-311G",
-    "6-311++Gss",
+    "6-311ppGss",
 ]
 
 
@@ -196,8 +196,8 @@ def test_basis_set_regions_are_valid_keys(basis: BasisSet) -> None:
         "6-31G_Z6_C",
         "6-311G_Z1_H",
         "6-311G_Z6_C",
-        "6-311++Gss_Z1_H",
-        "6-311++Gss_Z6_C",
+        "6-311ppGss_Z1_H",
+        "6-311ppGss_Z6_C",
     ],
 )
 def test_basis_set_has_core_region(basis: BasisSet, symbol: str) -> None:

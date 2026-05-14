@@ -11,7 +11,7 @@ Currently supported basis set types:
 
   - STO-nG minimal basis sets (STO-3G, STO-6G) – n Gaussians approximating
     Slater-type orbitals
-  - Split-valence basis sets (3-21G, 6-31G, 6-311G, 6-311++G**) – different
+  - Split-valence basis sets (3-21G, 6-31G, 6-311G, 6-311ppGss) – different
     numbers of Gaussians for core and valence regions
 
 Future basis set families (Dunning, Ahlrichs, etc.) should inherit from
@@ -184,7 +184,7 @@ class Pople(BasisSet):
       Slater-type orbital (e.g., STO-3G, STO-6G)
     * **Split-valence** (3-21G, 6-31G, 6-311G, etc.): Different numbers of
       Gaussian primitives for core vs. valence orbitals
-    * **Polarization and diffuse** (6-311++G**, etc.): Extended split-valence
+    * **Polarization and diffuse** (6-311ppGss, etc.): Extended split-valence
       with additional polarization and diffuse functions
 
     :param filepath: Path to the Gaussian-format ``.gbs`` file.

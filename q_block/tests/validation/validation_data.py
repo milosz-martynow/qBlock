@@ -427,7 +427,7 @@ ATOMS: dict = {
                 "max_iterations": 200,
             },
             "RKS": {
-                "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/6-311++G.gbs",
+                "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/6-311ppG.gbs",
                 "max_iterations": 200,
                 "functional": ["B3LYP"],
             }
@@ -688,7 +688,7 @@ ATOMS: dict = {
                 "max_iterations": 200,
             },
             "UKS": {
-                "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/6-311++Gss.gbs",
+                "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/6-311ppGss.gbs",
                 "max_iterations": 200,
                 "functional": ["B3LYP", "PBE"],
             }
@@ -1838,7 +1838,7 @@ ATOMS: dict = {
 #                      along bond/principal axis; source: NIST CCCBDB)
 # proposed_basis_set uses the largest Pople basis covering all constituent atoms.
 MOLECULES: dict = {
-    # ---- RHF molecules (closed-shell, multiplicity == 1) -----------------
+    # ---- closed-shell, multiplicity == 1 -----------------
     # Hydrogen molecule: simplest two-electron system; HOMO = 1σg
     "H2": {
         "formula": "H₂",
@@ -2014,7 +2014,7 @@ MOLECULES: dict = {
                 "max_iterations": 200,
             },
             "UKS": {
-                "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/6-311++Gss.gbs",
+                "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/6-311ppGss.gbs",
                 "max_iterations": 200,
                 "functional": ["B3LYP"],
             },
@@ -2104,7 +2104,7 @@ MOLECULES: dict = {
                 "max_iterations": 200,
             },
             "UKS": {
-                "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/6-311++Gss.gbs",
+                "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/6-311ppGss.gbs",
                 "max_iterations": 200,
                 "functional": ["B3LYP"],
             }
@@ -2144,7 +2144,7 @@ MOLECULES: dict = {
                 "max_iterations": 200,
             },
             "UKS": {
-                "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/6-311++Gss.gbs",
+                "proposed_basis_set": "q_block/compute/environment/constants/numerical/basis_set/pople/6-311ppGss.gbs",
                 "max_iterations": 200,
                 "functional": ["B3LYP", "PBE", "SVWN"],
             }

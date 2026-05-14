@@ -1,10 +1,10 @@
 {
-  "basis": "6-311++Gss",
+  "basis": "6-311ppGss",
   "atoms": {
     "H": {
       "symbol": "H",
       "Z": 1,
-      "basis": "6-311++Gss",
+      "basis": "6-311ppGss",
       "orbitals": {
         "1s": {
           "exponents": [
@@ -29,7 +29,7 @@
     "Li": {
       "symbol": "Li",
       "Z": 3,
-      "basis": "6-311++Gss",
+      "basis": "6-311ppGss",
       "orbitals": {
         "1s": {
           "exponents": [
@@ -72,7 +72,7 @@
     "Be": {
       "symbol": "Be",
       "Z": 4,
-      "basis": "6-311++Gss",
+      "basis": "6-311ppGss",
       "orbitals": {
         "1s": {
           "exponents": [
@@ -115,7 +115,7 @@
     "B": {
       "symbol": "B",
       "Z": 5,
-      "basis": "6-311++Gss",
+      "basis": "6-311ppGss",
       "orbitals": {
         "1s": {
           "exponents": [
@@ -176,7 +176,7 @@
     "C": {
       "symbol": "C",
       "Z": 6,
-      "basis": "6-311++Gss",
+      "basis": "6-311ppGss",
       "orbitals": {
         "1s": {
           "exponents": [
@@ -237,7 +237,7 @@
     "N": {
       "symbol": "N",
       "Z": 7,
-      "basis": "6-311++Gss",
+      "basis": "6-311ppGss",
       "orbitals": {
         "1s": {
           "exponents": [
@@ -298,7 +298,7 @@
     "O": {
       "symbol": "O",
       "Z": 8,
-      "basis": "6-311++Gss",
+      "basis": "6-311ppGss",
       "orbitals": {
         "1s": {
           "exponents": [
@@ -359,7 +359,7 @@
     "F": {
       "symbol": "F",
       "Z": 9,
-      "basis": "6-311++Gss",
+      "basis": "6-311ppGss",
       "orbitals": {
         "1s": {
           "exponents": [
@@ -420,7 +420,7 @@
     "Ne": {
       "symbol": "Ne",
       "Z": 10,
-      "basis": "6-311++Gss",
+      "basis": "6-311ppGss",
       "orbitals": {
         "1s": {
           "exponents": [
@@ -481,7 +481,7 @@
     "Na": {
       "symbol": "Na",
       "Z": 11,
-      "basis": "6-311++Gss",
+      "basis": "6-311ppGss",
       "orbitals": {
         "1s": {
           "exponents": [
@@ -560,7 +560,7 @@
     "Mg": {
       "symbol": "Mg",
       "Z": 12,
-      "basis": "6-311++Gss",
+      "basis": "6-311ppGss",
       "orbitals": {
         "1s": {
           "exponents": [
@@ -639,7 +639,7 @@
     "Al": {
       "symbol": "Al",
       "Z": 13,
-      "basis": "6-311++Gss",
+      "basis": "6-311ppGss",
       "orbitals": {
         "1s": {
           "exponents": [
@@ -724,7 +724,7 @@
     "Si": {
       "symbol": "Si",
       "Z": 14,
-      "basis": "6-311++Gss",
+      "basis": "6-311ppGss",
       "orbitals": {
         "1s": {
           "exponents": [
@@ -809,7 +809,7 @@
     "P": {
       "symbol": "P",
       "Z": 15,
-      "basis": "6-311++Gss",
+      "basis": "6-311ppGss",
       "orbitals": {
         "1s": {
           "exponents": [
@@ -894,7 +894,7 @@
     "S": {
       "symbol": "S",
       "Z": 16,
-      "basis": "6-311++Gss",
+      "basis": "6-311ppGss",
       "orbitals": {
         "1s": {
           "exponents": [
@@ -979,7 +979,7 @@
     "Cl": {
       "symbol": "Cl",
       "Z": 17,
-      "basis": "6-311++Gss",
+      "basis": "6-311ppGss",
       "orbitals": {
         "1s": {
           "exponents": [
@@ -1066,7 +1066,7 @@
     "Ar": {
       "symbol": "Ar",
       "Z": 18,
-      "basis": "6-311++Gss",
+      "basis": "6-311ppGss",
       "orbitals": {
         "1s": {
           "exponents": [
@@ -1153,7 +1153,7 @@
     "K": {
       "symbol": "K",
       "Z": 19,
-      "basis": "6-311++Gss",
+      "basis": "6-311ppGss",
       "orbitals": {
         "1s": {
           "exponents": [
@@ -1250,7 +1250,7 @@
     "Ca": {
       "symbol": "Ca",
       "Z": 20,
-      "basis": "6-311++Gss",
+      "basis": "6-311ppGss",
       "orbitals": {
         "1s": {
           "exponents": [

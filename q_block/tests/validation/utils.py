@@ -46,7 +46,7 @@ def build_from_geometry(
 
     :param geometry: List of ``{"symbol", "x", "y", "z"}`` dicts (Å).
     :param multiplicity: Spin multiplicity 2S+1.
-    :param basis_set_filename: Full path to basis-set file (e.g. ``Path("compute/environment/constants/numerical/basis_set/pople/6-311++Gss.gbs")``).
+    :param basis_set_filename: Full path to basis-set file (e.g. ``Path("compute/environment/constants/numerical/basis_set/pople/6-311ppGss.gbs")``).
     :returns: ``cgtos`` list ready for HF/KS constructors.
     """
     basis = Pople(filepath=str(basis_set_filename))

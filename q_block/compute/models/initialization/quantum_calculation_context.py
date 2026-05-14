@@ -49,7 +49,7 @@ from q_block.compute.models.molecule import Molecule
 # Allowed method literals
 # ──────────────────────────────────────────────────────────────────────
 HFMethod = Literal["RHF", "UHF", "ROHF"]
-KSMethod = Literal["RKS", "UKS"]
+KSMethod = Literal["RKS", "UKS", "ROKS"]
 
 
 # ======================================================================
@@ -568,5 +568,72 @@ class UKS(DensityFunctionalTheory, UnrestrictedContext):
             f"n_electrons={self.n_electrons}, "
             f"n_alpha={self.n_alpha}, "
             f"n_beta={self.n_beta}, "
+            f"n_basis={self.n_basis})"
+        )
+
+
+# ======================================================================
+# R O K S   –   R E S T R I C T E D   O P E N - S H E L L   K S
+# ======================================================================
+class ROKS(DensityFunctionalTheory):
+    """Restricted Open-Shell Kohn-Sham DFT.
+
+    Mirrors :class:`ROHF` for Kohn-Sham DFT.  Doubly-occupied
+    (closed) orbitals share the same spatial part; singly-occupied
+    (open) orbitals carry unpaired electrons:
+
+    .. math::
+
+        N_{open}   = M - 1
+
+        N_{closed} = (N_{elec} - N_{open}) / 2
+
+    :param molecule: Molecular system (see
+        :class:`DensityFunctionalTheory`).
+    :type molecule: Molecule
+
+    Attributes
+    ----------
+    n_closed : int
+        Number of doubly-occupied (closed-shell) spatial orbitals.
+    n_open : int
+        Number of singly-occupied (open-shell) spatial orbitals.
+    """
+
+    def __init__(self, molecule: Molecule) -> None:
+        super().__init__(molecule=molecule, ks_method="ROKS")
+
+        n_unpaired = self.multiplicity - 1
+        n_paired_electrons = self.n_electrons - n_unpaired
+        if n_paired_electrons % 2 != 0:
+            raise ValueError(
+                f"ROKS: after removing {n_unpaired} unpaired "
+                f"electrons, the remaining "
+                f"{n_paired_electrons} electrons are not even."
+            )
+
+        self.n_closed: int = n_paired_electrons // 2
+        self.n_open: int = n_unpaired
+
+        self.n_beta = self.n_closed
+        self.n_alpha = self.n_closed + self.n_open
+
+        expected_multiplicity = self.n_open + 1
+        if self.multiplicity != expected_multiplicity:
+            raise ValueError(
+                f"ROKS multiplicity inconsistency: "
+                f"multiplicity={self.multiplicity} but "
+                f"N_open={self.n_open} implies "
+                f"M={expected_multiplicity}."
+            )
+
+    def __repr__(self) -> str:
+        return (
+            f"ROKS(n_atoms={len(self.molecule)}, "
+            f"charge={self.charge}, "
+            f"multiplicity={self.multiplicity}, "
+            f"n_electrons={self.n_electrons}, "
+            f"n_closed={self.n_closed}, "
+            f"n_open={self.n_open}, "
             f"n_basis={self.n_basis})"
         )

@@ -4,6 +4,7 @@ from .nuclear_repulsion_energy import NuclearRepulsionEnergy
 from .quantum_calculation_context import (
     RHF,
     ROHF,
+    ROKS,
     RKS,
     UHF,
     UKS,
@@ -25,5 +26,6 @@ __all__ = [
     "DensityFunctionalTheory",
     "RKS",
     "UKS",
+    "ROKS",
     "NuclearRepulsionEnergy",
 ]

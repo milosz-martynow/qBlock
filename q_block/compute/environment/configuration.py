@@ -10,7 +10,7 @@ Recognised Configuration Keys
 basis_set
     Global basis set name applied to every atom that does not specify
     its own in the geometry block (e.g. ``STO-3G``, ``3-21G``,
-    ``6-31G``, ``6-311++G**``).  Default: ``STO-3G``.
+    ``6-31G``, ``6-311ppGss``).  Default: ``STO-3G``.
 
 charge
     Total system charge (integer).  Default: ``0``.

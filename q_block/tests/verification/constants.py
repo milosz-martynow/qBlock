@@ -1,4 +1,4 @@
-﻿"""Shared constants and configuration for qBlock test suite.
+"""Shared constants and configuration for qBlock test suite.
 
 This module provides common paths, basis set configurations, and test values
 used across multiple test modules to ensure consistency and reduce duplication.
@@ -35,7 +35,7 @@ BASIS_FILES: List[str] = [
     "3-21G.gbs",
     "6-31G.gbs",
     "6-311G.gbs",
-    "6-311++Gss.gbs",
+    "6-311ppGss.gbs",
 ]
 """Available GTO basis set filenames in BASIS_ROOT."""
 
@@ -55,8 +55,8 @@ BASIS_6_31G: Pople = Pople(filepath=str(BASIS_ROOT / "6-31G.gbs"))
 BASIS_6_311G: Pople = Pople(filepath=str(BASIS_ROOT / "6-311G.gbs"))
 """6-311G triple-zeta valence basis set."""
 
-BASIS_6_311PP_GSS: Pople = Pople(filepath=str(BASIS_ROOT / "6-311++Gss.gbs"))
-"""6-311++G** basis set with diffuse and polarization functions."""
+BASIS_6_311PP_GSS: Pople = Pople(filepath=str(BASIS_ROOT / "6-311ppGss.gbs"))
+"""6-311ppG** basis set with diffuse and polarization functions."""
 
 # Pre-loaded STO basis set instances
 BASIS_STO_3G: Pople = Pople(filepath=str(STO_ROOT / "STO-3G.gbs"))

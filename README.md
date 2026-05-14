@@ -3,7 +3,7 @@
 A Python library for quantum chemistry calculations. Implemented numerical features:
 
 - **SCF methods** — RHF, UHF, ROHF (Hartree-Fock); RKS, UKS, ROKS (Kohn-Sham DFT)
-- **Basis sets** — GTO (Pople family, e.g. 3-21G, 6-311++G**); each atom can carry its own independent basis set
+- **Basis sets** — GTO (Pople family, e.g. 3-21G, 6-311ppGss); each atom can carry its own independent basis set
 - **Input** — geometry and basis set defined together per atom via `InputData.from_script`; supports both Å and Bohr
 - **Integrals** — overlap, kinetic energy, nuclear attraction, two-electron repulsion (ERI)
 - **XC functionals** — LDA (SVWN), GGA (PBE), hybrid (B3LYP)
@@ -11,15 +11,14 @@ A Python library for quantum chemistry calculations. Implemented numerical featu
 - **Numerical integration** — Becke-partitioned grids for DFT quadrature
 
 ```python
-from q_block.compute.environment.io.basis_set import Pople
 from q_block.compute.environment.io.input_data import InputData
 from q_block.compute.models.molecule import Molecule
+from q_block.compute.environment.constants.numerical.pople import G321, G6311ppss
 from q_block.compute.solvers.wavefunction.hartree_fock import UnrestrictedHartreeFock
 
-# Load Pople basis sets — different quality per element
-basis_dir = "q_block/compute/environment/constants/numerical/basis_set/pople"
-basis_O = Pople(filepath=f"{basis_dir}/6-311++Gss.gbs")  # triple-zeta + diffuse + polarisation
-basis_H = Pople(filepath=f"{basis_dir}/3-21G.gbs")        # split-valence
+# Load Pople basis sets from library — zero I/O after first access
+basis_O = G6311ppss  # triple-zeta + diffuse + polarisation (was 6-311++G**)
+basis_H = G321       # split-valence
 
 # Build molecular geometry (coordinates in Å)
 inp = InputData()

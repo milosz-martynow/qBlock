@@ -12,7 +12,7 @@
 
 4. qBlock shall support DFT with at least one LDA functional, one GGA functional, and one hybrid functional. NOTE: examples of implementations are: LDA functional in SVMN implementation, GGA functional in PBE implementation, hybrid functional in B3LYP implementation.
 
-5. qBlock shall represent atomic systems electrons using Basis Sets. NOTE: examples of Basis Sets implementation are: CGTO and STO Pople basis sets read from standard Pople basis set files in GBS format e.g. STO-3G, 3-21G, 6-31G, 6-311++G**.
+5. qBlock shall represent atomic systems electrons using Basis Sets. NOTE: examples of Basis Sets implementation are: CGTO and STO Pople basis sets read from standard Pople basis set files in GBS format e.g. STO-3G, 3-21G, 6-31G, 6-311ppG**.
 
 6. qBlock shall compute one-electron integrals: overlap, kinetic energy, and nuclear attraction.
 

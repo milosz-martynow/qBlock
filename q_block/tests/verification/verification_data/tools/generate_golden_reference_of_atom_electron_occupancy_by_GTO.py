@@ -1,4 +1,4 @@
-﻿"""Generate golden-reference JSON snapshots for GTO population tests.
+"""Generate golden-reference JSON snapshots for GTO population tests.
 
 This module creates one JSON snapshot per Gaussian basis set containing the
 verified mapping between occupied subshells and Gaussian-type orbital (GTO)
@@ -37,7 +37,7 @@ BASIS_FILES: List[str] = [
     "3-21G.gbs",
     "6-31G.gbs",
     "6-311G.gbs",
-    "6-311++Gss.gbs",
+    "6-311ppGss.gbs",
 ]
 
 

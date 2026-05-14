@@ -6,5 +6,5 @@ examples/output*
 __pycache__
 *.pyc
 *.pub.md
-.clayde
+.claude
 dist/

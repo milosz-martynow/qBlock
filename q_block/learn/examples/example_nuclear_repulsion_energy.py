@@ -15,31 +15,19 @@ Nuclear repulsion energy is a classical Coulomb sum between nuclei:
 It does NOT involve basis functions — only geometry and atomic numbers.
 """
 
-import importlib.resources
 import math
-from pathlib import Path
 
-from q_block.compute.environment.io.basis_set import Pople
 from q_block.compute.environment.io.input_data import InputData
 from q_block.compute.environment.logs import setup_logging
 from q_block.compute.models.initialization import NuclearRepulsionEnergy
 from q_block.compute.models.molecule import Molecule
+from q_block.compute.environment.constants.numerical.pople import G321, G631, STO3G
 
 logger = setup_logging(__name__)
-
-BASIS_DIR: Path = (
-    Path(str(importlib.resources.files("q_block.compute.environment.constants.numerical")))
-    / "basis_set"
-    / "pople"
-)
 
 # ══════════════════════════════════════════════════════════════════════════════
 # 1. LOAD BASIS SETS
 # ══════════════════════════════════════════════════════════════════════════════
-
-basis_sto3g = Pople(filepath=str(BASIS_DIR / "STO-3G.gbs"))
-basis_3_21G = Pople(filepath=str(BASIS_DIR / "3-21G.gbs"))
-basis_6_31G = Pople(filepath=str(BASIS_DIR / "6-31G.gbs"))
 
 logger.info("Loaded basis sets: STO-3G, 3-21G and 6-31G\n")
 
@@ -51,8 +39,8 @@ logger.info("Loaded basis sets: STO-3G, 3-21G and 6-31G\n")
 h2_input = InputData()
 h2_input.from_script(
     atom_data=[
-        ["H", 0.0000, 0.0000, 0.0000, basis_sto3g],
-        ["H", 0.0000, 0.0000, 0.7414, basis_sto3g],  # Bond length ~0.74 Angstrom
+        ["H", 0.0000, 0.0000, 0.0000, STO3G],
+        ["H", 0.0000, 0.0000, 0.7414, STO3G],  # Bond length ~0.74 Angstrom
     ]
 )
 
@@ -70,9 +58,9 @@ logger.info(f"Number of atoms: {len(h2.atoms)}\n")
 water_input = InputData()
 water_input.from_script(
     atom_data=[
-        ["O", 0.0000, 0.0000, 0.1173, basis_6_31G],
-        ["H", 0.0000, 0.7572, -0.4692, basis_3_21G],
-        ["H", 0.0000, -0.7572, -0.4692, basis_3_21G],
+        ["O", 0.0000, 0.0000, 0.1173, G631],
+        ["H", 0.0000, 0.7572, -0.4692, G321],
+        ["H", 0.0000, -0.7572, -0.4692, G321],
     ]
 )
 
@@ -178,9 +166,9 @@ logger.info("E_nuc should be IDENTICAL regardless of basis set choice.\n")
 water_sto3g_input = InputData()
 water_sto3g_input.from_script(
     atom_data=[
-        ["O", 0.0000, 0.0000, 0.1173, basis_sto3g],
-        ["H", 0.0000, 0.7572, -0.4692, basis_sto3g],
-        ["H", 0.0000, -0.7572, -0.4692, basis_sto3g],
+        ["O", 0.0000, 0.0000, 0.1173, STO3G],
+        ["H", 0.0000, 0.7572, -0.4692, STO3G],
+        ["H", 0.0000, -0.7572, -0.4692, STO3G],
     ]
 )
 water_sto3g = Molecule(input_data=water_sto3g_input)
@@ -189,9 +177,9 @@ water_sto3g.to_bohr()
 water_321g_input = InputData()
 water_321g_input.from_script(
     atom_data=[
-        ["O", 0.0000, 0.0000, 0.1173, basis_3_21G],
-        ["H", 0.0000, 0.7572, -0.4692, basis_3_21G],
-        ["H", 0.0000, -0.7572, -0.4692, basis_3_21G],
+        ["O", 0.0000, 0.0000, 0.1173, G321],
+        ["H", 0.0000, 0.7572, -0.4692, G321],
+        ["H", 0.0000, -0.7572, -0.4692, G321],
     ]
 )
 water_321g = Molecule(input_data=water_321g_input)
@@ -200,9 +188,9 @@ water_321g.to_bohr()
 water_631g_input = InputData()
 water_631g_input.from_script(
     atom_data=[
-        ["O", 0.0000, 0.0000, 0.1173, basis_6_31G],
-        ["H", 0.0000, 0.7572, -0.4692, basis_6_31G],
-        ["H", 0.0000, -0.7572, -0.4692, basis_6_31G],
+        ["O", 0.0000, 0.0000, 0.1173, G631],
+        ["H", 0.0000, 0.7572, -0.4692, G631],
+        ["H", 0.0000, -0.7572, -0.4692, G631],
     ]
 )
 water_631g = Molecule(input_data=water_631g_input)

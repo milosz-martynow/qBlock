@@ -20,31 +20,20 @@ Mathematical foundation:
         ψ_i(r) = Σ_μ C_μi * φ_μ(r)
 """
 
-import importlib.resources
-from pathlib import Path
-
 from q_block.compute import Atom, Molecule
-from q_block.compute.environment.io.basis_set import Pople
 from q_block.compute.environment.io.coordinates import CartesianCoordinates
 from q_block.compute.environment.io.input_data import InputData
 from q_block.compute.environment.logs import setup_logging
+from q_block.compute.environment.constants.numerical.pople import G631
 from q_block.compute.utilities.mathematics import get_cartesian_components
 
 logger = setup_logging(__name__)
-
-BASIS_DIR: Path = (
-    Path(str(importlib.resources.files("q_block.compute.environment.constants.numerical")))
-    / "basis_set"
-    / "pople"
-)
 
 # ══════════════════════════════════════════════════════════════════════════════
 # 1. LOAD BASIS SET
 # ══════════════════════════════════════════════════════════════════════════════
 # Pople-style basis sets are stored in Gaussian format (.gbs files).
 # The 6-31G basis is a split-valence double-zeta basis set.
-
-basis = Pople(filepath=str(BASIS_DIR / "6-31G.gbs"))
 logger.info("Loaded 6-31G basis set\n")
 
 
@@ -57,7 +46,7 @@ logger.info("Loaded 6-31G basis set\n")
 
 hydrogen = Atom(
     atomic_number=1,  # Hydrogen (Z=1)
-    basis_set=basis,  # Attach 6-31G basis
+    basis_set=G631,  # Attach 6-31G basis
     coordinates=CartesianCoordinates(0.0, 0.0, 0.0),  # Place at origin
 )
 

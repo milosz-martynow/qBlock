@@ -19,15 +19,16 @@ formatted text files in an ``output_example_scf_kohn_sham/`` folder next
 to this script.
 """
 
-import importlib.resources
 from pathlib import Path
+
+from q_block.compute import Pople
 from q_block.compute.environment.configuration import Configuration
-from q_block.compute.environment.io.basis_set import Pople
 from q_block.compute.environment.io.input_data import InputData
 from q_block.compute.environment.io.output_data import OutputData
 from q_block.compute.environment.logs import setup_logging
 from q_block.compute.models.initialization import RKS
 from q_block.compute.models.molecule import Molecule
+from q_block.compute.environment.constants.numerical.pople import BASIS_DIR
 from q_block.compute.solvers.electronic_density.functionals import (
     B3LYP,
     PBE,
@@ -39,12 +40,7 @@ from q_block.compute.solvers.electronic_density.kohn_sham import (
 
 logger = setup_logging(__name__)
 
-BASIS_DIR: Path = (
-    Path(str(importlib.resources.files("q_block.compute.environment.constants.numerical")))
-    / "basis_set"
-    / "pople"
-)
-SCRIPT_DIR: Path = Path(str(importlib.resources.files("q_block.learn.examples")))
+SCRIPT_DIR: Path = Path(__file__).parent
 SCRIPT_NAME: str = "example_scf_kohn_sham"
 
 OUTPUT_DIR = SCRIPT_DIR / f"output_{SCRIPT_NAME}"

@@ -11,31 +11,19 @@ The to_dataframe() method creates a MultiIndex DataFrame containing
 all occupied spin-orbitals with their quantum numbers and GTO data.
 """
 
-import importlib.resources
-from pathlib import Path
-
 import pandas as pd
 
-from q_block.compute.environment.io.basis_set import Pople
 from q_block.compute.environment.io.input_data import InputData
 from q_block.compute.environment.logs import setup_logging
 from q_block.compute.models.molecule import Molecule
+from q_block.compute.environment.constants.numerical.pople import G321, G631
 
 logger = setup_logging(__name__)
-
-BASIS_DIR: Path = (
-    Path(str(importlib.resources.files("q_block.compute.environment.constants.numerical")))
-    / "basis_set"
-    / "pople"
-)
 
 # ══════════════════════════════════════════════════════════════════════════════
 # 1. LOAD BASIS SETS
 # ══════════════════════════════════════════════════════════════════════════════
 # Different basis sets for different atoms (mixed basis).
-
-basis_3_21G = Pople(filepath=str(BASIS_DIR / "3-21G.gbs"))
-basis_6_31G = Pople(filepath=str(BASIS_DIR / "6-31G.gbs"))
 
 logger.info("Loaded basis sets: 3-21G and 6-31G\n")
 
@@ -49,9 +37,9 @@ logger.info("Loaded basis sets: 3-21G and 6-31G\n")
 water_input = InputData()
 water_input.from_script(
     atom_data=[
-        ["O", 0.0000, 0.0000, 0.1173, basis_6_31G],  # Oxygen with 6-31G
-        ["H", 0.0000, 0.7572, -0.4692, basis_3_21G],  # H1 with 3-21G
-        ["H", 0.0000, -0.7572, -0.4692, basis_3_21G],  # H2 with 3-21G
+        ["O", 0.0000, 0.0000, 0.1173, G631],  # Oxygen with 6-31G
+        ["H", 0.0000, 0.7572, -0.4692, G321],  # H1 with 3-21G
+        ["H", 0.0000, -0.7572, -0.4692, G321],  # H2 with 3-21G
     ]
 )
 
