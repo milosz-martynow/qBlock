@@ -1,0 +1,101 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  verification:
+    name: Verification - unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          pip install pytest
+          pip install -e .
+
+      - name: Run verification tests
+        run: pytest q_block/tests/verification/ -v
+
+  validation:
+    name: Validation - atomic systems tests
+    needs: verification
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          pip install pytest
+          pip install -e .
+
+      - name: Run validation tests
+        run: pytest q_block/tests/validation/ -v
+
+  build-docs:
+    name: Documentation - Sphinx Build
+    needs: validation
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          pip install sphinx sphinx-autoapi furo
+          pip install -e .
+
+      - name: Build documentation
+        run: |
+          sphinx-build -b html \
+            q_block/learn/documentation/web_page/ \
+            q_block/learn/documentation/web_page/_build/html
+
+      - name: Upload pages artifact
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: q_block/learn/documentation/web_page/_build/html
+
+  deploy-docs:
+    name: Documentation - Deploy
+    needs: build-docs
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5
