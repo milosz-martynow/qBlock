@@ -10,30 +10,28 @@ A Python library for quantum chemistry calculations. Implemented numerical featu
 - **Convergence** — DIIS acceleration for all SCF variants
 - **Numerical integration** — Becke-partitioned grids for DFT quadrature
 
+The following example shows how to set up and run an Unrestricted Hartree-Fock calculation on a water molecule using a mixed basis set. It demonstrates that basis sets are bundled with the package and can be assigned independently per atom. It also illustrates the typical qBlock pipeline: define input geometry, construct an atomic system (here `Molecule`), expand it into contracted GTOs, then choose and instantiate a solver — one of RHF, UHF, ROHF, RKS, UKS, or ROKS, passing the basis functions and electron counts — and call `run()`, which executes the SCF iterations internally and stores the converged energy and other results on the solver object.
+
 ```python
 from q_block.compute.environment.io.input_data import InputData
 from q_block.compute.models.molecule import Molecule
 from q_block.compute.environment.constants.numerical.pople import G321, G6311ppss
 from q_block.compute.solvers.wavefunction.hartree_fock import UnrestrictedHartreeFock
 
-# Load Pople basis sets from library — zero I/O after first access
-basis_O = G6311ppss  # triple-zeta + diffuse + polarisation (was 6-311++G**)
-basis_H = G321       # split-valence
-
 # Build molecular geometry (coordinates in Å)
 inp = InputData()
 inp.from_script(atom_data=[
-    ["O",  0.0000, 0.0000, 0.0000, basis_O],
-    ["H",  0.7572, 0.0000, 0.5860, basis_H],
-    ["H", -0.7572, 0.0000, 0.5860, basis_H],
+    ["O",  0.0000, 0.0000, 0.0000, G6311ppss],
+    ["H",  0.7572, 0.0000, 0.5860, G321],
+    ["H", -0.7572, 0.0000, 0.5860, G321],
 ])
 
 # Construct the molecule and expand into contracted GTO basis functions
-molecule = Molecule(input_data=inp, multiplicity=1)  # singlet: all electrons paired
+molecule = Molecule(input_data=inp, multiplicity=1)
 molecule.to_bohr()
 molecule.make_contracted_gaussian_type_orbital()
 
-# Run UHF SCF — nuclear geometry is derived automatically from the basis
+# Build UHF and run SCF on it.
 uhf = UnrestrictedHartreeFock(
         cgtos=molecule.contracted_gaussian_type_orbitals, 
         n_alpha=5, 
