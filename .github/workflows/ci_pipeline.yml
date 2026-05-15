@@ -11,7 +11,7 @@ concurrency:
   cancel-in-progress: true
 
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 
@@ -99,3 +99,57 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v5
+
+  publish:
+    name: Publish - PyPI
+    needs: deploy-docs
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Bump patch version
+        id: bump
+        run: |
+          python - <<'EOF'
+          import re, pathlib, os
+          path = pathlib.Path("setup.py")
+          content = path.read_text(encoding="utf-8")
+          match = re.search(r'PROJECT_VERSION: str = "(\d+)"', content)
+          new_version = str(int(match.group(1)) + 1)
+          new_content = re.sub(
+              r'(PROJECT_VERSION: str = )"(\d+)"',
+              f'\\1"{new_version}"',
+              content
+          )
+          path.write_text(new_content, encoding="utf-8")
+          with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+              f.write(f"new_version={new_version}\n")
+          EOF
+
+      - name: Commit and push version bump
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add setup.py
+          git commit -m "chore: bump version to ${{ steps.bump.outputs.new_version }} [skip ci]"
+          git push
+
+      - name: Install build tools
+        run: pip install build
+
+      - name: Build package
+        run: python -m build
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@v1.12.4
+        with:
+          password: ${{ secrets.PYPI_API_TOKEN }}
