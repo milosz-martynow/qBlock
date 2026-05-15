@@ -8,7 +8,7 @@ from typing import List
 from setuptools import find_packages, setup
 
 PROJECT_NAME: str = "qBlock"
-PROJECT_VERSION: str = "3"
+PROJECT_VERSION: str = "1"
 PROJECT_AUTHOR: str = "Miłosz Martynow"
 PROJECT_AUTHOR_EMAIL: str = "miloszmartynow@gmail.com"
 PROJECT_DESCRIPTION: str = (
