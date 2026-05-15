@@ -8,13 +8,13 @@ from typing import List
 from setuptools import find_packages, setup
 
 PROJECT_NAME: str = "qBlock"
-PROJECT_VERSION: str = "1"
+PROJECT_VERSION: str = "2"
 PROJECT_AUTHOR: str = "Miłosz Martynow"
 PROJECT_AUTHOR_EMAIL: str = "miloszmartynow@gmail.com"
 PROJECT_DESCRIPTION: str = (
-    "Easy in maintenance software to study electronic structure of atomic "
-    "systems via SCF process, including Hartree-Fock and Density Functional "
-    "Theory."
+    "Easy in maintenance software to study electronic structure"
+    "of atomic systems via SCF process, including Hartree-Fock and "
+    "Density Functional Theory."
 )
 
 requires: List[str] = [

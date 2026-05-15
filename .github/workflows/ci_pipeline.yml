@@ -57,11 +57,14 @@ jobs:
       - name: Run validation tests
         run: pytest q_block/tests/validation/ -v
 
-  build-docs:
-    name: Documentation - Sphinx Build
+  documentation:
+    name: Documentation - Sphinx
     needs: validation
     if: github.event_name == 'push'
     runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
@@ -87,22 +90,13 @@ jobs:
         with:
           path: q_block/learn/documentation/web_page/_build/html
 
-  deploy-docs:
-    name: Documentation - Deploy
-    needs: build-docs
-    if: github.event_name == 'push'
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v5
 
   publish:
     name: Publish - PyPI
-    needs: deploy-docs
+    needs: documentation
     if: github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
