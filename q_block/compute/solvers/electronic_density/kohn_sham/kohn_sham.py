@@ -33,11 +33,10 @@ KohnSham
 
 import logging
 from abc import abstractmethod
-from typing import List, Optional, Tuple, Union
+from typing import Optional, Union
 
 import numpy as np
 
-from q_block.compute.models.basis_functions import ContractedGaussianTypeOrbital
 from q_block.compute.models.integrals.numerical_grid import NumericalGrid
 from q_block.compute.solvers.electronic_density.functionals.exchange_correlation_functional import (
     ExchangeCorrelationFunctional,
@@ -68,8 +67,6 @@ class KohnSham(SCF):
     Concrete subclasses only need to implement
     :meth:`_store_matrices` to decide *which* matrices are saved.
 
-    :param cgtos: Contracted Gaussian-type orbital basis.
-    :type cgtos: List[ContractedGaussianTypeOrbital]
     :param functional: Exchange-correlation functional.
     :type functional: ExchangeCorrelationFunctional
     :param n_alpha: Number of alpha electrons.
@@ -80,23 +77,11 @@ class KohnSham(SCF):
     :type n_radial: int
     :param n_angular: Number of angular (Lebedev) points per atom.
     :type n_angular: int
-    :param max_iterations: Maximum number of SCF cycles.
-    :type max_iterations: int
-    :param convergence_threshold: Threshold for energy change and
-        DIIS error.
-    :type convergence_threshold: float
-    :param diis_start: SCF iteration at which to begin DIIS
-        extrapolation (0-indexed).
-    :type diis_start: int
-    :param diis_max_vectors: Maximum number of Fock/error pairs
-        stored in the DIIS subspace.
-    :type diis_max_vectors: int
-    :param calculation_error_metric: Error reduction method
-        (``"rms"`` or ``"max_abs"``).
-    :type calculation_error_metric: str
-    :param precomputed_eri: Pre-built ERI tensor to reuse instead of
-        recomputing. ``None`` triggers computation from scratch.
-    :type precomputed_eri: Optional[np.ndarray]
+    :param \*\*kwargs: All parameters forwarded to
+        :class:`~compute.solvers.scf.SCF` (``cgtos``,
+        ``max_iterations``, ``convergence_threshold``, ``diis_start``,
+        ``diis_max_vectors``, ``calculation_error_metric``,
+        ``precomputed_eri``).
 
     Attributes
     ----------
@@ -114,28 +99,19 @@ class KohnSham(SCF):
 
     def __init__(
         self,
-        cgtos: List[ContractedGaussianTypeOrbital],
         functional: ExchangeCorrelationFunctional,
         n_alpha: int,
         n_beta: int,
         n_radial: int = 50,
         n_angular: int = 14,
-        max_iterations: int = 100,
-        convergence_threshold: float = 1e-6,
-        diis_start: int = 1,
-        diis_max_vectors: int = 6,
-        calculation_error_metric: str = "rms",
-        precomputed_eri: Optional[np.ndarray] = None,
+        **kwargs,
     ) -> None:
-        super().__init__(
-            cgtos,
-            max_iterations=max_iterations,
-            convergence_threshold=convergence_threshold,
-            diis_start=diis_start,
-            diis_max_vectors=diis_max_vectors,
-            calculation_error_metric=calculation_error_metric,
-            precomputed_eri=precomputed_eri,
-        )
+        if n_alpha < 0 or n_beta < 0:
+            raise ValueError(
+                f"Electron counts must be non-negative; "
+                f"got n_alpha={n_alpha}, n_beta={n_beta}."
+            )
+        super().__init__(**kwargs)
         self._n_alpha: int = n_alpha
         self._n_beta: int = n_beta
         self._C: Optional[np.ndarray] = None

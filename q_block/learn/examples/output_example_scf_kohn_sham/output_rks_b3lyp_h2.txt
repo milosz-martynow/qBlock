@@ -1,7 +1,7 @@
 ======================================================================
 Quantum Chemistry Calculation Results - RKS-B3LYP
 ======================================================================
-  Timestamp          : 2026-04-19T21:27:56.112113
+  Timestamp          : 2026-05-15T09:39:32.168883
   Basis Set          : 3-21G
 
 Input Geometry (Bohr)
@@ -20,25 +20,25 @@ System Information
 Convergence
 ----------------------------------------------------------------------
   Converged          : True
-  Iterations         : 8
+  Iterations         : 9
   Threshold          : 1.00e-08
 
 Energies (Hartree)
 ----------------------------------------------------------------------
-  Electronic Energy  :      -1.9283583743
+  Electronic Energy  :      -1.9310626252
   Nuclear Repulsion  :       0.7151043905
-  Total Energy       :      -1.2132539837
+  Total Energy       :      -1.2159582347
 
 Orbital Energies
 ----------------------------------------------------------------------
-  [-0.40570543  0.1349915   0.74661652  1.27338546]
+  [-0.46774675  0.09770899  0.6995834   1.19263524]
 
 Available Matrices : ['C', 'F', 'H', 'P', 'S', 'epsilon']
 
 Convergence History
 ----------------------------------------------------------------------
-  Total iterations: 8
+  Total iterations: 9
   Initial energy  : -1.8992052367 Ha
-  Final energy    : -1.9283583743 Ha
-  Final error     : 2.82e-09
+  Final energy    : -1.9310626252 Ha
+  Final error     : 5.54e-11
 ======================================================================

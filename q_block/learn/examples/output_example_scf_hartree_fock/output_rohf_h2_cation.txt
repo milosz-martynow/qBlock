@@ -1,44 +1,44 @@
 ======================================================================
-Quantum Chemistry Calculation Results - RKS-SVWN
+Quantum Chemistry Calculation Results - ROHF
 ======================================================================
-  Timestamp          : 2026-05-15T09:39:32.163061
+  Timestamp          : 2026-05-15T09:39:31.027384
   Basis Set          : 3-21G
 
 Input Geometry (Bohr)
 ----------------------------------------------------------------------
   Atom     Z                X               Y               Z
   H        1      0.000000000     0.000000000     0.000000000
-  H        1      0.000000000     0.000000000     1.398397232
+  H        1      0.000000000     0.000000000     2.642587591
 
 System Information
 ----------------------------------------------------------------------
-  Number of Electrons: 2
+  Number of Electrons: 1
   Number of Basis Fns: 4
-  Charge             : +0
-  Multiplicity (2S+1): 1
+  Charge             : -1
+  Multiplicity (2S+1): 2
 
 Convergence
 ----------------------------------------------------------------------
   Converged          : True
-  Iterations         : 9
+  Iterations         : 2
   Threshold          : 1.00e-08
 
 Energies (Hartree)
 ----------------------------------------------------------------------
-  Electronic Energy  :      -1.8484362419
-  Nuclear Repulsion  :       0.7151043905
-  Total Energy       :      -1.1333318514
+  Electronic Energy  :      -0.9514596016
+  Nuclear Repulsion  :       0.3784169741
+  Total Energy       :      -0.5730426275
 
 Orbital Energies
 ----------------------------------------------------------------------
-  [-0.3746911   0.09187021  0.69094775  1.19509647]
+  [-0.9514596  -0.28599586  0.7334248   0.76300001]
 
-Available Matrices : ['C', 'F', 'H', 'P', 'S', 'epsilon']
+Available Matrices : ['C', 'F_alpha', 'F_beta', 'F_eff', 'H', 'P', 'P_alpha', 'P_beta', 'S', 'epsilon']
 
 Convergence History
 ----------------------------------------------------------------------
-  Total iterations: 9
-  Initial energy  : -1.7969450961 Ha
-  Final energy    : -1.8484362419 Ha
-  Final error     : 4.92e-10
+  Total iterations: 2
+  Initial energy  : -0.9514596016 Ha
+  Final energy    : -0.9514596016 Ha
+  Final error     : 3.82e-16
 ======================================================================

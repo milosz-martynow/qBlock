@@ -27,11 +27,10 @@ HartreeFock
 
 import logging
 from abc import abstractmethod
-from typing import List, Optional, Tuple, Union
+from typing import Optional, Union
 
 import numpy as np
 
-from q_block.compute.models.basis_functions import ContractedGaussianTypeOrbital
 from q_block.compute.solvers.scf import SCF
 from q_block.compute.solvers.spin_pair import SpinPair
 
@@ -56,47 +55,29 @@ class HartreeFock(SCF):
     :meth:`_store_matrices` to decide *which* matrices are saved in
     :attr:`matrices`.
 
-    :param cgtos: Contracted Gaussian-type orbital basis.
-    :type cgtos: List[ContractedGaussianTypeOrbital]
     :param n_alpha: Number of alpha electrons.
     :type n_alpha: int
     :param n_beta: Number of beta electrons.
     :type n_beta: int
-    :param max_iterations: Maximum number of SCF cycles.
-    :type max_iterations: int
-    :param convergence_threshold: Threshold for energy change and
-        DIIS error.
-    :type convergence_threshold: float
-    :param diis_start: SCF iteration at which to begin DIIS
-        extrapolation (0-indexed).
-    :type diis_start: int
-    :param diis_max_vectors: Maximum number of Fock/error pairs
-        stored in the DIIS subspace.
-    :type diis_max_vectors: int
-    :param calculation_error_metric: Error reduction method
-        (``"rms"`` or ``"max_abs"``).
-    :type calculation_error_metric: str
+    :param \*\*kwargs: All parameters forwarded to
+        :class:`~compute.solvers.scf.SCF` (``cgtos``,
+        ``max_iterations``, ``convergence_threshold``, ``diis_start``,
+        ``diis_max_vectors``, ``calculation_error_metric``,
+        ``precomputed_eri``).
     """
 
     def __init__(
         self,
-        cgtos: List[ContractedGaussianTypeOrbital],
         n_alpha: int,
         n_beta: int,
-        max_iterations: int = 100,
-        convergence_threshold: float = 1e-8,
-        diis_start: int = 1,
-        diis_max_vectors: int = 6,
-        calculation_error_metric: str = "rms",
+        **kwargs,
     ) -> None:
-        super().__init__(
-            cgtos,
-            max_iterations=max_iterations,
-            convergence_threshold=convergence_threshold,
-            diis_start=diis_start,
-            diis_max_vectors=diis_max_vectors,
-            calculation_error_metric=calculation_error_metric,
-        )
+        if n_alpha < 0 or n_beta < 0:
+            raise ValueError(
+                f"Electron counts must be non-negative; "
+                f"got n_alpha={n_alpha}, n_beta={n_beta}."
+            )
+        super().__init__(**kwargs)
         self._n_alpha: int = n_alpha
         self._n_beta: int = n_beta
         self._C: Optional[np.ndarray] = None

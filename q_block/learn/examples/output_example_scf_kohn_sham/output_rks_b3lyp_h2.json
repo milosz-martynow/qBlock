@@ -1,25 +1,25 @@
 {
   "method": "RKS-B3LYP",
-  "timestamp": "2026-04-19T21:27:56.112113",
+  "timestamp": "2026-05-15T09:39:32.168883",
   "basis_set": "3-21G",
   "molecular_formula": null,
   "converged": true,
-  "n_iterations": 8,
+  "n_iterations": 9,
   "convergence_threshold": 1e-08,
   "n_electrons": 2,
   "n_basis": 4,
   "charge": 0,
   "multiplicity": 1,
   "energies": {
-    "electronic": -1.9283583742724408,
+    "electronic": -1.931062625209791,
     "nuclear": 0.7151043905325648,
-    "total": -1.2132539837398761
+    "total": -1.2159582346772262
   },
   "orbital_energies": [
-    -0.4057054256283157,
-    0.13499150373821478,
-    0.7466165175758633,
-    1.2733854583993873
+    -0.4677467464503564,
+    0.09770899025614477,
+    0.6995833978440086,
+    1.1926352418312856
   ],
   "geometry": [
     {
@@ -42,56 +42,63 @@
       "iteration": 1,
       "e_electronic": -1.8992052366968686,
       "energy_change": -1.8992052366968686,
-      "error": 0.07524800545224697,
+      "error": 0.05828144517725,
       "diis_active": false
     },
     {
       "iteration": 2,
-      "e_electronic": -1.9235568813035164,
-      "energy_change": -0.02435164460664785,
-      "error": 0.011553424574862517,
+      "e_electronic": -1.930606182277837,
+      "energy_change": -0.03140094558096851,
+      "error": 0.006395303022735057,
       "diis_active": true
     },
     {
       "iteration": 3,
-      "e_electronic": -1.9288655930005725,
-      "energy_change": -0.0053087116970560455,
-      "error": 0.0017097344961454401,
+      "e_electronic": -1.931065969012852,
+      "energy_change": -0.00045978673501489986,
+      "error": 0.0006909092562647137,
       "diis_active": true
     },
     {
       "iteration": 4,
-      "e_electronic": -1.928358105991502,
-      "energy_change": 0.0005074870090704398,
-      "error": 8.570476007759476e-07,
+      "e_electronic": -1.931062623142272,
+      "energy_change": 3.345870579929411e-06,
+      "error": 1.82591663717232e-07,
       "diis_active": true
     },
     {
       "iteration": 5,
-      "e_electronic": -1.928358105991502,
-      "energy_change": 0.0,
-      "error": 8.570476007759476e-07,
+      "e_electronic": -1.9310626260789754,
+      "energy_change": -2.936703324962764e-09,
+      "error": 7.669926222313488e-08,
       "diis_active": true
     },
     {
       "iteration": 6,
-      "e_electronic": -1.9283584131584104,
-      "energy_change": -3.071669083531958e-07,
-      "error": 1.2745565137495203e-07,
+      "e_electronic": -1.9310626258760193,
+      "energy_change": 2.0295609637344114e-10,
+      "error": 5.877603972167101e-08,
       "diis_active": true
     },
     {
       "iteration": 7,
-      "e_electronic": -1.928358367479247,
-      "energy_change": 4.5679163340750506e-08,
-      "error": 1.895454677079502e-08,
+      "e_electronic": -1.931062625891061,
+      "energy_change": -1.504174562683147e-11,
+      "error": 6.010434849568273e-08,
       "diis_active": true
     },
     {
       "iteration": 8,
-      "e_electronic": -1.9283583742724408,
-      "energy_change": -6.793193785270546e-09,
-      "error": 2.81882337306118e-09,
+      "e_electronic": -1.9310626315832076,
+      "energy_change": -5.692146531899311e-09,
+      "error": 5.629858568121062e-07,
+      "diis_active": true
+    },
+    {
+      "iteration": 9,
+      "e_electronic": -1.931062625209791,
+      "energy_change": 6.37341646125833e-09,
+      "error": 5.539606105393459e-11,
       "diis_active": true
     }
   ]

@@ -73,14 +73,10 @@ RestrictedOpenShellKohnSham
     Concrete ROKS implementation.
 """
 
-from typing import List, Optional
+from typing import Optional
 
 import numpy as np
 
-from q_block.compute.models.basis_functions import ContractedGaussianTypeOrbital
-from q_block.compute.solvers.electronic_density.functionals.exchange_correlation_functional import (
-    ExchangeCorrelationFunctional,
-)
 from q_block.compute.solvers.electronic_density.kohn_sham.kohn_sham import (
     KohnSham,
 )
@@ -95,58 +91,21 @@ class RestrictedOpenShellKohnSham(KohnSham):
     Roothaan effective Fock matrix is assembled from the per-spin KS
     Fock matrices and used to drive the SCF loop.
 
-    :param cgtos: Contracted Gaussian-type orbital basis.
-    :type cgtos: List[ContractedGaussianTypeOrbital]
-    :param functional: Exchange-correlation functional.
-    :type functional: ExchangeCorrelationFunctional
     :param n_closed: Number of doubly-occupied spatial orbitals.
     :type n_closed: int
     :param n_open: Number of singly-occupied spatial orbitals.
     :type n_open: int
-    :param n_radial: Number of radial grid points per atom.
-    :type n_radial: int
-    :param n_angular: Number of angular (Lebedev) points per atom.
-    :type n_angular: int
-    :param max_iterations: Maximum number of SCF cycles.
-    :type max_iterations: int
-    :param convergence_threshold: Threshold for energy change and
-        DIIS error.
-    :type convergence_threshold: float
-    :param diis_start: SCF iteration at which to begin DIIS
-        extrapolation (0-indexed).
-    :type diis_start: int
-    :param diis_max_vectors: Maximum number of Fock/error pairs
-        stored in the DIIS subspace.
-    :type diis_max_vectors: int
-    :param calculation_error_metric: Error reduction method
-        (``"rms"`` or ``"max_abs"``).
-    :type calculation_error_metric: str
-    :param precomputed_eri: Pre-built ERI tensor to reuse instead of
-        recomputing. ``None`` triggers computation from scratch.
-    :type precomputed_eri: Optional[np.ndarray]
-
-    Attributes
-    ----------
-    n_closed : int
-        Number of doubly-occupied (closed-shell) spatial orbitals.
-    n_open : int
-        Number of singly-occupied (open-shell) spatial orbitals.
+    :param \*\*kwargs: All parameters forwarded to
+        :class:`~compute.solvers.electronic_density.kohn_sham.kohn_sham.KohnSham`
+        (e.g. ``functional``, ``n_radial``, ``n_angular``, ``cgtos``,
+        ``convergence_threshold``, ``max_iterations``).
     """
 
     def __init__(
         self,
-        cgtos: List[ContractedGaussianTypeOrbital],
-        functional: ExchangeCorrelationFunctional,
         n_closed: int,
         n_open: int,
-        n_radial: int = 50,
-        n_angular: int = 14,
-        max_iterations: int = 100,
-        convergence_threshold: float = 1e-6,
-        diis_start: int = 1,
-        diis_max_vectors: int = 6,
-        calculation_error_metric: str = "rms",
-        precomputed_eri: Optional[np.ndarray] = None,
+        **kwargs,
     ) -> None:
         if n_closed < 0 or n_open < 0:
             raise ValueError(
@@ -160,26 +119,21 @@ class RestrictedOpenShellKohnSham(KohnSham):
             )
         n_alpha = n_closed + n_open
         n_beta = n_closed
-        super().__init__(
-            cgtos,
-            functional=functional,
-            n_alpha=n_alpha,
-            n_beta=n_beta,
-            n_radial=n_radial,
-            n_angular=n_angular,
-            max_iterations=max_iterations,
-            convergence_threshold=convergence_threshold,
-            diis_start=diis_start,
-            diis_max_vectors=diis_max_vectors,
-            calculation_error_metric=calculation_error_metric,
-            precomputed_eri=precomputed_eri,
-        )
-        self.n_closed: int = n_closed
-        self.n_open: int = n_open
+        super().__init__(n_alpha=n_alpha, n_beta=n_beta, **kwargs)
 
         # ── Internal caches (set by _build_fock, read by _store_matrices) ──
         self._F_alpha: Optional[np.ndarray] = None
         self._F_beta: Optional[np.ndarray] = None
+
+    @property
+    def n_closed(self) -> int:
+        """Number of doubly-occupied (closed-shell) spatial orbitals."""
+        return self.n_beta
+
+    @property
+    def n_open(self) -> int:
+        """Number of singly-occupied (open-shell) spatial orbitals."""
+        return self.n_alpha - self.n_beta
 
     # ------------------------------------------------------------------
     # SCF hooks (overrides)

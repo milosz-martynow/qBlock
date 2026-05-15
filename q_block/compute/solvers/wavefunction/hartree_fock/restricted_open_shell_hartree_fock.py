@@ -53,11 +53,10 @@ RestrictedOpenShellHartreeFock
     Concrete ROHF implementation.
 """
 
-from typing import List, Optional, Tuple, Union
+from typing import Optional, Union
 
 import numpy as np
 
-from q_block.compute.models.basis_functions import ContractedGaussianTypeOrbital
 from q_block.compute.solvers.spin_pair import SpinPair
 from q_block.compute.solvers.wavefunction.hartree_fock.hartree_fock import HartreeFock
 
@@ -76,45 +75,21 @@ class RestrictedOpenShellHartreeFock(HartreeFock):
     :meth:`_compute_electronic_energy` to use the physical per-spin
     Fock matrices instead of the effective one.
 
-    :param cgtos: Contracted Gaussian-type orbital basis.
-    :type cgtos: List[ContractedGaussianTypeOrbital]
     :param n_closed: Number of doubly-occupied spatial orbitals.
     :type n_closed: int
     :param n_open: Number of singly-occupied spatial orbitals.
     :type n_open: int
-    :param max_iterations: Maximum number of SCF cycles.
-    :type max_iterations: int
-    :param convergence_threshold: Threshold for energy change and
-        DIIS error.
-    :type convergence_threshold: float
-    :param diis_start: SCF iteration at which to begin DIIS
-        extrapolation (0-indexed).
-    :type diis_start: int
-    :param diis_max_vectors: Maximum number of Fock/error pairs
-        stored in the DIIS subspace.
-    :type diis_max_vectors: int
-    :param calculation_error_metric: Error reduction method
-        (``"rms"`` or ``"max_abs"``).
-    :type calculation_error_metric: str
-
-    Attributes
-    ----------
-    n_closed : int
-        Number of doubly-occupied (closed-shell) spatial orbitals.
-    n_open : int
-        Number of singly-occupied (open-shell) spatial orbitals.
+    :param \*\*kwargs: All parameters forwarded to
+        :class:`~compute.solvers.scf.SCF` via
+        :class:`~compute.solvers.wavefunction.hartree_fock.hartree_fock.HartreeFock`
+        (e.g. ``cgtos``, ``convergence_threshold``, ``max_iterations``).
     """
 
     def __init__(
         self,
-        cgtos: List[ContractedGaussianTypeOrbital],
         n_closed: int,
         n_open: int,
-        max_iterations: int = 100,
-        convergence_threshold: float = 1e-8,
-        diis_start: int = 1,
-        diis_max_vectors: int = 6,
-        calculation_error_metric: str = "rms",
+        **kwargs,
     ) -> None:
         if n_closed < 0 or n_open < 0:
             raise ValueError(
@@ -123,22 +98,21 @@ class RestrictedOpenShellHartreeFock(HartreeFock):
             )
         n_alpha = n_closed + n_open
         n_beta = n_closed
-        super().__init__(
-            cgtos,
-            n_alpha=n_alpha,
-            n_beta=n_beta,
-            max_iterations=max_iterations,
-            convergence_threshold=convergence_threshold,
-            diis_start=diis_start,
-            diis_max_vectors=diis_max_vectors,
-            calculation_error_metric=calculation_error_metric,
-        )
-        self.n_closed: int = n_closed
-        self.n_open: int = n_open
+        super().__init__(n_alpha=n_alpha, n_beta=n_beta, **kwargs)
 
         # ── Internal caches (set by _build_fock, used by energy) ─────
         self._F_alpha: Optional[np.ndarray] = None
         self._F_beta: Optional[np.ndarray] = None
+
+    @property
+    def n_closed(self) -> int:
+        """Number of doubly-occupied (closed-shell) spatial orbitals."""
+        return self.n_beta
+
+    @property
+    def n_open(self) -> int:
+        """Number of singly-occupied (open-shell) spatial orbitals."""
+        return self.n_alpha - self.n_beta
 
     # ------------------------------------------------------------------
     # SCF hooks (overrides)
